@@ -73,7 +73,26 @@
 
     <!-- Sidebar (Position: 2nd on Mobile, Right-Column on Desktop) -->
     <div class="lg:col-start-3 lg:row-start-1 lg:row-span-2">
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 lg:sticky lg:top-8">
+        <!-- Quick Actions Card -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-6 lg:sticky lg:top-8 z-10">
+            <h3 class="font-bold text-slate-900 mb-4">Ações Rápidas</h3>
+            <form method="post" action="?">
+                <?php wp_nonce_field('ccs_action_nonce'); ?>
+                <input type="hidden" name="ccs_action" value="quick_windows_update">
+                <input type="hidden" name="computer_id" value="<?php echo $pc->id; ?>">
+                <button type="submit"
+                    class="w-full flex items-center justify-center gap-2 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 p-3 rounded-lg transition-colors font-medium">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                        </path>
+                    </svg>
+                    Marcar Windows Atualizado
+                </button>
+            </form>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 lg:sticky lg:top-48">
             <h3 class="font-bold text-slate-900 mb-4">Novo Evento / Checkup</h3>
             <form method="post" action="?">
                 <?php wp_nonce_field('ccs_action_nonce'); ?>

@@ -235,6 +235,12 @@ class ComputerControlSystem
             $this->log_history($id, 'restore', 'Restaurado da lixeira', $current_user_id);
             $this->redirect('?view=details&id=' . $id . '&message=restored');
         }
+
+        if ($_POST['ccs_action'] === 'quick_windows_update') {
+            $id = intval($_POST['computer_id']);
+            $this->log_history($id, 'maintenance', 'Windows e Drivers Atualizados', $current_user_id);
+            $this->redirect('?view=details&id=' . $id . '&message=windows_updated');
+        }
     }
 
     private function handle_file_uploads($files)
