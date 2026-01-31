@@ -19,8 +19,15 @@ class ComputerControlSystem
     public function run()
     {
         // Enforce Authentication
+        // Handle Login Submission
+        if (isset($_POST['ccs_action']) && $_POST['ccs_action'] === 'login') {
+            $this->handle_login();
+        }
+
+        // Enforce Authentication
         if (!is_user_logged_in()) {
-            auth_redirect();
+            $this->render_login_page();
+            exit;
         }
 
         // Enforce Permissions (Admin only)
@@ -341,5 +348,29 @@ class ComputerControlSystem
         $history = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$this->table_history} WHERE computer_id = %d ORDER BY created_at DESC", $id));
 
         require __DIR__ . '/../templates/view-details.php';
+    }
+
+    private function handle_login()
+    {
+        $creds = array();
+        $creds['user_login'] = $_POST['log'];
+        $creds['user_password'] = $_POST['pwd'];
+        $creds['remember'] = isset($_POST['rememberme']);
+
+        $user = wp_signon($creds, is_ssl());
+
+        if (is_wp_error($user)) {
+            $this->redirect('?login_error=1');
+        } else {
+            $this->redirect('?');
+        }
+    }
+
+    private function render_login_page()
+    {
+        if (!headers_sent()) {
+            header('Content-Type: text/html; charset=' . get_bloginfo('charset'));
+        }
+        require __DIR__ . '/../templates/view-login.php';
     }
 }
