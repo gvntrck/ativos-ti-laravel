@@ -1,9 +1,27 @@
 <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
     <div
         class="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-center gap-4">
-        <input type="text" id="searchInput" onkeyup="filterTable()"
-            class="block w-full sm:w-64 px-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-400 focus:outline-none focus:placeholder-slate-500 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            placeholder="Filtrar computadores...">
+
+        <div class="flex gap-2 w-full sm:w-auto">
+            <input type="text" id="searchInput" onkeyup="filterTable()"
+                class="block w-full sm:w-64 px-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-400 focus:outline-none focus:placeholder-slate-500 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                placeholder="Filtrar computadores...">
+
+            <?php
+            $is_filter_outdated = isset($_GET['filter']) && $_GET['filter'] === 'outdated';
+            $filter_url = $is_filter_outdated ? '?' : '?filter=outdated';
+            $filter_class = $is_filter_outdated ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50';
+            ?>
+            <a href="<?php echo $filter_url; ?>"
+                class="flex items-center px-4 py-2 border rounded-lg text-sm font-medium transition-colors <?php echo $filter_class; ?>"
+                title="Mostrar computadores com Windows desatualizado (> 30 dias)">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <?php echo $is_filter_outdated ? 'Mostrando Desatualizados' : 'Ver Desatualizados'; ?>
+            </a>
+        </div>
 
         <div class="flex items-center">
             <?php if ($show_trash): ?>
@@ -49,13 +67,37 @@
                     $status_label = match ($pc->status) {
                         'active' => 'Em Uso', 'backup' => 'Backup', 'maintenance' => 'Manutenção', default => 'Aposentado'
                     };
+
+                    // Windows Update Status Logic
+                    $last_update = $pc->last_windows_update ? strtotime($pc->last_windows_update) : 0;
+                    $days_since_update = floor((time() - $last_update) / (60 * 60 * 24));
+                    $is_outdated = $days_since_update > 30;
+
+                    if (!$pc->last_windows_update) {
+                        $win_status_color = 'text-red-500';
+                        $win_status_icon = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>';
+                        $win_tooltip = 'Windows nunca atualizado';
+                    } elseif ($is_outdated) {
+                        $win_status_color = 'text-red-500';
+                        $win_status_icon = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+                        $win_tooltip = "Atualizado há $days_since_update dias";
+                    } else {
+                        $win_status_color = 'text-emerald-500';
+                        $win_status_icon = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+                        $win_tooltip = "Atualizado há $days_since_update dia(s)";
+                    }
                     ?>
                     <tr class="hover:bg-slate-50"
                         data-search-terms="<?php echo esc_attr(strtolower(($pc->hostname ?? '') . ' ' . ($pc->user_name ?? '') . ' ' . ($pc->location ?? '') . ' ' . ($pc->type ?? '') . ' ' . ($pc->search_meta ?? ''))); ?>">
-                        <td class="px-4 py-2"><span
-                                class="px-2 py-0.5 rounded-full text-xs font-medium <?php echo $status_color; ?>">
-                                <?php echo $status_label; ?>
-                            </span>
+                        <td class="px-4 py-2">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-0.5 rounded-full text-xs font-medium <?php echo $status_color; ?>">
+                                    <?php echo $status_label; ?>
+                                </span>
+                                <div class="<?php echo $win_status_color; ?>" title="<?php echo esc_attr($win_tooltip); ?>">
+                                    <?php echo $win_status_icon; ?>
+                                </div>
+                            </div>
                         </td>
                         <td class="px-4 py-2 font-medium text-slate-900">
                             <a href="?view=details&id=<?php echo $pc->id; ?>" class="text-indigo-600 hover:text-indigo-900">

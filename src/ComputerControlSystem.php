@@ -2,7 +2,7 @@
 
 class ComputerControlSystem
 {
-    private $db_version = '1.0.9';
+    private $db_version = '1.1.0';
     private $table_inventory;
     private $table_history;
 
@@ -75,6 +75,27 @@ class ComputerControlSystem
         if ($row && !isset($row['deleted'])) {
             $wpdb->query("ALTER TABLE {$this->table_inventory} ADD deleted tinyint(1) NOT NULL DEFAULT 0 AFTER status");
         }
+
+        $row = $wpdb->get_row("SELECT * FROM {$this->table_inventory} LIMIT 1", ARRAY_A);
+        if ($row && !isset($row['last_windows_update'])) {
+            $wpdb->query("ALTER TABLE {$this->table_inventory} ADD last_windows_update datetime DEFAULT NULL AFTER updated_at");
+
+            // Populate based on history
+            $updates = $wpdb->get_results("
+                SELECT computer_id, MAX(created_at) as last_update 
+                FROM {$this->table_history} 
+                WHERE description LIKE '%Windows e Drivers Atualizados%' 
+                GROUP BY computer_id
+            ");
+
+            foreach ($updates as $update) {
+                $wpdb->update(
+                    $this->table_inventory,
+                    ['last_windows_update' => $update->last_update],
+                    ['id' => $update->computer_id]
+                );
+            }
+        }
     }
 
     private function install_db()
@@ -95,6 +116,7 @@ class ComputerControlSystem
             photo_url varchar(255) DEFAULT '',
             created_at datetime DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            last_windows_update datetime DEFAULT NULL,
             PRIMARY KEY  (id),
             KEY hostname (hostname)
         ) $charset_collate;";
@@ -239,6 +261,13 @@ class ComputerControlSystem
         if ($_POST['ccs_action'] === 'quick_windows_update') {
             $id = intval($_POST['computer_id']);
             $this->log_history($id, 'maintenance', 'Windows e Drivers Atualizados', $current_user_id);
+
+            $wpdb->update(
+                $this->table_inventory,
+                ['last_windows_update' => current_time('mysql')],
+                ['id' => $id]
+            );
+
             $this->redirect('?view=details&id=' . $id . '&message=windows_updated');
         }
     }
@@ -326,7 +355,16 @@ class ComputerControlSystem
     {
         global $wpdb;
         $deleted_val = $show_trash ? 1 : 0;
-        $computers = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$this->table_inventory} WHERE deleted = %d ORDER BY updated_at DESC", $deleted_val));
+
+        $where_add = "";
+        $filter = $_GET['filter'] ?? '';
+
+        if ($filter === 'outdated') {
+            // Desatualizados: last_windows_update nulo ou maior que 30 dias atrás
+            $where_add = " AND (last_windows_update IS NULL OR last_windows_update < DATE_SUB(NOW(), INTERVAL 30 DAY))";
+        }
+
+        $computers = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$this->table_inventory} WHERE deleted = %d $where_add ORDER BY updated_at DESC", $deleted_val));
 
         // Buscar histórico concatenado para pesquisa (inclui hostnames antigos, mudanças de usuário, etc)
         // Usamos OBJECT_K para indexar o array pelo computer_id para acesso r\u00e1pido
