@@ -5,6 +5,8 @@ class ComputerControlSystem
     private $db_version = '1.1.0';
     private $table_inventory;
     private $table_history;
+    private $form_error = '';
+    private $form_data = [];
 
     public function __construct()
     {
@@ -172,6 +174,16 @@ class ComputerControlSystem
                 }
             }
 
+            // Validation: Check if hostname exists
+            $exists = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$this->table_inventory} WHERE hostname = %s AND deleted = 0", $hostname));
+            if ($exists > 0) {
+                $this->form_error = "O hostname '$hostname' já está em uso por outro computador.";
+                $this->form_data = $_POST;
+                $this->form_data['hostname'] = $hostname; // Ensure uppercase
+                $_GET['view'] = 'add'; // Force stay on add view
+                return;
+            }
+
             $wpdb->insert($this->table_inventory, [
                 'type' => sanitize_text_field($_POST['type']),
                 'hostname' => $hostname,
@@ -202,6 +214,22 @@ class ComputerControlSystem
                 'specs' => sanitize_textarea_field($_POST['specs']),
                 'notes' => sanitize_textarea_field($_POST['notes']),
             ];
+
+            // Validation: Check if hostname exists (excluding current ID)
+            $exists = $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM {$this->table_inventory} WHERE hostname = %s AND id != %d AND deleted = 0",
+                $new_data['hostname'],
+                $id
+            ));
+
+            if ($exists > 0) {
+                $this->form_error = "O hostname '{$new_data['hostname']}' já está em uso por outro computador.";
+                $this->form_data = $_POST;
+                $this->form_data['hostname'] = $new_data['hostname'];
+                $_GET['view'] = 'edit';
+                $_GET['id'] = $id;
+                return;
+            }
 
             $wpdb->update($this->table_inventory, $new_data, ['id' => $id]);
 
@@ -391,6 +419,10 @@ class ComputerControlSystem
             $pc = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$this->table_inventory} WHERE id = %d", $id));
         }
         $is_edit = !empty($pc);
+
+        // Pass error/data to view
+        $error_message = $this->form_error;
+        $form_data = $this->form_data;
 
         require __DIR__ . '/../templates/view-form.php';
     }
