@@ -1,0 +1,34 @@
+body {
+    background-color: #f8fafc;
+    color: #1e293b;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Admin Bar Fix */
+html {
+    margin-top: 32px !important;
+}
+
+@media screen and (max-width: 782px) {
+    html {
+        margin-top: 46px !important;
+    }
+}
+
+.ccs-glass {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(229, 231, 235, 0.8);
+}
+
+.btn {
+    @apply inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all;
+}
+
+.btn-primary {
+    @apply text-white bg-indigo-600 hover:text-white focus:ring-indigo-500;
+}
+
+.btn-secondary {
+    @apply text-slate-700 bg-white border-slate-300 hover:bg-slate-50 focus:ring-indigo-500;
+}
