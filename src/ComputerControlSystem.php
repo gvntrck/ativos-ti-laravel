@@ -362,7 +362,7 @@ class ComputerControlSystem
         if (is_wp_error($user)) {
             $this->redirect('?login_error=1');
         } else {
-            $this->redirect('?');
+            $this->redirect('index.php');
         }
     }
 
