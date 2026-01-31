@@ -322,6 +322,20 @@ class ComputerControlSystem
         $deleted_val = $show_trash ? 1 : 0;
         $computers = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$this->table_inventory} WHERE deleted = %d ORDER BY updated_at DESC", $deleted_val));
 
+        // Buscar histórico concatenado para pesquisa (inclui hostnames antigos, mudanças de usuário, etc)
+        // Usamos OBJECT_K para indexar o array pelo computer_id para acesso r\u00e1pido
+        $history_data = $wpdb->get_results("
+            SELECT computer_id, GROUP_CONCAT(description SEPARATOR ' ') as full_history 
+            FROM {$this->table_history} 
+            GROUP BY computer_id
+        ", OBJECT_K);
+
+        foreach ($computers as $pc) {
+            // Anexa o hist\u00f3rico ao objeto do computador
+            // Removemos tags HTML se houver e normalizamos
+            $pc->search_meta = isset($history_data[$pc->id]) ? strip_tags($history_data[$pc->id]->full_history) : '';
+        }
+
         require __DIR__ . '/../templates/view-list.php';
     }
 

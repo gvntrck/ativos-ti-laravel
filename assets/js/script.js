@@ -5,6 +5,9 @@ function filterTable() {
 
     rows.forEach(row => {
         const text = row.textContent.toLowerCase();
-        row.style.display = text.includes(filter) ? "" : "none";
+        const searchMeta = row.getAttribute("data-search-terms") || "";
+        const combinedText = text + " " + searchMeta;
+
+        row.style.display = combinedText.includes(filter) ? "" : "none";
     });
 }
