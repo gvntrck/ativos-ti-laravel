@@ -31,7 +31,13 @@
         <div class="bg-white py-8 px-4 shadow-lg sm:rounded-lg sm:px-10 border border-slate-200">
             <?php if (isset($_GET['login_error'])): ?>
                 <div class="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-md text-sm text-center">
-                    Credenciais inválidas. Tente novamente.
+                    <?php
+                    if (isset($_GET['error_message']) && !empty($_GET['error_message'])) {
+                        echo htmlspecialchars(urldecode($_GET['error_message']));
+                    } else {
+                        echo 'Credenciais inválidas. Tente novamente.';
+                    }
+                    ?>
                 </div>
             <?php endif; ?>
 

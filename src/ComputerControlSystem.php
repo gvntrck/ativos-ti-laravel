@@ -360,7 +360,11 @@ class ComputerControlSystem
         $user = wp_signon($creds, is_ssl());
 
         if (is_wp_error($user)) {
-            $this->redirect('?login_error=1');
+            $error_code = $user->get_error_code();
+            // Map WP errors to user friendly messages if needed, or just pass generic
+            $error_msg = $user->get_error_message();
+            // Sanitize message for URL
+            $this->redirect('index.php?login_error=1&error_message=' . urlencode(strip_tags($error_msg)));
         } else {
             $this->redirect('index.php');
         }
