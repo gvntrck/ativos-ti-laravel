@@ -2,7 +2,7 @@
 
 class ComputerControlSystem
 {
-    private $db_version = '1.0.8';
+    private $db_version = '1.0.9';
     private $table_inventory;
     private $table_history;
 

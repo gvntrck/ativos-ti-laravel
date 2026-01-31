@@ -10,27 +10,27 @@
                     <?php echo $pc->type; ?>
                 </span>
             </div>
-            <a href="?view=edit&id=<?php echo $pc->id; ?>"
-                class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">Editar Informações</a>
+            <div class="flex flex-col items-end gap-2">
+                <form method="post" action="?"
+                    onsubmit="return confirm('Tem certeza que deseja enviar este computador para a lixeira? Ele não será excluído permanentemente, mas sairá da lista principal.');">
+                    <?php wp_nonce_field('ccs_action_nonce'); ?>
+                    <input type="hidden" name="ccs_action" value="trash_computer">
+                    <input type="hidden" name="computer_id" value="<?php echo $pc->id; ?>">
+                    <button type="submit"
+                        class="text-red-500 hover:text-red-700 p-2 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 transition-colors"
+                        title="Mover para Lixeira">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                            </path>
+                        </svg>
+                    </button>
+                </form>
+                <a href="?view=edit&id=<?php echo $pc->id; ?>"
+                    class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">Editar Informações</a>
+            </div>
         </div>
 
-        <div class="mb-6 flex justify-end">
-            <form method="post" action="?"
-                onsubmit="return confirm('Tem certeza que deseja enviar este computador para a lixeira? Ele não será excluído permanentemente, mas sairá da lista principal.');">
-                <?php wp_nonce_field('ccs_action_nonce'); ?>
-                <input type="hidden" name="ccs_action" value="trash_computer">
-                <input type="hidden" name="computer_id" value="<?php echo $pc->id; ?>">
-                <button type="submit"
-                    class="text-red-500 hover:text-red-700 text-xs font-medium flex items-center border border-red-200 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors">
-                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                        </path>
-                    </svg>
-                    Mover para Lixeira
-                </button>
-            </form>
-        </div>
 
         <div class="grid grid-cols-2 gap-6 text-sm">
             <div><span class="block text-slate-400 text-xs uppercase tracking-wider font-semibold">Status</span>
