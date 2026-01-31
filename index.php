@@ -311,40 +311,41 @@ class ComputerControlSystem
             <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
             <style type="text/tailwindcss">
                 body {
-                                                                                                                            background-color: #f8fafc;
-                                                                                                                            color: #1e293b;
-                                                                                                                            font-family: 'Inter', sans-serif;
-                                                                                                                        }
+                                                                                                                                    background-color: #f8fafc;
+                                                                                                                                    color: #1e293b;
+                                                                                                                                    font-family: 'Inter', sans-serif;
+                                                                                                                                }
 
-                                                                                                                        /* Admin Bar Fix */
-                                                                                                                        html {
-                                                                                                                            margin-top: 32px !important;
-                                                                                                                        }
+                                                                                                                                /* Admin Bar Fix */
+                                                                                                                                html {
+                                                                                                                                    margin-top: 32px !important;
+                                                                                                                                }
 
-                                                                                                                        @media screen and (max-width: 782px) {
-                                                                                                                            html {
-                                                                                                                                margin-top: 46px !important;
-                                                                                                                            }
-                                                                                                                        }
+                                                                                                                                @media screen and (max-width: 782px) {
+                                                                                                                                    html {
+                                                                                                                                        margin-top: 46px !important;
+                                                                                                                                    }
+                                                                                                                                }
 
-                                                                                                                        .ccs-glass {
-                                                                                                                            background: rgba(255, 255, 255, 0.95);
-                                                                                                                            backdrop-filter: blur(10px);
-                                                                                                                            border: 1px solid rgba(229, 231, 235, 0.8);
-                                                                                                                        }
+                                                                                                                                .ccs-glass {
+                                                                                                                                    background: rgba(255, 255, 255, 0.95);
+                                                                                                                                    backdrop-filter: blur(10px);
+                                                                                                                                    border: 1px solid rgba(229, 231, 235, 0.8);
+                                                                                                                                }
 
-                                                                                                                        .btn {
-                                                                                                                            @apply inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all;
-                                                                                                                        }
+                                                                                                                                .btn {
+                                                                                                                                    @apply inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all;
+                                                                                                                                }
 
-                                                                                                                        .btn-primary {
-                                                                                                                            @apply text-white bg-indigo-600 hover:text-white focus:ring-indigo-500;
-                                                                                                                        }
+                                                                                                                                .btn-primary {
+                                                                                                                                    @apply text-white bg-indigo-600 hover:text-white focus:ring-indigo-500;
+                                                                                                                                }
 
-                                                                                                                        .btn-secondary {
-                                                                                                                            @apply text-slate-700 bg-white border-slate-300 hover:bg-slate-50 focus:ring-indigo-500;
-                                                                                                                        }
-                                                                                                                    </style>
+                                                                                                                                .btn-secondary {
+                                                                                                                                    @apply text-slate-700 bg-white border-slate-300 hover:bg-slate-50 focus:ring-indigo-500;
+                                                                                                                                }
+                                                                                                                    
+            </style>
             <script>
                 function filterTable() {
                     const input = document.getElementById("searchInput");
@@ -375,9 +376,9 @@ class ComputerControlSystem
         echo '<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">';
 
         // Header
-        echo '<div class="flex justify-between items-center mb-8">';
-        echo '<div><h1 class="text-3xl font-bold text-slate-900 tracking-tight">Controle de Computadores</h1><p class="text-slate-500 mt-1">Gerenciamento de Inventário</p></div>';
-        echo '<div class="flex space-x-3">';
+        echo '<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">';
+        echo '<div><h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Controle de Computadores</h1><p class="text-slate-500 mt-1">Gerenciamento de Inventário</p></div>';
+        echo '<div class="flex space-x-3 w-full sm:w-auto">';
         if ($view !== 'list') {
             echo '<a href="?" class="btn btn-secondary">Voltar para Lista</a>';
         }
