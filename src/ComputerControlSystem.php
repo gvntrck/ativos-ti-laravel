@@ -2,7 +2,7 @@
 
 class ComputerControlSystem
 {
-    private $db_version = '1.0.7';
+    private $db_version = '1.0.8';
     private $table_inventory;
     private $table_history;
 
@@ -11,6 +11,9 @@ class ComputerControlSystem
         global $wpdb;
         $this->table_inventory = $wpdb->prefix . 'computer_inventory';
         $this->table_history = $wpdb->prefix . 'computer_history';
+
+        // Set MySQL session time zone to GMT-3
+        $wpdb->query("SET time_zone = '-03:00'");
     }
 
     public function run()

@@ -1,4 +1,7 @@
 <?php
+// Set timezone for GMT-3
+date_default_timezone_set('America/Sao_Paulo');
+
 // --- Configuration ---
 // Path to wp-load.php assuming: public_html/sistemas/computadores/index.php
 // Leads to: public_html/wp-load.php
