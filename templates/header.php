@@ -15,6 +15,19 @@
         <?php include __DIR__ . '/../assets/css/tailwind-custom.css'; ?>
     </style>
     <script src="assets/js/script.js"></script>
+    <!-- PWA Configuration -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192x192.png">
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(registration => console.log('SW registered'))
+                    .catch(err => console.log('SW registration failed: ', err));
+            });
+        }
+    </script>
 </head>
 
 <body class="wp-core-ui">

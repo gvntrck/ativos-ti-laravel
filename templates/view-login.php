@@ -15,6 +15,19 @@
         }
         ?>
     </style>
+    <!-- PWA Configuration -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192x192.png">
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(registration => console.log('SW registered'))
+                    .catch(err => console.log('SW registration failed: ', err));
+            });
+        }
+    </script>
 </head>
 
 <body class="bg-slate-50 min-h-screen flex flex-col justify-center items-center py-12 sm:px-6 lg:px-8 font-[Inter]">
