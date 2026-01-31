@@ -13,7 +13,7 @@
             $filter_class = $is_filter_outdated ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50';
             ?>
             <a href="<?php echo $filter_url; ?>"
-                class="flex items-center px-4 py-2 border rounded-lg text-sm font-medium transition-colors <?php echo $filter_class; ?>"
+                class="flex items-center px-4 py-2 border rounded-lg text-sm font-medium transition-colors whitespace-nowrap <?php echo $filter_class; ?>"
                 title="Mostrar computadores com Windows desatualizado (> 30 dias)">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
