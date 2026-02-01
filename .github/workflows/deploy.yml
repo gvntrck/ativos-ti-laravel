@@ -24,5 +24,5 @@ jobs:
           username: u269540782
           password: ${{ secrets.DEPLOY_PASS }}
           port: 21
-          server-dir: /domains/projetoalfa.org/public_html/sistemas/computadores
+          server-dir: /domains/projetoalfa.org/public_html/sistemas/computadores/
           local-dir: ./
