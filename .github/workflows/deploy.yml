@@ -22,7 +22,7 @@ jobs:
         with:
           server: 147.93.64.63
           username: u269540782
-          password: ${{ secrets.FPT_PASS }}
+          password: ${{ secrets.DEPLOY_PASS }}
           port: 21
           server-dir: /domains/projetoalfa.org/public_html/sistemas/computadores
           local-dir: ./
