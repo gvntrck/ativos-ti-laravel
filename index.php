@@ -13,7 +13,7 @@ if (!file_exists($wp_load_path)) {
 }
 require_once $wp_load_path;
 
-// --- Load Logic ---
+// --- Load Logic ---d
 require_once __DIR__ . '/src/ComputerControlSystem.php';
 
 // --- Run App ---
