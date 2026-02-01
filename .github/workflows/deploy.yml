@@ -1,0 +1,28 @@
+name: Deploy (FTP)
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Se precisa build, descomente e ajuste:
+      # - name: Build
+      #   run: |
+      #     npm ci
+      #     npm run build
+
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: 147.93.64.63
+          username: u269540782
+          password: ${{ secrets.FPT_PASS }}
+          port: 21
+          server-dir: /domains/projetoalfa.org/public_html/sistemas/computadores
+          local-dir: ./
