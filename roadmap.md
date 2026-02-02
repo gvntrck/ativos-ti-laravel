@@ -14,4 +14,8 @@ Alterações em lote na tabela
 
 Atualizações via ajax para não dar refresh
 
-Menu fixo no footer no mobile 
+Menu fixo no footer no mobile
+
+Adicionar filtro checkbox para listar apenas desktops e notebooks 
+
+Filtros acima do campo de pesquisa 
