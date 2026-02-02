@@ -12,4 +12,6 @@ Caixa de pesquisa precisa aceitar separar PCs por vírgula, para listar mais de 
 
 Alterações em lote na tabela
 
+Atualizações via ajax para não dar refresh
+
 Menu fixo no footer no mobile 
