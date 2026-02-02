@@ -7,7 +7,7 @@ date_default_timezone_set('America/Sao_Paulo');
 // Leads to: public_html/wp-load.php
 $wp_load_path = __DIR__ . '/../../wp-load.php';
 
-// --- Bootstrap WordPress ---
+// --- Bootstrap WordPress --- 
 if (!file_exists($wp_load_path)) {
     die("Erro: Não foi possível encontrar o WordPress em: " . $wp_load_path);
 }
