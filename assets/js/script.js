@@ -1,7 +1,8 @@
 function filterTable() {
     const input = document.getElementById("searchInput");
     const filter = input.value.toLowerCase();
-    const rows = document.querySelectorAll("#computerTableBody tr");
+    const rows = document.querySelectorAll("#computerTableBody tr:not(.no-results-row)");
+    const noResultsRow = document.querySelector(".no-results-row");
 
     let visibleCount = 0;
 
@@ -20,4 +21,11 @@ function filterTable() {
     if (countElement) {
         countElement.textContent = visibleCount;
     }
+
+    // Handle "No results" visual feedback if you want (optional, but good UX)
+    // If we have a dedicated no-results row from PHP, it might show initially if list is empty.
+    // If list is NOT empty but filtered to 0, we might want to show a message, but for now just updating count is enough.
 }
+
+// Run on load to handle browser persistence
+document.addEventListener('DOMContentLoaded', filterTable);

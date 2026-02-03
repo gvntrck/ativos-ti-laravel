@@ -134,7 +134,7 @@
                     </tr>
                 <?php endforeach; ?>
                 <?php if (empty($computers)): ?>
-                    <tr>
+                    <tr class="no-results-row">
                         <td colspan="5" class="px-4 py-8 text-center text-slate-400">Nenhum computador encontrado.</td>
                     </tr>
                 <?php endif; ?>
@@ -142,6 +142,6 @@
         </table>
     </div>
     <div class="px-4 py-3 border-t border-slate-100 bg-slate-50 text-xs text-slate-500 flex justify-between items-center">
-        <span>Mostrando <strong id="visibleCount" class="text-slate-700"><?php echo count($computers); ?></strong> itens</span>
+        <span>Total: <strong id="visibleCount" class="text-slate-700"><?php echo count($computers); ?></strong></span>
     </div>
 </div>
