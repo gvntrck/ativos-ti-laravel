@@ -15,3 +15,5 @@ Atualizações via ajax para não dar refresh
 Menu fixo no footer no mobile
 
 Adicionar filtro checkbox para listar apenas desktops e notebooks 
+
+botao para copiar todos os cados do pc para colar no wpp
