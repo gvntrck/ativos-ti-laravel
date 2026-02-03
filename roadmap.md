@@ -1,4 +1,4 @@
-*Botão para apontar Windows atualizado
+
 
 *Ordenar lista por data do último registro de histórico
 
@@ -16,4 +16,4 @@ Menu fixo no footer no mobile
 
 Adicionar filtro checkbox para listar apenas desktops e notebooks 
 
-Filtros acima do campo de pesquisa 
+botao para copiar todos os cados do pc para colar no wpp
