@@ -16,6 +16,10 @@
             $is_filter_outdated = isset($_GET['filter']) && $_GET['filter'] === 'outdated';
             $filter_url = $is_filter_outdated ? '?' : '?filter=outdated';
             $filter_class = $is_filter_outdated ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50';
+            
+            // No Photos Filter
+            $is_filter_no_photos = isset($_GET['filter']) && $_GET['filter'] === 'no_photos';
+            $no_photos_class = $is_filter_no_photos ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50';
             ?>
             
             <label class="flex items-center gap-2 px-2 py-1 border rounded-md text-sm font-medium transition-colors whitespace-nowrap <?php echo $updated_class; ?>"
@@ -32,6 +36,14 @@
                     <?php echo $is_filter_outdated ? 'checked' : ''; ?>
                     onchange="window.location.href=this.checked ? '?filter=outdated' : '?';">
                 <span>Desatualizados</span>
+            </label>
+
+            <label class="flex items-center gap-2 px-2 py-1 border rounded-md text-sm font-medium transition-colors whitespace-nowrap <?php echo $no_photos_class; ?>"
+                title="Mostrar computadores sem fotos">
+                <input type="checkbox" class="h-4 w-4 text-amber-600 border-slate-300 rounded"
+                    <?php echo $is_filter_no_photos ? 'checked' : ''; ?>
+                    onchange="window.location.href=this.checked ? '?filter=no_photos' : '?';">
+                <span>Sem Fotos</span>
             </label>
 
             <span class="text-sm text-slate-500 self-center ml-2 border-l pl-2 border-slate-300 h-5 flex items-center">Total: <strong id="visibleCount" class="text-slate-700 ml-1"><?php echo count($computers); ?></strong></span>

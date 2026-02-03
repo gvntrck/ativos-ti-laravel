@@ -395,6 +395,14 @@ class ComputerControlSystem
         } elseif ($filter === 'updated') {
             // Atualizados: last_windows_update nos últimos 30 dias
             $where_add = " AND last_windows_update >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
+        } elseif ($filter === 'no_photos') {
+            // Sem Fotos: sem photo_url E sem fotos no histórico
+            $where_add = " AND (photo_url IS NULL OR photo_url = '') 
+                AND id NOT IN (
+                    SELECT DISTINCT computer_id 
+                    FROM {$this->table_history} 
+                    WHERE photos IS NOT NULL AND photos != '' AND photos != 'null'
+                )";
         }
 
         $computers = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$this->table_inventory} WHERE deleted = %d $where_add ORDER BY updated_at DESC", $deleted_val));
