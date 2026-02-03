@@ -90,14 +90,9 @@
                     <tr class="hover:bg-slate-50"
                         data-search-terms="<?php echo esc_attr(strtolower(($pc->hostname ?? '') . ' ' . ($pc->user_name ?? '') . ' ' . ($pc->location ?? '') . ' ' . ($pc->type ?? '') . ' ' . ($pc->search_meta ?? ''))); ?>">
                         <td class="px-4 py-2">
-                            <div class="flex items-center gap-2">
-                                <span class="px-2 py-0.5 rounded-full text-xs font-medium <?php echo $status_color; ?>">
-                                    <?php echo $status_label; ?>
-                                </span>
-                                <div class="<?php echo $win_status_color; ?>" title="<?php echo esc_attr($win_tooltip); ?>">
-                                    <?php echo $win_status_icon; ?>
-                                </div>
-                            </div>
+                            <span class="px-2 py-0.5 rounded-full text-xs font-medium <?php echo $status_color; ?>">
+                                <?php echo $status_label; ?>
+                            </span>
                         </td>
                         <td class="px-4 py-2 font-medium text-slate-900">
                             <a href="?view=details&id=<?php echo $pc->id; ?>" class="text-indigo-600 hover:text-indigo-900">
