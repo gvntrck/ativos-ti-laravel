@@ -2,8 +2,6 @@
 
 *Ordenar lista por data do último registro de histórico
 
-Remover registros de Windows update antes do dia 02-02-29
-
 Ao enviar foto, já salvar, menos cliques
 
 Tabela de PCs deve ter coluna as 2 últimas atualizações de texto 
