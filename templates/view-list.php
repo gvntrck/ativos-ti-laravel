@@ -20,6 +20,8 @@
                 <span>Desatualizados</span>
             </label>
 
+            <span class="text-sm text-slate-500 self-center ml-2 border-l pl-2 border-slate-300 h-5 flex items-center">Total: <strong id="visibleCount" class="text-slate-700 ml-1"><?php echo count($computers); ?></strong></span>
+
         </div>
 
         <div class="flex items-center">
@@ -142,6 +144,5 @@
         </table>
     </div>
     <div class="px-4 py-3 border-t border-slate-100 bg-slate-50 text-xs text-slate-500 flex justify-between items-center">
-        <span>Total: <strong id="visibleCount" class="text-slate-700"><?php echo count($computers); ?></strong></span>
     </div>
 </div>
