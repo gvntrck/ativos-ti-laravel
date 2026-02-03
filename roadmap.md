@@ -1,4 +1,4 @@
-*Botão para apontar Windows atualizado
+
 
 *Ordenar lista por data do último registro de histórico
 
@@ -15,5 +15,3 @@ Atualizações via ajax para não dar refresh
 Menu fixo no footer no mobile
 
 Adicionar filtro checkbox para listar apenas desktops e notebooks 
-
-Filtros acima do campo de pesquisa 
