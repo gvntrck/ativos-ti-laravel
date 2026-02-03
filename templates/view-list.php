@@ -12,15 +12,14 @@
             $filter_url = $is_filter_outdated ? '?' : '?filter=outdated';
             $filter_class = $is_filter_outdated ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50';
             ?>
-            <a href="<?php echo $filter_url; ?>"
-                class="flex items-center px-4 py-2 border rounded-lg text-sm font-medium transition-colors whitespace-nowrap <?php echo $filter_class; ?>"
+            <label class="flex items-center gap-2 px-2 py-1 border rounded-md text-sm font-medium transition-colors whitespace-nowrap <?php echo $filter_class; ?>"
                 title="Mostrar computadores com Windows desatualizado (> 30 dias)">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <?php echo $is_filter_outdated ? 'Mostrando Desatualizados' : 'Ver Desatualizados'; ?>
-            </a>
+                <input type="checkbox" class="h-4 w-4 text-indigo-600 border-slate-300 rounded"
+                    <?php echo $is_filter_outdated ? 'checked' : ''; ?>
+                    onchange="window.location.href=this.checked ? '?filter=outdated' : '?';">
+                <span>Desatualizados</span>
+            </label>
+
         </div>
 
         <div class="flex items-center">
