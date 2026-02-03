@@ -392,6 +392,9 @@ class ComputerControlSystem
         if ($filter === 'outdated') {
             // Desatualizados: last_windows_update nulo ou maior que 30 dias atrás
             $where_add = " AND (last_windows_update IS NULL OR last_windows_update < DATE_SUB(NOW(), INTERVAL 30 DAY))";
+        } elseif ($filter === 'updated') {
+            // Atualizados: last_windows_update nos últimos 30 dias
+            $where_add = " AND last_windows_update >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
         }
 
         $computers = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$this->table_inventory} WHERE deleted = %d $where_add ORDER BY updated_at DESC", $deleted_val));

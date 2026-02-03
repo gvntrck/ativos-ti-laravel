@@ -8,10 +8,24 @@
                 placeholder="Filtrar computadores...">
 
             <?php
+            // Updated Filter (<= 30 days)
+            $is_filter_updated = isset($_GET['filter']) && $_GET['filter'] === 'updated';
+            $updated_class = $is_filter_updated ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50';
+            
+            // Outdated Filter (> 30 days or null)
             $is_filter_outdated = isset($_GET['filter']) && $_GET['filter'] === 'outdated';
             $filter_url = $is_filter_outdated ? '?' : '?filter=outdated';
             $filter_class = $is_filter_outdated ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50';
             ?>
+            
+            <label class="flex items-center gap-2 px-2 py-1 border rounded-md text-sm font-medium transition-colors whitespace-nowrap <?php echo $updated_class; ?>"
+                title="Mostrar computadores atualizados (últimos 30 dias)">
+                <input type="checkbox" class="h-4 w-4 text-emerald-600 border-slate-300 rounded"
+                    <?php echo $is_filter_updated ? 'checked' : ''; ?>
+                    onchange="window.location.href=this.checked ? '?filter=updated' : '?';">
+                <span>Atualizados</span>
+            </label>
+
             <label class="flex items-center gap-2 px-2 py-1 border rounded-md text-sm font-medium transition-colors whitespace-nowrap <?php echo $filter_class; ?>"
                 title="Mostrar computadores com Windows desatualizado (> 30 dias)">
                 <input type="checkbox" class="h-4 w-4 text-indigo-600 border-slate-300 rounded"
