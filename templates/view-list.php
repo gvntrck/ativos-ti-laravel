@@ -166,7 +166,7 @@
                         </td>
                         <td class="px-4 py-2">
                             <?php if ($show_trash): ?>
-                                <form method="post" action="?" class="inline"
+                                <form method="post" action="?" class="inline" data-ajax="true"
                                     onsubmit="return confirm('Tem certeza que deseja restaurar este computador?');">
                                     <?php wp_nonce_field('ccs_action_nonce'); ?>
                                     <input type="hidden" name="ccs_action" value="restore_computer">
