@@ -86,7 +86,7 @@
                         $win_tooltip = "Atualizado há $days_since_update dia(s)";
                     }
                     ?>
-                    <tr class="hover:bg-slate-50"
+                    <tr class="computer-row hover:bg-slate-50"
                         data-search-terms="<?php echo esc_attr(strtolower(($pc->hostname ?? '') . ' ' . ($pc->user_name ?? '') . ' ' . ($pc->location ?? '') . ' ' . ($pc->type ?? '') . ' ' . ($pc->search_meta ?? ''))); ?>">
                         <td class="px-4 py-2">
                             <span class="px-2 py-0.5 rounded-full text-xs font-medium <?php echo $status_color; ?>">
@@ -140,5 +140,8 @@
                 <?php endif; ?>
             </tbody>
         </table>
+    </div>
+    <div class="px-4 py-3 border-t border-slate-100 bg-slate-50 text-xs text-slate-500 flex justify-between items-center">
+        <span>Mostrando <strong id="visibleCount" class="text-slate-700"><?php echo count($computers); ?></strong> itens</span>
     </div>
 </div>
