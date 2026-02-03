@@ -2,10 +2,31 @@
     <div
         class="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-center gap-4">
 
-        <div class="flex gap-2 w-full sm:w-auto">
-            <input type="text" id="searchInput" onkeyup="filterTable()"
-                class="block w-full sm:w-64 px-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-400 focus:outline-none focus:placeholder-slate-500 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                placeholder="Filtrar computadores...">
+        <div class="flex flex-col gap-3 w-full sm:w-auto">
+            <!-- Search Bar -->
+            <div class="flex gap-2 w-full">
+                <input type="text" id="searchInput" onkeyup="filterTable()"
+                    class="block flex-1 sm:w-64 px-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-400 focus:outline-none focus:placeholder-slate-500 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Filtrar computadores...">
+                
+                <!-- Filter Toggle Button -->
+                <button onclick="toggleFilters()" 
+                    class="inline-flex items-center gap-2 px-3 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                    </svg>
+                    <span class="hidden sm:inline">Filtros</span>
+                    <?php 
+                    $active_filter_count = 0;
+                    if (isset($_GET['filter']) && !empty($_GET['filter'])) {
+                        $active_filter_count = 1;
+                    }
+                    if ($active_filter_count > 0): 
+                    ?>
+                        <span class="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-indigo-600 rounded-full"><?php echo $active_filter_count; ?></span>
+                    <?php endif; ?>
+                </button>
+            </div>
 
             <?php
             // Updated Filter (<= 30 days)
@@ -14,40 +35,46 @@
             
             // Outdated Filter (> 30 days or null)
             $is_filter_outdated = isset($_GET['filter']) && $_GET['filter'] === 'outdated';
-            $filter_url = $is_filter_outdated ? '?' : '?filter=outdated';
             $filter_class = $is_filter_outdated ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50';
             
             // No Photos Filter
             $is_filter_no_photos = isset($_GET['filter']) && $_GET['filter'] === 'no_photos';
             $no_photos_class = $is_filter_no_photos ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50';
             ?>
-            
-            <label class="flex items-center gap-2 px-2 py-1 border rounded-md text-sm font-medium transition-colors whitespace-nowrap <?php echo $updated_class; ?>"
-                title="Mostrar computadores atualizados (últimos 30 dias)">
-                <input type="checkbox" class="h-4 w-4 text-emerald-600 border-slate-300 rounded"
-                    <?php echo $is_filter_updated ? 'checked' : ''; ?>
-                    onchange="window.location.href=this.checked ? '?filter=updated' : '?';">
-                <span>Atualizados</span>
-            </label>
 
-            <label class="flex items-center gap-2 px-2 py-1 border rounded-md text-sm font-medium transition-colors whitespace-nowrap <?php echo $filter_class; ?>"
-                title="Mostrar computadores com Windows desatualizado (> 30 dias)">
-                <input type="checkbox" class="h-4 w-4 text-indigo-600 border-slate-300 rounded"
-                    <?php echo $is_filter_outdated ? 'checked' : ''; ?>
-                    onchange="window.location.href=this.checked ? '?filter=outdated' : '?';">
-                <span>Desatualizados</span>
-            </label>
+            <!-- Collapsible Filter Panel -->
+            <div id="filterPanel" class="hidden overflow-hidden transition-all duration-300 ease-in-out">
+                <div class="flex flex-wrap gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <label class="flex items-center gap-2 px-2 py-1 border rounded-md text-sm font-medium transition-colors whitespace-nowrap <?php echo $updated_class; ?>"
+                        title="Mostrar computadores atualizados (últimos 30 dias)">
+                        <input type="checkbox" class="h-4 w-4 text-emerald-600 border-slate-300 rounded"
+                            <?php echo $is_filter_updated ? 'checked' : ''; ?>
+                            onchange="window.location.href=this.checked ? '?filter=updated' : '?';">
+                        <span>Atualizados</span>
+                    </label>
 
-            <label class="flex items-center gap-2 px-2 py-1 border rounded-md text-sm font-medium transition-colors whitespace-nowrap <?php echo $no_photos_class; ?>"
-                title="Mostrar computadores sem fotos">
-                <input type="checkbox" class="h-4 w-4 text-amber-600 border-slate-300 rounded"
-                    <?php echo $is_filter_no_photos ? 'checked' : ''; ?>
-                    onchange="window.location.href=this.checked ? '?filter=no_photos' : '?';">
-                <span>Sem Fotos</span>
-            </label>
+                    <label class="flex items-center gap-2 px-2 py-1 border rounded-md text-sm font-medium transition-colors whitespace-nowrap <?php echo $filter_class; ?>"
+                        title="Mostrar computadores com Windows desatualizado (> 30 dias)">
+                        <input type="checkbox" class="h-4 w-4 text-indigo-600 border-slate-300 rounded"
+                            <?php echo $is_filter_outdated ? 'checked' : ''; ?>
+                            onchange="window.location.href=this.checked ? '?filter=outdated' : '?';">
+                        <span>Desatualizados</span>
+                    </label>
 
-            <span class="text-sm text-slate-500 self-center ml-2 border-l pl-2 border-slate-300 h-5 flex items-center">Total: <strong id="visibleCount" class="text-slate-700 ml-1"><?php echo count($computers); ?></strong></span>
+                    <label class="flex items-center gap-2 px-2 py-1 border rounded-md text-sm font-medium transition-colors whitespace-nowrap <?php echo $no_photos_class; ?>"
+                        title="Mostrar computadores sem fotos">
+                        <input type="checkbox" class="h-4 w-4 text-amber-600 border-slate-300 rounded"
+                            <?php echo $is_filter_no_photos ? 'checked' : ''; ?>
+                            onchange="window.location.href=this.checked ? '?filter=no_photos' : '?';">
+                        <span>Sem Fotos</span>
+                    </label>
+                </div>
+            </div>
 
+            <!-- Item Count -->
+            <div class="flex items-center gap-2">
+                <span class="text-sm text-slate-500">Total: <strong id="visibleCount" class="text-slate-700"><?php echo count($computers); ?></strong></span>
+            </div>
         </div>
 
         <div class="flex items-center">

@@ -13,7 +13,7 @@ function filterTable() {
 
         const isVisible = combinedText.includes(filter);
         row.style.display = isVisible ? "" : "none";
-        
+
         if (isVisible) visibleCount++;
     });
 
@@ -29,3 +29,28 @@ function filterTable() {
 
 // Run on load to handle browser persistence
 document.addEventListener('DOMContentLoaded', filterTable);
+
+// Toggle filter panel visibility
+function toggleFilters() {
+    const panel = document.getElementById('filterPanel');
+    const isHidden = panel.classList.contains('hidden');
+
+    if (isHidden) {
+        panel.classList.remove('hidden');
+        // Store state in localStorage
+        localStorage.setItem('filterPanelOpen', 'true');
+    } else {
+        panel.classList.add('hidden');
+        localStorage.setItem('filterPanelOpen', 'false');
+    }
+}
+
+// Restore filter panel state on page load
+document.addEventListener('DOMContentLoaded', function () {
+    const panel = document.getElementById('filterPanel');
+    const isOpen = localStorage.getItem('filterPanelOpen') === 'true';
+
+    if (isOpen) {
+        panel.classList.remove('hidden');
+    }
+});
