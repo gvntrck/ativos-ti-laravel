@@ -336,14 +336,14 @@ class ComputerControlSystem
     {
         $id = intval($_POST['computer_id']);
         $description = sanitize_textarea_field($_POST['description']);
-        $this->log_history($id, 'checkup', $description, $current_user_id);
+        $history_id = $this->log_history($id, 'checkup', $description, $current_user_id);
 
         return [
             'success' => true,
             'message' => 'Checkup adicionado com sucesso.',
             'redirect_url' => '?view=details&id=' . $id . '&message=checkup_added',
             'data' => [
-                'history_html' => $this->get_history_item_html($id, $description, 'checkup', $current_user_id) // We'll need a helper for this
+                'history_html' => $this->get_history_item_html($id, $description, 'checkup', $current_user_id, null, $history_id)
             ]
         ];
     }
@@ -359,13 +359,16 @@ class ComputerControlSystem
             $photos_json = json_encode($uploaded_photos);
 
             $wpdb->update($this->table_inventory, ['photo_url' => $photo_url], ['id' => $id]);
-            $this->log_history($id, 'update', 'Novas fotos adicionadas', $current_user_id, $photos_json);
+            $history_id = $this->log_history($id, 'update', 'Novas fotos adicionadas', $current_user_id, $photos_json);
 
             return [
                 'success' => true,
                 'message' => 'Fotos enviadas com sucesso!',
                 'redirect_url' => '?view=details&id=' . $id . '&message=photo_uploaded',
-                'data' => ['photo_url' => $photo_url]
+                'data' => [
+                    'photo_url' => $photo_url,
+                    'history_html' => $this->get_history_item_html($id, 'Novas fotos adicionadas', 'update', $current_user_id, $photos_json, $history_id)
+                ]
             ];
         } else {
             return ['success' => false, 'message' => 'Erro ao enviar imagens.'];
@@ -404,8 +407,6 @@ class ComputerControlSystem
     {
         global $wpdb;
         $id = intval($_POST['computer_id']);
-        $this->log_history($id, 'maintenance', 'Windows e Drivers Atualizados', $current_user_id);
-
         $now = current_time('mysql');
         $wpdb->update(
             $this->table_inventory,
@@ -413,11 +414,17 @@ class ComputerControlSystem
             ['id' => $id]
         );
 
+        $description = 'Windows e Drivers Atualizados';
+        $history_id = $this->log_history($id, 'maintenance', $description, $current_user_id);
+
         return [
             'success' => true,
             'message' => 'Status de atualização do Windows registrado.',
             'redirect_url' => '?view=details&id=' . $id . '&message=windows_updated',
-            'data' => ['last_windows_update' => date('d/m/Y H:i', strtotime($now))]
+            'data' => [
+                'last_windows_update' => date('d/m/Y H:i', strtotime($now)),
+                'history_html' => $this->get_history_item_html($id, $description, 'maintenance', $current_user_id, null, $history_id)
+            ]
         ];
     }
 
@@ -502,6 +509,7 @@ class ComputerControlSystem
             'photos' => $photos_json,
             'user_id' => $user_id
         ]);
+        return $wpdb->insert_id;
     }
 
     private function render_page()
@@ -642,7 +650,7 @@ class ComputerControlSystem
         }
         require __DIR__ . '/../templates/view-login.php';
     }
-    private function get_history_item_html($computer_id, $description, $event_type, $user_id)
+    private function get_history_item_html($computer_id, $description, $event_type, $user_id, $photos_json = null, $history_id = null)
     {
         $u = get_userdata($user_id);
         $display_name = $u ? $u->display_name : 'Sistema';
@@ -659,15 +667,48 @@ class ComputerControlSystem
                     <span class="font-semibold text-slate-900 capitalize">
                         <?php echo esc_html($event_type); ?>
                     </span>
-                    <span class="text-xs text-slate-400">
-                        <?php echo $time; ?>
-                        -
-                        <?php echo esc_html($display_name); ?>
-                    </span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-slate-400">
+                            <?php echo $time; ?>
+                            -
+                            <?php echo esc_html($display_name); ?>
+                        </span>
+                        <?php if ($history_id): ?>
+                            <form method="post" action="?" data-ajax="true" class="inline"
+                                onsubmit="return confirm('Tem certeza que deseja excluir este item do histórico?');">
+                                <?php wp_nonce_field('ccs_action_nonce'); ?>
+                                <input type="hidden" name="ccs_action" value="delete_history">
+                                <input type="hidden" name="computer_id" value="<?php echo $computer_id; ?>">
+                                <input type="hidden" name="history_id" value="<?php echo $history_id; ?>">
+                                <button type="submit" class="text-slate-400 hover:text-red-500 p-1 rounded transition-colors"
+                                    title="Excluir item do histórico">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                        </path>
+                                    </svg>
+                                </button>
+                            </form>
+                        <?php endif; ?>
+                    </div>
                 </div>
                 <p class="text-slate-600 text-sm">
                     <?php echo esc_html($description); ?>
                 </p>
+
+                <?php
+                $photos = !empty($photos_json) ? json_decode($photos_json, true) : [];
+                if (!empty($photos)):
+                    ?>
+                    <div class="flex gap-2 mt-2 overflow-x-auto pb-2">
+                        <?php foreach ($photos as $photo_url): ?>
+                            <a href="<?php echo esc_url($photo_url); ?>" target="_blank" class="block flex-shrink-0">
+                                <img src="<?php echo esc_url($photo_url); ?>"
+                                    class="h-16 w-16 object-cover rounded-lg border border-slate-200 hover:opacity-75 transition-opacity">
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
         <?php
