@@ -2,7 +2,7 @@
 
 class ComputerControlSystem
 {
-    public const VERSION = '1.2.0';
+    public const VERSION = '1.3.0';
 
     private $db_version = '1.1.0';
     private $table_inventory;
@@ -186,6 +186,9 @@ class ComputerControlSystem
                 break;
             case 'quick_windows_update':
                 $result = $this->process_quick_windows_update($current_user_id);
+                break;
+            case 'delete_history':
+                $result = $this->process_delete_history($current_user_id);
                 break;
         }
 
@@ -415,6 +418,37 @@ class ComputerControlSystem
             'message' => 'Status de atualização do Windows registrado.',
             'redirect_url' => '?view=details&id=' . $id . '&message=windows_updated',
             'data' => ['last_windows_update' => date('d/m/Y H:i', strtotime($now))]
+        ];
+    }
+
+    private function process_delete_history($current_user_id)
+    {
+        global $wpdb;
+        $history_id = intval($_POST['history_id']);
+        $computer_id = intval($_POST['computer_id']);
+
+        // Verificar se o item existe
+        $history_item = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM {$this->table_history} WHERE id = %d AND computer_id = %d",
+            $history_id,
+            $computer_id
+        ));
+
+        if (!$history_item) {
+            return [
+                'success' => false,
+                'message' => 'Item de histórico não encontrado.'
+            ];
+        }
+
+        // Excluir o item do histórico
+        $wpdb->delete($this->table_history, ['id' => $history_id]);
+
+        return [
+            'success' => true,
+            'message' => 'Item de histórico excluído com sucesso.',
+            'redirect_url' => '?view=details&id=' . $computer_id . '&message=history_deleted',
+            'data' => ['deleted_id' => $history_id]
         ];
     }
 

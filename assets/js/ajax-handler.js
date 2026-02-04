@@ -125,6 +125,20 @@ function handleAjaxSuccess(form, response) {
             window.location.reload();
         }
     }
+    else if (action === 'delete_history') {
+        // Remove the history item from DOM
+        if (response.data && response.data.deleted_id) {
+            // Find the form that was submitted (form is passed to this function)
+            const historyItem = form.closest('.relative.flex.gap-4');
+            if (historyItem) {
+                historyItem.style.transition = 'opacity 0.3s, transform 0.3s';
+                historyItem.style.opacity = '0';
+                historyItem.style.transform = 'translateX(-20px)';
+                setTimeout(() => historyItem.remove(), 300);
+            }
+        }
+        showToast(response.data.message || 'Item excluído!', 'success');
+    }
     else if (action === 'add_computer' || action === 'update_computer') {
         // Redirect is usually expected here
         if (response.data && response.data.redirect_url) {

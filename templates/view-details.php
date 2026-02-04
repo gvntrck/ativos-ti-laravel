@@ -130,24 +130,37 @@
                     <input type="hidden" name="computer_id" value="<?php echo $pc->id; ?>">
 
                     <div class="mb-0">
-                        <label for="cameraInput" class="cursor-pointer flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-indigo-300 rounded-xl bg-indigo-50 hover:bg-indigo-100 transition-colors group">
-                            <div class="p-3 bg-indigo-100 rounded-full group-hover:bg-indigo-200 transition-colors mb-2">
-                                <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <label for="cameraInput"
+                            class="cursor-pointer flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-indigo-300 rounded-xl bg-indigo-50 hover:bg-indigo-100 transition-colors group">
+                            <div
+                                class="p-3 bg-indigo-100 rounded-full group-hover:bg-indigo-200 transition-colors mb-2">
+                                <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                    </path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                 </svg>
                             </div>
                             <span class="text-indigo-700 font-semibold text-sm">Tirar Foto</span>
                             <span class="text-indigo-400 text-xs mt-1">Toque para capturar e enviar</span>
                         </label>
-                        <input id="cameraInput" type="file" name="computer_photos[]" accept="image/*" capture="environment" class="hidden" onchange="if(this.files.length > 0) { document.getElementById('loadingOverlay').classList.remove('hidden'); document.getElementById('photoUploadForm').submit(); }">
+                        <input id="cameraInput" type="file" name="computer_photos[]" accept="image/*"
+                            capture="environment" class="hidden"
+                            onchange="if(this.files.length > 0) { document.getElementById('loadingOverlay').classList.remove('hidden'); document.getElementById('photoUploadForm').submit(); }">
                     </div>
-                    
+
                     <!-- Loading Overlay -->
-                    <div id="loadingOverlay" class="hidden absolute inset-0 bg-white/80 flex flex-col items-center justify-center rounded-xl z-10">
-                        <svg class="animate-spin h-8 w-8 text-indigo-600 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <div id="loadingOverlay"
+                        class="hidden absolute inset-0 bg-white/80 flex flex-col items-center justify-center rounded-xl z-10">
+                        <svg class="animate-spin h-8 w-8 text-indigo-600 mb-2" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            </circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
                         </svg>
                         <span class="text-sm font-medium text-indigo-700">Enviando foto...</span>
                     </div>
@@ -171,11 +184,29 @@
                             <span class="font-semibold text-slate-900 capitalize">
                                 <?php echo $h->event_type; ?>
                             </span>
-                            <span class="text-xs text-slate-400">
-                                <?php echo date('d/m H:i', strtotime($h->created_at)); ?>
-                                -
-                                <?php echo $u ? $u->display_name : 'Sistema'; ?>
-                            </span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-slate-400">
+                                    <?php echo date('d/m H:i', strtotime($h->created_at)); ?>
+                                    -
+                                    <?php echo $u ? $u->display_name : 'Sistema'; ?>
+                                </span>
+                                <form method="post" action="?" data-ajax="true" class="inline"
+                                    onsubmit="return confirm('Tem certeza que deseja excluir este item do histórico?');">
+                                    <?php wp_nonce_field('ccs_action_nonce'); ?>
+                                    <input type="hidden" name="ccs_action" value="delete_history">
+                                    <input type="hidden" name="computer_id" value="<?php echo $pc->id; ?>">
+                                    <input type="hidden" name="history_id" value="<?php echo $h->id; ?>">
+                                    <button type="submit"
+                                        class="text-slate-400 hover:text-red-500 p-1 rounded transition-colors"
+                                        title="Excluir item do histórico">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                            </path>
+                                        </svg>
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                         <p class="text-slate-600 text-sm">
                             <?php echo esc_html($h->description); ?>
