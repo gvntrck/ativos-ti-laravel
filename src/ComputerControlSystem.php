@@ -522,6 +522,17 @@ class ComputerControlSystem
                 )";
         }
 
+        // Type Filters
+        $type_desktop = isset($_GET['type_desktop']) && $_GET['type_desktop'] === '1';
+        $type_notebook = isset($_GET['type_notebook']) && $_GET['type_notebook'] === '1';
+
+        if ($type_desktop && !$type_notebook) {
+            $where_add .= " AND type = 'desktop'";
+        } elseif ($type_notebook && !$type_desktop) {
+            $where_add .= " AND type = 'notebook'";
+        }
+        // If both are checked or neither is checked, we show all (no filter needed)
+
         $computers = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$this->table_inventory} WHERE deleted = %d $where_add ORDER BY updated_at DESC", $deleted_val));
 
         // Buscar histórico concatenado para pesquisa (inclui hostnames antigos, mudanças de usuário, etc)

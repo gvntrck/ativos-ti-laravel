@@ -40,16 +40,24 @@
             // No Photos Filter
             $is_filter_no_photos = isset($_GET['filter']) && $_GET['filter'] === 'no_photos';
             $no_photos_class = $is_filter_no_photos ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50';
+
+            // [NEW] Type Filters
+            $is_type_desktop = isset($_GET['type_desktop']) && $_GET['type_desktop'] === '1';
+            $desktop_class = $is_type_desktop ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50';
+
+            $is_type_notebook = isset($_GET['type_notebook']) && $_GET['type_notebook'] === '1';
+            $notebook_class = $is_type_notebook ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50';
             ?>
 
             <!-- Collapsible Filter Panel -->
             <div id="filterPanel" class="hidden overflow-hidden transition-all duration-300 ease-in-out">
-                <div class="flex flex-wrap gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <div class="flex flex-wrap gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200 items-center">
                     <label class="flex items-center gap-2 px-2 py-1 border rounded-md text-sm font-medium transition-colors whitespace-nowrap <?php echo $updated_class; ?>"
                         title="Mostrar computadores atualizados (últimos 30 dias)">
                         <input type="checkbox" class="h-4 w-4 text-emerald-600 border-slate-300 rounded"
                             <?php echo $is_filter_updated ? 'checked' : ''; ?>
-                            onchange="window.location.href=this.checked ? '?filter=updated' : '?';">
+                            data-filter-type="status" data-filter-value="updated"
+                            onchange="applyFilters(this)">
                         <span>Atualizados</span>
                     </label>
 
@@ -57,7 +65,8 @@
                         title="Mostrar computadores com Windows desatualizado (> 30 dias)">
                         <input type="checkbox" class="h-4 w-4 text-indigo-600 border-slate-300 rounded"
                             <?php echo $is_filter_outdated ? 'checked' : ''; ?>
-                            onchange="window.location.href=this.checked ? '?filter=outdated' : '?';">
+                            data-filter-type="status" data-filter-value="outdated"
+                            onchange="applyFilters(this)">
                         <span>Desatualizados</span>
                     </label>
 
@@ -65,11 +74,63 @@
                         title="Mostrar computadores sem fotos">
                         <input type="checkbox" class="h-4 w-4 text-amber-600 border-slate-300 rounded"
                             <?php echo $is_filter_no_photos ? 'checked' : ''; ?>
-                            onchange="window.location.href=this.checked ? '?filter=no_photos' : '?';">
+                            data-filter-type="status" data-filter-value="no_photos"
+                            onchange="applyFilters(this)">
                         <span>Sem Fotos</span>
+                    </label>
+                    
+                    <!-- Divider -->
+                    <div class="w-px h-6 bg-slate-300 mx-1"></div>
+
+                    <!-- Type Filters -->
+                    <label class="flex items-center gap-2 px-2 py-1 border rounded-md text-sm font-medium transition-colors whitespace-nowrap <?php echo $desktop_class; ?>"
+                        title="Mostrar apenas Desktops">
+                        <input type="checkbox" id="filter_desktop" class="h-4 w-4 text-indigo-600 border-slate-300 rounded"
+                            <?php echo $is_type_desktop ? 'checked' : ''; ?>
+                            onchange="applyFilters(this)">
+                        <span>Desktops</span>
+                    </label>
+                    
+                    <label class="flex items-center gap-2 px-2 py-1 border rounded-md text-sm font-medium transition-colors whitespace-nowrap <?php echo $notebook_class; ?>"
+                        title="Mostrar apenas Notebooks">
+                        <input type="checkbox" id="filter_notebook" class="h-4 w-4 text-indigo-600 border-slate-300 rounded"
+                            <?php echo $is_type_notebook ? 'checked' : ''; ?>
+                            onchange="applyFilters(this)">
+                        <span>Notebooks</span>
                     </label>
                 </div>
             </div>
+
+            <script>
+            function applyFilters(element) {
+                const urlParams = new URLSearchParams(window.location.search);
+                
+                // Handle Status Filters (Mutually Exclusive)
+                if (element.dataset.filterType === 'status') {
+                    if (element.checked) {
+                        urlParams.set('filter', element.dataset.filterValue);
+                    } else {
+                        // Only remove if it matches the current filter value
+                        if (urlParams.get('filter') === element.dataset.filterValue) {
+                            urlParams.delete('filter');
+                        }
+                    }
+                }
+                
+                // Handle Type Filters (Cumulative)
+                if (element.id === 'filter_desktop') {
+                    if (element.checked) urlParams.set('type_desktop', '1');
+                    else urlParams.delete('type_desktop');
+                }
+                
+                if (element.id === 'filter_notebook') {
+                    if (element.checked) urlParams.set('type_notebook', '1');
+                    else urlParams.delete('type_notebook');
+                }
+                
+                window.location.search = urlParams.toString();
+            }
+            </script>
 
             <!-- Item Count -->
             <div class="flex items-center gap-2">
