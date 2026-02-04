@@ -124,17 +124,33 @@
             <!-- Photos Card -->
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                 <h3 class="font-bold text-slate-900 mb-4">Fotos do Equipamento</h3>
-                <form method="post" action="?" enctype="multipart/form-data">
+                <form method="post" action="?" enctype="multipart/form-data" id="photoUploadForm">
                     <?php wp_nonce_field('ccs_action_nonce'); ?>
                     <input type="hidden" name="ccs_action" value="upload_photo">
                     <input type="hidden" name="computer_id" value="<?php echo $pc->id; ?>">
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-slate-700 mb-2">Adicionar Foto</label>
-                        <input type="file" name="computer_photos[]" multiple accept="image/*" capture="environment"
-                            class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                    <div class="mb-0">
+                        <label for="cameraInput" class="cursor-pointer flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-indigo-300 rounded-xl bg-indigo-50 hover:bg-indigo-100 transition-colors group">
+                            <div class="p-3 bg-indigo-100 rounded-full group-hover:bg-indigo-200 transition-colors mb-2">
+                                <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                            </div>
+                            <span class="text-indigo-700 font-semibold text-sm">Tirar Foto</span>
+                            <span class="text-indigo-400 text-xs mt-1">Toque para capturar e enviar</span>
+                        </label>
+                        <input id="cameraInput" type="file" name="computer_photos[]" accept="image/*" capture="environment" class="hidden" onchange="if(this.files.length > 0) { document.getElementById('loadingOverlay').classList.remove('hidden'); document.getElementById('photoUploadForm').submit(); }">
                     </div>
-                    <button type="submit" class="w-full btn btn-secondary">Enviar Foto</button>
+                    
+                    <!-- Loading Overlay -->
+                    <div id="loadingOverlay" class="hidden absolute inset-0 bg-white/80 flex flex-col items-center justify-center rounded-xl z-10">
+                        <svg class="animate-spin h-8 w-8 text-indigo-600 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span class="text-sm font-medium text-indigo-700">Enviando foto...</span>
+                    </div>
                 </form>
             </div>
         </div>
