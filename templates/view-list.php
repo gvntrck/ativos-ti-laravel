@@ -344,3 +344,16 @@
     <div class="px-4 py-3 border-t border-slate-100 bg-slate-50 text-xs text-slate-500 flex justify-between items-center">
     </div>
 </div>
+
+<script>
+// Salvar filtros atuais no sessionStorage para preservar ao voltar da página de detalhes
+(function() {
+    const currentParams = window.location.search;
+    if (currentParams) {
+        sessionStorage.setItem('ccs_list_filters', currentParams);
+    } else {
+        // Se não há filtros, limpar o sessionStorage
+        sessionStorage.removeItem('ccs_list_filters');
+    }
+})();
+</script>

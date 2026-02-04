@@ -136,7 +136,19 @@
             </div>
             <div class="flex space-x-3 w-full sm:w-auto">
                 <?php if ($view !== 'list'): ?>
-                    <a href="?" class="btn btn-secondary">Voltar para Lista</a>
+                    <a href="?" id="backToListBtn" class="btn btn-secondary">Voltar para Lista</a>
+                    <script>
+                        // Restaurar filtros ao clicar em Voltar para Lista
+                        (function () {
+                            const backBtn = document.getElementById('backToListBtn');
+                            if (backBtn) {
+                                const savedFilters = sessionStorage.getItem('ccs_list_filters');
+                                if (savedFilters) {
+                                    backBtn.href = window.location.pathname + savedFilters;
+                                }
+                            }
+                        })();
+                    </script>
                 <?php endif; ?>
                 <?php if ($view !== 'add'): ?>
                     <a href="?view=add" class="btn btn-primary"><svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor"
