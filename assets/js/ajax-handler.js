@@ -127,17 +127,36 @@ function handleAjaxSuccess(form, response) {
     }
     else if (action === 'delete_history') {
         // Remove the history item from DOM
-        if (response.data && response.data.deleted_id) {
-            // Find the form that was submitted (form is passed to this function)
-            const historyItem = form.closest('.relative.flex.gap-4');
-            if (historyItem) {
-                historyItem.style.transition = 'opacity 0.3s, transform 0.3s';
-                historyItem.style.opacity = '0';
-                historyItem.style.transform = 'translateX(-20px)';
-                setTimeout(() => historyItem.remove(), 300);
+        // Find the parent div that contains this form (the history item container)
+        // Navigate up from form -> div.flex.items-center -> div.flex.justify-between -> div.ml-6 -> div.relative (history item)
+        let historyItem = form.closest('div.relative');
+
+        // Fallback: try to find by traversing up
+        if (!historyItem) {
+            let parent = form.parentElement;
+            while (parent && !parent.classList.contains('space-y-6')) {
+                if (parent.classList.contains('relative') && parent.classList.contains('flex')) {
+                    historyItem = parent;
+                    break;
+                }
+                parent = parent.parentElement;
             }
         }
-        showToast(response.data.message || 'Item excluído!', 'success');
+
+        if (historyItem) {
+            historyItem.style.transition = 'opacity 0.3s, transform 0.3s, max-height 0.3s';
+            historyItem.style.opacity = '0';
+            historyItem.style.transform = 'translateX(-20px)';
+            historyItem.style.overflow = 'hidden';
+            setTimeout(() => {
+                historyItem.style.maxHeight = '0';
+                historyItem.style.marginBottom = '0';
+                historyItem.style.paddingTop = '0';
+                historyItem.style.paddingBottom = '0';
+                setTimeout(() => historyItem.remove(), 200);
+            }, 300);
+        }
+        showToast(response.data?.message || 'Item excluído!', 'success');
     }
     else if (action === 'add_computer' || action === 'update_computer') {
         // Redirect is usually expected here
