@@ -172,8 +172,7 @@
     <!-- History (Position: 3rd on Mobile, Left-Bottom on Desktop) -->
     <div class="lg:col-span-2 bg-white p-8 rounded-xl shadow-sm border border-slate-200">
         <h3 class="text-lg font-bold text-slate-900 mb-6">Histórico</h3>
-        <div id="history-container"
-            class="space-y-6 relative before:absolute before:inset-0 before:ml-2.5 before:w-0.5 before:bg-slate-200">
+        <div class="space-y-6 relative before:absolute before:inset-0 before:ml-2.5 before:w-0.5 before:bg-slate-200">
             <?php foreach ($history as $h):
                 $u = get_userdata($h->user_id);
                 ?>

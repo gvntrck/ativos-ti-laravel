@@ -78,29 +78,18 @@ function handleAjaxSuccess(form, response) {
 
         // Append history item
         if (response.data && response.data.history_html) {
-            const historyContainer = document.getElementById('history-container');
+            const historyContainer = document.querySelector('.lg\\:col-span-2 .space-y-6');
             if (historyContainer) {
                 // Remove "No history" message if exists
                 const emptyMsg = historyContainer.querySelector('p.text-slate-400.italic');
                 if (emptyMsg) emptyMsg.remove();
 
-                // Insert at the beginning of the container
+                // Insert after the vertical line div (which is pseudo-element actually) 
+                // We just prepend to the container
                 historyContainer.insertAdjacentHTML('afterbegin', response.data.history_html);
-
-                // Add animation to new item
-                const newItem = historyContainer.firstElementChild;
-                if (newItem) {
-                    newItem.style.opacity = '0';
-                    newItem.style.transform = 'translateX(-20px)';
-                    requestAnimationFrame(() => {
-                        newItem.style.transition = 'opacity 0.3s, transform 0.3s';
-                        newItem.style.opacity = '1';
-                        newItem.style.transform = 'translateX(0)';
-                    });
-                }
             }
         }
-        showToast(response.data?.message || 'Checkup registrado!', 'success');
+        showToast(response.data.message || 'Checkup registrado!', 'success');
     }
     else if (action === 'quick_windows_update') {
         if (response.data && response.data.last_windows_update) {
@@ -138,36 +127,17 @@ function handleAjaxSuccess(form, response) {
     }
     else if (action === 'delete_history') {
         // Remove the history item from DOM
-        // Find the parent div that contains this form (the history item container)
-        // Navigate up from form -> div.flex.items-center -> div.flex.justify-between -> div.ml-6 -> div.relative (history item)
-        let historyItem = form.closest('div.relative');
-
-        // Fallback: try to find by traversing up
-        if (!historyItem) {
-            let parent = form.parentElement;
-            while (parent && !parent.classList.contains('space-y-6')) {
-                if (parent.classList.contains('relative') && parent.classList.contains('flex')) {
-                    historyItem = parent;
-                    break;
-                }
-                parent = parent.parentElement;
+        if (response.data && response.data.deleted_id) {
+            // Find the form that was submitted (form is passed to this function)
+            const historyItem = form.closest('.relative.flex.gap-4');
+            if (historyItem) {
+                historyItem.style.transition = 'opacity 0.3s, transform 0.3s';
+                historyItem.style.opacity = '0';
+                historyItem.style.transform = 'translateX(-20px)';
+                setTimeout(() => historyItem.remove(), 300);
             }
         }
-
-        if (historyItem) {
-            historyItem.style.transition = 'opacity 0.3s, transform 0.3s, max-height 0.3s';
-            historyItem.style.opacity = '0';
-            historyItem.style.transform = 'translateX(-20px)';
-            historyItem.style.overflow = 'hidden';
-            setTimeout(() => {
-                historyItem.style.maxHeight = '0';
-                historyItem.style.marginBottom = '0';
-                historyItem.style.paddingTop = '0';
-                historyItem.style.paddingBottom = '0';
-                setTimeout(() => historyItem.remove(), 200);
-            }, 300);
-        }
-        showToast(response.data?.message || 'Item excluído!', 'success');
+        showToast(response.data.message || 'Item excluído!', 'success');
     }
     else if (action === 'add_computer' || action === 'update_computer') {
         // Redirect is usually expected here
