@@ -2,7 +2,7 @@
 
 class ComputerControlSystem
 {
-    public const VERSION = '1.3.0';
+    public const VERSION = '1.3.1';
 
     private $db_version = '1.1.0';
     private $table_inventory;
@@ -668,22 +668,21 @@ class ComputerControlSystem
                             <?php echo esc_html($display_name); ?>
                         </span>
                         <?php if ($history_id): ?>
-                        <form method="post" action="?" data-ajax="true" class="inline"
-                            onsubmit="return confirm('Tem certeza que deseja excluir este item do histórico?');">
-                            <input type="hidden" name="_wpnonce" value="<?php echo $nonce; ?>">
-                            <input type="hidden" name="ccs_action" value="delete_history">
-                            <input type="hidden" name="computer_id" value="<?php echo $computer_id; ?>">
-                            <input type="hidden" name="history_id" value="<?php echo $history_id; ?>">
-                            <button type="submit"
-                                class="text-slate-400 hover:text-red-500 p-1 rounded transition-colors"
-                                title="Excluir item do histórico">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                                    </path>
-                                </svg>
-                            </button>
-                        </form>
+                            <form method="post" action="?" data-ajax="true" class="inline"
+                                onsubmit="return confirm('Tem certeza que deseja excluir este item do histórico?');">
+                                <input type="hidden" name="_wpnonce" value="<?php echo $nonce; ?>">
+                                <input type="hidden" name="ccs_action" value="delete_history">
+                                <input type="hidden" name="computer_id" value="<?php echo $computer_id; ?>">
+                                <input type="hidden" name="history_id" value="<?php echo $history_id; ?>">
+                                <button type="submit" class="text-slate-400 hover:text-red-500 p-1 rounded transition-colors"
+                                    title="Excluir item do histórico">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                        </path>
+                                    </svg>
+                                </button>
+                            </form>
                         <?php endif; ?>
                     </div>
                 </div>
