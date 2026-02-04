@@ -89,6 +89,18 @@
             <!-- Quick Actions Card -->
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                 <h3 class="font-bold text-slate-900 mb-4">Ações Rápidas</h3>
+
+                <!-- Botão Copiar Dados -->
+                <button type="button" id="copyDataBtn" onclick="copyComputerData()"
+                    class="w-full flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 p-3 rounded-lg transition-colors font-medium mb-3">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3">
+                        </path>
+                    </svg>
+                    <span id="copyBtnText">Copiar Dados</span>
+                </button>
+
                 <form method="post" action="?" data-ajax="true">
                     <?php wp_nonce_field('ccs_action_nonce'); ?>
                     <input type="hidden" name="ccs_action" value="quick_windows_update">
@@ -234,3 +246,122 @@
         </div>
     </div>
 </div>
+
+<!-- Script para Copiar Dados -->
+<script>
+    // Dados do computador para cópia
+    const computerData = {
+        hostname: <?php echo json_encode(strtoupper($pc->hostname)); ?>,
+        type: <?php echo json_encode($pc->type); ?>,
+        status: <?php echo json_encode($pc->status); ?>,
+        userName: <?php echo json_encode($pc->user_name ?: '-'); ?>,
+        location: <?php echo json_encode($pc->location ?: '-'); ?>,
+        updatedAt: <?php echo json_encode(date('d/m/Y H:i', strtotime($pc->updated_at))); ?>,
+        windowsUpdate: <?php
+        if ($pc->last_windows_update) {
+            $days = floor((time() - strtotime($pc->last_windows_update)) / (60 * 60 * 24));
+            echo json_encode(date('d/m/Y H:i', strtotime($pc->last_windows_update)) . ' (' . $days . ' dias)');
+        } else {
+            echo json_encode('Nunca Atualizado');
+        }
+        ?>,
+        specs: <?php echo json_encode($pc->specs ?: '-'); ?>,
+        notes: <?php echo json_encode($pc->notes ?: '-'); ?>,
+        history: [
+            <?php foreach ($history as $index => $h):
+                $u = get_userdata($h->user_id);
+                $photos = !empty($h->photos) ? json_decode($h->photos, true) : [];
+                ?>
+                {
+                    type: <?php echo json_encode($h->event_type); ?>,
+                    date: <?php echo json_encode(date('d/m/Y H:i', strtotime($h->created_at))); ?>,
+                    user: <?php echo json_encode($u ? $u->display_name : 'Sistema'); ?>,
+                    description: <?php echo json_encode($h->description); ?>,
+                    photos: <?php echo json_encode($photos); ?>
+                }<?php echo $index < count($history) - 1 ? ',' : ''; ?>
+            <?php endforeach; ?>
+        ],
+        pageUrl: <?php echo json_encode((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']); ?>
+    };
+
+    function copyComputerData() {
+        // Formatar texto para WhatsApp (usando * para negrito)
+        let text = '';
+        
+        // Header
+        text += '🖥️ *FICHA DO COMPUTADOR*\n';
+        text += '━━━━━━━━━━━━━━━━━━━━━━\n\n';
+        
+        // Dados principais
+        text += `*Hostname:* ${computerData.hostname}\n`;
+        text += `*Tipo:* ${computerData.type === 'desktop' ? 'Desktop' : 'Notebook'}\n`;
+        text += `*Status:* ${computerData.status}\n`;
+        text += `*Usuário:* ${computerData.userName}\n`;
+        text += `*Local:* ${computerData.location}\n`;
+        text += `*Atualizado em:* ${computerData.updatedAt}\n`;
+        text += `*Windows Update:* ${computerData.windowsUpdate}\n`;
+        
+        // Especificações
+        if (computerData.specs && computerData.specs !== '-') {
+            text += '\n📋 *Especificações:*\n';
+            text += computerData.specs + '\n';
+        }
+        
+        // Anotações
+        if (computerData.notes && computerData.notes !== '-') {
+            text += '\n📝 *Anotações:*\n';
+            text += computerData.notes + '\n';
+        }
+        
+        // Histórico
+        if (computerData.history.length > 0) {
+            text += '\n━━━━━━━━━━━━━━━━━━━━━━\n';
+            text += '📜 *HISTÓRICO*\n\n';
+            
+            computerData.history.forEach((entry, index) => {
+                text += `*${entry.date}* - _${entry.type}_\n`;
+                text += `${entry.description}\n`;
+                if (entry.user) {
+                    text += `👤 ${entry.user}\n`;
+                }
+                
+                // Links das fotos
+                if (entry.photos && entry.photos.length > 0) {
+                    text += '📷 Fotos:\n';
+                    entry.photos.forEach((photo, photoIndex) => {
+                        text += `  ${photoIndex + 1}. ${photo}\n`;
+                    });
+                }
+                
+                if (index < computerData.history.length - 1) {
+                    text += '\n';
+                }
+            });
+        }
+        
+        // Link direto
+        text += '\n━━━━━━━━━━━━━━━━━━━━━━\n';
+        text += `🔗 *Link:* ${computerData.pageUrl}`;
+        
+        // Copiar para área de transferência
+        navigator.clipboard.writeText(text).then(() => {
+            // Feedback visual
+            const btn = document.getElementById('copyDataBtn');
+            const btnText = document.getElementById('copyBtnText');
+            const originalText = btnText.textContent;
+            
+            btn.classList.remove('bg-emerald-50', 'text-emerald-700', 'border-emerald-200', 'hover:bg-emerald-100');
+            btn.classList.add('bg-emerald-500', 'text-white', 'border-emerald-600');
+            btnText.textContent = 'Copiado! ✓';
+            
+            setTimeout(() => {
+                btn.classList.remove('bg-emerald-500', 'text-white', 'border-emerald-600');
+                btn.classList.add('bg-emerald-50', 'text-emerald-700', 'border-emerald-200', 'hover:bg-emerald-100');
+                btnText.textContent = originalText;
+            }, 2000);
+        }).catch(err => {
+            alert('Erro ao copiar dados. Tente novamente.');
+            console.error('Erro ao copiar:', err);
+        });
+    }
+</script>
