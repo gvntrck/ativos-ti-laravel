@@ -78,18 +78,29 @@ function handleAjaxSuccess(form, response) {
 
         // Append history item
         if (response.data && response.data.history_html) {
-            const historyContainer = document.querySelector('.lg\\:col-span-2 .space-y-6');
+            const historyContainer = document.getElementById('history-container');
             if (historyContainer) {
                 // Remove "No history" message if exists
                 const emptyMsg = historyContainer.querySelector('p.text-slate-400.italic');
                 if (emptyMsg) emptyMsg.remove();
 
-                // Insert after the vertical line div (which is pseudo-element actually) 
-                // We just prepend to the container
+                // Insert at the beginning of the container
                 historyContainer.insertAdjacentHTML('afterbegin', response.data.history_html);
+
+                // Add animation to new item
+                const newItem = historyContainer.firstElementChild;
+                if (newItem) {
+                    newItem.style.opacity = '0';
+                    newItem.style.transform = 'translateX(-20px)';
+                    requestAnimationFrame(() => {
+                        newItem.style.transition = 'opacity 0.3s, transform 0.3s';
+                        newItem.style.opacity = '1';
+                        newItem.style.transform = 'translateX(0)';
+                    });
+                }
             }
         }
-        showToast(response.data.message || 'Checkup registrado!', 'success');
+        showToast(response.data?.message || 'Checkup registrado!', 'success');
     }
     else if (action === 'quick_windows_update') {
         if (response.data && response.data.last_windows_update) {
