@@ -567,6 +567,25 @@ class ComputerControlSystem
         }
         // If both are checked or neither is checked, we show all (no filter needed)
 
+        // Location Filters
+        $loc_conditions = [];
+        $locations_map = [
+            'loc_fabrica' => 'Fabrica',
+            'loc_centro' => 'Centro',
+            'loc_perdido' => 'Perdido',
+            'loc_manutencao' => 'Manutenção'
+        ];
+
+        foreach ($locations_map as $param => $db_value) {
+            if (isset($_GET[$param]) && $_GET[$param] === '1') {
+                $loc_conditions[] = "location = '" . esc_sql($db_value) . "'";
+            }
+        }
+
+        if (!empty($loc_conditions)) {
+            $where_add .= " AND (" . implode(' OR ', $loc_conditions) . ")";
+        }
+
         $computers = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$this->table_inventory} WHERE deleted = %d $where_add ORDER BY updated_at DESC", $deleted_val));
 
         // Buscar histórico concatenado para pesquisa (inclui hostnames antigos, mudanças de usuário, etc)

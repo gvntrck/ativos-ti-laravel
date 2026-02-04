@@ -79,7 +79,7 @@
                         <span>Sem Fotos</span>
                     </label>
                     
-                    <!-- Divider -->
+    <!-- Divider -->
                     <div class="w-px h-6 bg-slate-300 mx-1"></div>
 
                     <!-- Type Filters -->
@@ -98,6 +98,37 @@
                             onchange="applyFilters(this)">
                         <span>Notebooks</span>
                     </label>
+
+                    <!-- Divider -->
+                    <div class="w-px h-6 bg-slate-300 mx-1"></div>
+
+                    <!-- Location Filters -->
+                    <?php
+                    $locations = ['Fabrica' => 'Fábrica', 'Centro' => 'Centro', 'Perdido' => 'Perdido', 'Manutenção' => 'Manut.'];
+                    foreach ($locations as $slug => $label):
+                        $param_name = 'loc_' . strtolower(str_replace('ç', 'c', str_replace('ã', 'a', $slug))); // loc_fabrica, loc_centro... usually just lower slug if simple
+                        // Manual mapping for safety
+                        $param_name = match($slug) {
+                            'Fabrica' => 'loc_fabrica',
+                            'Centro' => 'loc_centro',
+                            'Perdido' => 'loc_perdido',
+                            'Manutenção' => 'loc_manutencao',
+                            default => 'loc_' . strtolower($slug)
+                        };
+                        
+                        $is_active = isset($_GET[$param_name]) && $_GET[$param_name] === '1';
+                        $active_class = $is_active ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50';
+                    ?>
+                    <label class="flex items-center gap-2 px-2 py-1 border rounded-md text-sm font-medium transition-colors whitespace-nowrap <?php echo $active_class; ?>"
+                        title="Mostrar local: <?php echo $label; ?>">
+                        <input type="checkbox" id="filter_<?php echo $param_name; ?>" 
+                            data-filter-param="<?php echo $param_name; ?>"
+                            class="h-4 w-4 text-indigo-600 border-slate-300 rounded"
+                            <?php echo $is_active ? 'checked' : ''; ?>
+                            onchange="applyFilters(this)">
+                        <span><?php echo $label; ?></span>
+                    </label>
+                    <?php endforeach; ?>
                 </div>
             </div>
 
@@ -110,7 +141,6 @@
                     if (element.checked) {
                         urlParams.set('filter', element.dataset.filterValue);
                     } else {
-                        // Only remove if it matches the current filter value
                         if (urlParams.get('filter') === element.dataset.filterValue) {
                             urlParams.delete('filter');
                         }
@@ -126,6 +156,12 @@
                 if (element.id === 'filter_notebook') {
                     if (element.checked) urlParams.set('type_notebook', '1');
                     else urlParams.delete('type_notebook');
+                }
+
+                // Handle Location Filters (Cumulative)
+                if (element.dataset.filterParam) {
+                    if (element.checked) urlParams.set(element.dataset.filterParam, '1');
+                    else urlParams.delete(element.dataset.filterParam);
                 }
                 
                 window.location.search = urlParams.toString();

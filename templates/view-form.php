@@ -59,10 +59,132 @@
 
         <div class="mb-6">
             <label class="block text-sm font-medium text-slate-700 mb-2">Localização</label>
-            <?php $val_location = isset($form_data['location']) ? $form_data['location'] : ($is_edit ? $pc->location : ''); ?>
-            <input type="text" name="location" value="<?php echo esc_attr($val_location); ?>"
-                class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm"
-                placeholder="Ex: Financeiro, TI">
+            <?php
+            $val_location = isset($form_data['location']) ? $form_data['location'] : ($is_edit ? $pc->location : '');
+            $predefined_locations = ['Fabrica', 'Centro', 'Perdido', 'Manutenção'];
+            $is_other = !empty($val_location) && !in_array($val_location, $predefined_locations);
+            $selected_option = $is_other ? 'other' : $val_location;
+            ?>
+
+            <div class="flex flex-col gap-3">
+                <select id="locationSelect" name="location_select" onchange="toggleLocationInput(this)"
+                    class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                    <option value="" <?php selected($selected_option, ''); ?>>Selecione um local...</option>
+                    <?php foreach ($predefined_locations as $loc): ?>
+                        <option value="<?php echo esc_attr($loc); ?>" <?php selected($selected_option, $loc); ?>>
+                            <?php echo esc_html($loc); ?>
+                        </option>
+                    <?php endforeach; ?>
+                    <option value="other" <?php selected($selected_option, 'other'); ?>>Outro (Livre escolha)</option>
+                </select>
+
+                <input type="text" id="locationOtherInput" name="location"
+                    value="<?php echo esc_attr($val_location); ?>"
+                    class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm <?php echo $is_other ? '' : 'hidden'; ?>"
+                    placeholder="Digite o local específico" <?php echo $is_other ? '' : 'disabled'; ?>>
+            </div>
+
+            <script>
+                function toggleLocationInput(select) {
+                    const input = document.getElementById('locationOtherInput');
+                    if (select.value === 'other') {
+                        input.classList.remove('hidden');
+                        input.disabled = false;
+                        input.value = ''; // Clear for new input or keep? Better clear or let user decide. Let's keep empty for now as it's a switch.
+                        input.focus();
+                    } else {
+                        input.classList.add('hidden');
+                        input.disabled = true; // Disable so it's not sent if not visible, but we need to ensure the select value is sent?
+                        // actually if disabled it won't be sent. 
+                        // We need 'location' to be the name of the parameter sent to backend.
+                        // If select is NOT other, we want select value to be 'location'.
+                        // If select IS other, we want input value to be 'location'.
+
+                        // Allow me to refine this:
+                        // Easy way: name="location" on input is good. 
+                        // But if select is not other, we simply copy select value to input (hidden)?
+                        // OR we handle this in backend. Backend expects 'location'.
+                        // Let's modify the JS to update the input value when select changes given it's a predefined one.
+
+                        if (select.value) {
+                            input.value = select.value;
+                        }
+                    }
+                }
+
+                // Initial sync script for better UX
+                document.addEventListener('DOMContentLoaded', function () {
+                    const select = document.getElementById('locationSelect');
+                    const input = document.getElementById('locationOtherInput');
+
+                    select.addEventListener('change', function () {
+                        if (this.value === 'other') {
+                            input.classList.remove('hidden');
+                            input.disabled = false;
+                            // Don't clear if it was already 'other' logic, but here it is fresh switch
+                            if (input.value && <?php echo json_encode($predefined_locations); ?>.includes(input.value)) {
+                                input.value = '';
+                            }
+                        } else {
+                            input.classList.add('hidden');
+                            // We keep it enabled but hidden? No, if we have two fields with same name?
+                            // Actually, let's change name logic.
+                            // Let's make select have no name that conflicts, or handle in backend?
+                            // Let's fix this properly below.
+                            input.value = this.value;
+                        }
+                    });
+                });
+            </script>
+
+            <!-- Refined Logic Implementation -->
+            <!-- We will use a hidden input for the real 'location' submitted value if we want to be pure, OR simpler: -->
+            <!-- Use 'location_select' for the dropdown and 'location_custom' for the text. -->
+            <!-- And in backend check: if location_select == 'other' use location_custom, else use location_select. -->
+            <!-- However, to avoid modifying backend too much, let's use JS to populate a single field or use the 'location' name smartly. -->
+
+            <!-- Let's go with: Select has name 'location_select', Input has name 'location_custom'. -->
+            <!-- We need to modify backend to read these? OR we simply use JS to fill a hidden 'location' field. -->
+            <!-- JS filling hidden field is safest for existing backend compatibility. -->
+
+            <input type="hidden" name="location" id="finalLocation" value="<?php echo esc_attr($val_location); ?>">
+
+            <script>
+                // Redefining the script to work with the hidden field approach
+                (function () {
+                    const select = document.getElementById('locationSelect');
+                    const customInput = document.getElementById('locationOtherInput');
+                    const finalInput = document.getElementById('finalLocation');
+
+                    // Helper to update final value
+                    function updateFinalValue() {
+                        if (select.value === 'other') {
+                            finalInput.value = customInput.value;
+                        } else {
+                            finalInput.value = select.value;
+                        }
+                    }
+
+                    select.addEventListener('change', function () {
+                        if (this.value === 'other') {
+                            customInput.classList.remove('hidden');
+                            customInput.disabled = false;
+                            if (!customInput.value || <?php echo json_encode($predefined_locations); ?>.includes(customInput.value)) {
+                                customInput.value = '';
+                            }
+                        } else {
+                            customInput.classList.add('hidden');
+                            customInput.disabled = true; // Visual only
+                        }
+                        updateFinalValue();
+                    });
+
+                    customInput.addEventListener('input', updateFinalValue);
+
+                    // Ensure state on load (already handled by PHP logic above but need to ensure input visibility matches)
+                    // The PHP logic sets class='hidden' correctly.
+                })();
+            </script>
         </div>
 
         <div class="mb-6">
@@ -82,22 +204,27 @@
         <?php if (!$is_edit): ?>
             <div class="mb-8 p-4 bg-slate-50 rounded-lg border border-slate-200">
                 <label class="block text-sm font-medium text-slate-700 mb-2">Foto Inicial (Câmera)</label>
-                
+
                 <div class="mb-2">
-                     <label for="formCameraInput" class="cursor-pointer flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-indigo-300 rounded-xl bg-white hover:bg-indigo-50 transition-colors group">
+                    <label for="formCameraInput"
+                        class="cursor-pointer flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-indigo-300 rounded-xl bg-white hover:bg-indigo-50 transition-colors group">
                         <div class="p-3 bg-indigo-50 rounded-full group-hover:bg-indigo-100 transition-colors mb-2">
                             <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                </path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
                             </svg>
                         </div>
                         <span class="text-indigo-700 font-semibold text-sm">Tirar/Escolher Foto</span>
                         <span id="fileNameDisplay" class="text-slate-400 text-xs mt-1">Nenhuma foto selecionada</span>
                     </label>
-                    <input id="formCameraInput" type="file" name="photo" accept="image/*" capture="environment" class="hidden" 
+                    <input id="formCameraInput" type="file" name="photo" accept="image/*" capture="environment"
+                        class="hidden"
                         onchange="if(this.files.length > 0) { document.getElementById('fileNameDisplay').textContent = this.files[0].name; document.getElementById('fileNameDisplay').classList.add('text-emerald-600', 'font-medium'); document.getElementById('fileNameDisplay').classList.remove('text-slate-400'); }">
                 </div>
-                
+
                 <p class="mt-1 text-xs text-slate-500">Tire uma foto do computador para o cadastro.</p>
             </div>
         <?php endif; ?>
