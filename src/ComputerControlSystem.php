@@ -2,7 +2,7 @@
 
 class ComputerControlSystem
 {
-    public const VERSION = '1.1.6';
+    public const VERSION = '1.2.0';
 
     private $db_version = '1.1.0';
     private $table_inventory;
@@ -152,155 +152,272 @@ class ComputerControlSystem
 
         // Verify Nonce
         if (!isset($_POST['_wpnonce']) || !wp_verify_nonce($_POST['_wpnonce'], 'ccs_action_nonce')) {
+            if ($this->is_ajax()) {
+                wp_send_json_error(['message' => 'Erro de segurança: Nonce inválido ou expirado.']);
+            }
             wp_die('Erro de segurança: Nonce inválido ou expirado.');
         }
 
         global $wpdb;
         $current_user_id = get_current_user_id();
+        $is_ajax = $this->is_ajax();
+        $action = $_POST['ccs_action'];
 
-        // Setup redirect URL (preserve other params if needed, but clean action)
-        $redirect_url = '?';
+        $result = ['success' => false, 'message' => 'Ação desconhecida.'];
 
-        if ($_POST['ccs_action'] === 'add_computer') {
-            $hostname = strtoupper(sanitize_text_field($_POST['hostname']));
-
-            // Handle Photos (Single Camera Shot)
-            $photo_url = '';
-            $photos_json = null;
-
-            if (!empty($_FILES['photo']['name'])) {
-                $uploaded_photos = $this->handle_file_uploads(['name' => [$_FILES['photo']['name']], 'type' => [$_FILES['photo']['type']], 'tmp_name' => [$_FILES['photo']['tmp_name']], 'error' => [$_FILES['photo']['error']], 'size' => [$_FILES['photo']['size']]]);
-                if (!empty($uploaded_photos)) {
-                    $photo_url = $uploaded_photos[0];
-                    $photos_json = json_encode($uploaded_photos);
-                }
-            }
-
-            // Validation: Check if hostname exists
-            $exists = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$this->table_inventory} WHERE hostname = %s AND deleted = 0", $hostname));
-            if ($exists > 0) {
-                $this->form_error = "O hostname '$hostname' já está em uso por outro computador.";
-                $this->form_data = $_POST;
-                $this->form_data['hostname'] = $hostname; // Ensure uppercase
-                $_GET['view'] = 'add'; // Force stay on add view
-                return;
-            }
-
-            $wpdb->insert($this->table_inventory, [
-                'type' => sanitize_text_field($_POST['type']),
-                'hostname' => $hostname,
-                'status' => sanitize_text_field($_POST['status']),
-                'user_name' => sanitize_text_field($_POST['user_name']),
-                'location' => sanitize_text_field($_POST['location']),
-                'specs' => sanitize_textarea_field($_POST['specs']),
-                'notes' => sanitize_textarea_field($_POST['notes']),
-                'photo_url' => $photo_url
-            ]);
-
-            $computer_id = $wpdb->insert_id;
-            $this->log_history($computer_id, 'create', 'Computador cadastrado', $current_user_id, $photos_json);
-
-            $this->redirect('?message=created');
+        switch ($action) {
+            case 'add_computer':
+                $result = $this->process_add_computer($current_user_id);
+                break;
+            case 'update_computer':
+                $result = $this->process_update_computer($current_user_id);
+                break;
+            case 'add_checkup':
+                $result = $this->process_add_checkup($current_user_id);
+                break;
+            case 'upload_photo':
+                $result = $this->process_upload_photo($current_user_id);
+                break;
+            case 'trash_computer':
+                $result = $this->process_trash_computer($current_user_id);
+                break;
+            case 'restore_computer':
+                $result = $this->process_restore_computer($current_user_id);
+                break;
+            case 'quick_windows_update':
+                $result = $this->process_quick_windows_update($current_user_id);
+                break;
         }
 
-        if ($_POST['ccs_action'] === 'update_computer') {
-            $id = intval($_POST['computer_id']);
-            $old_data = $wpdb->get_row("SELECT * FROM {$this->table_inventory} WHERE id = $id", ARRAY_A);
-
-            $new_data = [
-                'type' => sanitize_text_field($_POST['type']),
-                'hostname' => strtoupper(sanitize_text_field($_POST['hostname'])),
-                'status' => sanitize_text_field($_POST['status']),
-                'user_name' => sanitize_text_field($_POST['user_name']),
-                'location' => sanitize_text_field($_POST['location']),
-                'specs' => sanitize_textarea_field($_POST['specs']),
-                'notes' => sanitize_textarea_field($_POST['notes']),
-            ];
-
-            // Validation: Check if hostname exists (excluding current ID)
-            $exists = $wpdb->get_var($wpdb->prepare(
-                "SELECT COUNT(*) FROM {$this->table_inventory} WHERE hostname = %s AND id != %d AND deleted = 0",
-                $new_data['hostname'],
-                $id
-            ));
-
-            if ($exists > 0) {
-                $this->form_error = "O hostname '{$new_data['hostname']}' já está em uso por outro computador.";
-                $this->form_data = $_POST;
-                $this->form_data['hostname'] = $new_data['hostname'];
-                $_GET['view'] = 'edit';
-                $_GET['id'] = $id;
-                return;
-            }
-
-            $wpdb->update($this->table_inventory, $new_data, ['id' => $id]);
-
-            $changes = [];
-            foreach ($new_data as $key => $value) {
-                if ($old_data[$key] != $value) {
-                    $changes[] = "$key alterado de '{$old_data[$key]}' para '$value'";
-                }
-            }
-
-            if (!empty($changes)) {
-                $this->log_history($id, 'update', implode('; ', $changes), $current_user_id);
-            }
-
-            $this->redirect('?view=details&id=' . $id . '&message=updated');
-        }
-
-        if ($_POST['ccs_action'] === 'add_checkup') {
-            $id = intval($_POST['computer_id']);
-            $description = sanitize_textarea_field($_POST['description']);
-            $this->log_history($id, 'checkup', $description, $current_user_id);
-
-            $this->redirect('?view=details&id=' . $id . '&message=checkup_added');
-        }
-
-        if ($_POST['ccs_action'] === 'upload_photo') {
-            $id = intval($_POST['computer_id']);
-
-            $uploaded_photos = $this->handle_file_uploads($_FILES['computer_photos']);
-
-            if (!empty($uploaded_photos)) {
-                $photo_url = $uploaded_photos[0]; // Set the first one as main
-                $photos_json = json_encode($uploaded_photos);
-
-                $wpdb->update($this->table_inventory, ['photo_url' => $photo_url], ['id' => $id]);
-                $this->log_history($id, 'update', 'Novas fotos adicionadas', $current_user_id, $photos_json);
-                $this->redirect('?view=details&id=' . $id . '&message=photo_uploaded');
+        if ($is_ajax) {
+            if ($result['success']) {
+                wp_send_json_success($result);
             } else {
-                wp_die("Erro ao enviar imagens.");
+                wp_send_json_error($result);
             }
-        }
+        } else {
+            if ($result['success']) {
+                $this->redirect($result['redirect_url']);
+            } else {
+                // Handle form errors in non-ajax mode (populate form_error and form_data)
+                // This logic is slightly simplistic for "stay on page" errors like invalid hostname
+                // Ideally process methods should set class state if they fail? 
+                // For now let's rely on what we have. Most errors were redirecting or setting state.
 
-        if ($_POST['ccs_action'] === 'trash_computer') {
-            $id = intval($_POST['computer_id']);
-            $wpdb->update($this->table_inventory, ['deleted' => 1], ['id' => $id]);
-            $this->log_history($id, 'trash', 'Movido para a lixeira', $current_user_id);
-            $this->redirect('?message=trashed');
-        }
-
-        if ($_POST['ccs_action'] === 'restore_computer') {
-            $id = intval($_POST['computer_id']);
-            $wpdb->update($this->table_inventory, ['deleted' => 0], ['id' => $id]);
-            $this->log_history($id, 'restore', 'Restaurado da lixeira', $current_user_id);
-            $this->redirect('?view=details&id=' . $id . '&message=restored');
-        }
-
-        if ($_POST['ccs_action'] === 'quick_windows_update') {
-            $id = intval($_POST['computer_id']);
-            $this->log_history($id, 'maintenance', 'Windows e Drivers Atualizados', $current_user_id);
-
-            $wpdb->update(
-                $this->table_inventory,
-                ['last_windows_update' => current_time('mysql')],
-                ['id' => $id]
-            );
-
-            $this->redirect('?view=details&id=' . $id . '&message=windows_updated');
+                if (isset($result['form_error'])) {
+                    $this->form_error = $result['form_error'];
+                    $this->form_data = $result['form_data'] ?? $_POST;
+                    $_GET['view'] = $result['view'] ?? $_GET['view'];
+                    if (isset($result['id']))
+                        $_GET['id'] = $result['id'];
+                } else {
+                    wp_die($result['message']);
+                }
+            }
         }
     }
+
+    private function is_ajax()
+    {
+        return (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+            || (isset($_POST['ajax']) && $_POST['ajax'] === '1');
+    }
+
+    private function process_add_computer($current_user_id)
+    {
+        global $wpdb;
+        $hostname = strtoupper(sanitize_text_field($_POST['hostname']));
+
+        // Handle Photos
+        $photo_url = '';
+        $photos_json = null;
+
+        if (!empty($_FILES['photo']['name'])) {
+            $uploaded_photos = $this->handle_file_uploads(['name' => [$_FILES['photo']['name']], 'type' => [$_FILES['photo']['type']], 'tmp_name' => [$_FILES['photo']['tmp_name']], 'error' => [$_FILES['photo']['error']], 'size' => [$_FILES['photo']['size']]]);
+            if (!empty($uploaded_photos)) {
+                $photo_url = $uploaded_photos[0];
+                $photos_json = json_encode($uploaded_photos);
+            }
+        }
+
+        // Validation
+        $exists = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$this->table_inventory} WHERE hostname = %s AND deleted = 0", $hostname));
+        if ($exists > 0) {
+            return [
+                'success' => false,
+                'message' => "O hostname '$hostname' já está em uso por outro computador.",
+                'form_error' => "O hostname '$hostname' já está em uso por outro computador.",
+                'form_data' => array_merge($_POST, ['hostname' => $hostname]),
+                'view' => 'add'
+            ];
+        }
+
+        $wpdb->insert($this->table_inventory, [
+            'type' => sanitize_text_field($_POST['type']),
+            'hostname' => $hostname,
+            'status' => sanitize_text_field($_POST['status']),
+            'user_name' => sanitize_text_field($_POST['user_name']),
+            'location' => sanitize_text_field($_POST['location']),
+            'specs' => sanitize_textarea_field($_POST['specs']),
+            'notes' => sanitize_textarea_field($_POST['notes']),
+            'photo_url' => $photo_url
+        ]);
+
+        $computer_id = $wpdb->insert_id;
+        $this->log_history($computer_id, 'create', 'Computador cadastrado', $current_user_id, $photos_json);
+
+        return [
+            'success' => true,
+            'message' => 'Computador cadastrado com sucesso!',
+            'redirect_url' => '?message=created',
+            'data' => ['id' => $computer_id]
+        ];
+    }
+
+    private function process_update_computer($current_user_id)
+    {
+        global $wpdb;
+        $id = intval($_POST['computer_id']);
+        $old_data = $wpdb->get_row("SELECT * FROM {$this->table_inventory} WHERE id = $id", ARRAY_A);
+
+        $new_data = [
+            'type' => sanitize_text_field($_POST['type']),
+            'hostname' => strtoupper(sanitize_text_field($_POST['hostname'])),
+            'status' => sanitize_text_field($_POST['status']),
+            'user_name' => sanitize_text_field($_POST['user_name']),
+            'location' => sanitize_text_field($_POST['location']),
+            'specs' => sanitize_textarea_field($_POST['specs']),
+            'notes' => sanitize_textarea_field($_POST['notes']),
+        ];
+
+        // Validation
+        $exists = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$this->table_inventory} WHERE hostname = %s AND id != %d AND deleted = 0",
+            $new_data['hostname'],
+            $id
+        ));
+
+        if ($exists > 0) {
+            return [
+                'success' => false,
+                'message' => "O hostname '{$new_data['hostname']}' já está em uso por outro computador.",
+                'form_error' => "O hostname '{$new_data['hostname']}' já está em uso por outro computador.",
+                'form_data' => array_merge($_POST, ['hostname' => $new_data['hostname']]),
+                'view' => 'edit',
+                'id' => $id
+            ];
+        }
+
+        $wpdb->update($this->table_inventory, $new_data, ['id' => $id]);
+
+        $changes = [];
+        foreach ($new_data as $key => $value) {
+            if ($old_data[$key] != $value) {
+                $changes[] = "$key alterado de '{$old_data[$key]}' para '$value'";
+            }
+        }
+
+        if (!empty($changes)) {
+            $this->log_history($id, 'update', implode('; ', $changes), $current_user_id);
+        }
+
+        return [
+            'success' => true,
+            'message' => 'Computador atualizado com sucesso!',
+            'redirect_url' => '?view=details&id=' . $id . '&message=updated',
+            'data' => ['id' => $id]
+        ];
+    }
+
+    private function process_add_checkup($current_user_id)
+    {
+        $id = intval($_POST['computer_id']);
+        $description = sanitize_textarea_field($_POST['description']);
+        $this->log_history($id, 'checkup', $description, $current_user_id);
+
+        return [
+            'success' => true,
+            'message' => 'Checkup adicionado com sucesso.',
+            'redirect_url' => '?view=details&id=' . $id . '&message=checkup_added',
+            'data' => [
+                'history_html' => $this->get_history_item_html($id, $description, 'checkup', $current_user_id) // We'll need a helper for this
+            ]
+        ];
+    }
+
+    private function process_upload_photo($current_user_id)
+    {
+        global $wpdb;
+        $id = intval($_POST['computer_id']);
+        $uploaded_photos = $this->handle_file_uploads($_FILES['computer_photos']);
+
+        if (!empty($uploaded_photos)) {
+            $photo_url = $uploaded_photos[0];
+            $photos_json = json_encode($uploaded_photos);
+
+            $wpdb->update($this->table_inventory, ['photo_url' => $photo_url], ['id' => $id]);
+            $this->log_history($id, 'update', 'Novas fotos adicionadas', $current_user_id, $photos_json);
+
+            return [
+                'success' => true,
+                'message' => 'Fotos enviadas com sucesso!',
+                'redirect_url' => '?view=details&id=' . $id . '&message=photo_uploaded',
+                'data' => ['photo_url' => $photo_url]
+            ];
+        } else {
+            return ['success' => false, 'message' => 'Erro ao enviar imagens.'];
+        }
+    }
+
+    private function process_trash_computer($current_user_id)
+    {
+        global $wpdb;
+        $id = intval($_POST['computer_id']);
+        $wpdb->update($this->table_inventory, ['deleted' => 1], ['id' => $id]);
+        $this->log_history($id, 'trash', 'Movido para a lixeira', $current_user_id);
+
+        return [
+            'success' => true,
+            'message' => 'Computador movido para a lixeira.',
+            'redirect_url' => '?message=trashed'
+        ];
+    }
+
+    private function process_restore_computer($current_user_id)
+    {
+        global $wpdb;
+        $id = intval($_POST['computer_id']);
+        $wpdb->update($this->table_inventory, ['deleted' => 0], ['id' => $id]);
+        $this->log_history($id, 'restore', 'Restaurado da lixeira', $current_user_id);
+
+        return [
+            'success' => true,
+            'message' => 'Computador restaurado.',
+            'redirect_url' => '?view=details&id=' . $id . '&message=restored'
+        ];
+    }
+
+    private function process_quick_windows_update($current_user_id)
+    {
+        global $wpdb;
+        $id = intval($_POST['computer_id']);
+        $this->log_history($id, 'maintenance', 'Windows e Drivers Atualizados', $current_user_id);
+
+        $now = current_time('mysql');
+        $wpdb->update(
+            $this->table_inventory,
+            ['last_windows_update' => $now],
+            ['id' => $id]
+        );
+
+        return [
+            'success' => true,
+            'message' => 'Status de atualização do Windows registrado.',
+            'redirect_url' => '?view=details&id=' . $id . '&message=windows_updated',
+            'data' => ['last_windows_update' => date('d/m/Y H:i', strtotime($now))]
+        ];
+    }
+
 
     private function handle_file_uploads($files)
     {
@@ -392,6 +509,17 @@ class ComputerControlSystem
         if ($filter === 'outdated') {
             // Desatualizados: last_windows_update nulo ou maior que 30 dias atrás
             $where_add = " AND (last_windows_update IS NULL OR last_windows_update < DATE_SUB(NOW(), INTERVAL 30 DAY))";
+        } elseif ($filter === 'updated') {
+            // Atualizados: last_windows_update nos últimos 30 dias
+            $where_add = " AND last_windows_update >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
+        } elseif ($filter === 'no_photos') {
+            // Sem Fotos: sem photo_url E sem fotos no histórico
+            $where_add = " AND (photo_url IS NULL OR photo_url = '') 
+                AND id NOT IN (
+                    SELECT DISTINCT computer_id 
+                    FROM {$this->table_history} 
+                    WHERE photos IS NOT NULL AND photos != '' AND photos != 'null'
+                )";
         }
 
         $computers = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$this->table_inventory} WHERE deleted = %d $where_add ORDER BY updated_at DESC", $deleted_val));
@@ -468,5 +596,36 @@ class ComputerControlSystem
             header('Content-Type: text/html; charset=' . get_bloginfo('charset'));
         }
         require __DIR__ . '/../templates/view-login.php';
+    }
+    private function get_history_item_html($computer_id, $description, $event_type, $user_id)
+    {
+        $u = get_userdata($user_id);
+        $display_name = $u ? $u->display_name : 'Sistema';
+        $time = date('d/m H:i', current_time('timestamp'));
+
+        // Simulating the structure from view-details.php
+        ob_start();
+        ?>
+        <div class="relative flex gap-4 history-item-new fade-in">
+            <div class="absolute -left-1 w-2.5 h-2.5 rounded-full bg-indigo-500 ring-4 ring-white mt-1.5 ml-1">
+            </div>
+            <div class="ml-6 flex-1">
+                <div class="flex justify-between items-baseline mb-1">
+                    <span class="font-semibold text-slate-900 capitalize">
+                        <?php echo esc_html($event_type); ?>
+                    </span>
+                    <span class="text-xs text-slate-400">
+                        <?php echo $time; ?>
+                        -
+                        <?php echo esc_html($display_name); ?>
+                    </span>
+                </div>
+                <p class="text-slate-600 text-sm">
+                    <?php echo esc_html($description); ?>
+                </p>
+            </div>
+        </div>
+        <?php
+        return ob_get_clean();
     }
 }

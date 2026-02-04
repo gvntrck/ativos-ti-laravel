@@ -1,8 +1,6 @@
-*Botão para apontar Windows atualizado
+
 
 *Ordenar lista por data do último registro de histórico
-
-Remover registros de Windows update antes do dia 02-02-29
 
 Ao enviar foto, já salvar, menos cliques
 
@@ -18,4 +16,4 @@ Menu fixo no footer no mobile
 
 Adicionar filtro checkbox para listar apenas desktops e notebooks 
 
-Filtros acima do campo de pesquisa 
+botao para copiar todos os cados do pc para colar no wpp

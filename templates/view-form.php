@@ -1,5 +1,5 @@
 <div class="max-w-2xl mx-auto">
-    <form method="post" action="?" enctype="multipart/form-data"
+    <form method="post" action="?" enctype="multipart/form-data" data-ajax="true"
         class="bg-white p-8 rounded-xl shadow-sm border border-slate-200">
         <?php wp_nonce_field('ccs_action_nonce'); ?>
         <input type="hidden" name="ccs_action" value="<?php echo $is_edit ? 'update_computer' : 'add_computer'; ?>">

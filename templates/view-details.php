@@ -11,7 +11,7 @@
                 </span>
             </div>
             <div class="flex flex-col items-end gap-2">
-                <form method="post" action="?"
+                <form method="post" action="?" data-ajax="true"
                     onsubmit="return confirm('Tem certeza que deseja enviar este computador para a lixeira? Ele não será excluído permanentemente, mas sairá da lista principal.');">
                     <?php wp_nonce_field('ccs_action_nonce'); ?>
                     <input type="hidden" name="ccs_action" value="trash_computer">
@@ -58,9 +58,9 @@
                     $days = floor((time() - strtotime($pc->last_windows_update)) / (60 * 60 * 24));
                     $color_class = $days > 30 ? 'text-red-500 font-bold' : 'text-emerald-500 font-medium';
                     $date_str = date('d/m/Y H:i', strtotime($pc->last_windows_update));
-                    echo "<span class='$color_class'>$date_str ({$days}d)</span>";
+                    echo "<span id='windows-update-display' class='$color_class'>$date_str ({$days}d)</span>";
                 } else {
-                    echo "<span class='text-red-500 font-bold'>Nunca Atualizado</span>";
+                    echo "<span id='windows-update-display' class='text-red-500 font-bold'>Nunca Atualizado</span>";
                 }
                 ?>
             </div>
@@ -89,7 +89,7 @@
             <!-- Quick Actions Card -->
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                 <h3 class="font-bold text-slate-900 mb-4">Ações Rápidas</h3>
-                <form method="post" action="?">
+                <form method="post" action="?" data-ajax="true">
                     <?php wp_nonce_field('ccs_action_nonce'); ?>
                     <input type="hidden" name="ccs_action" value="quick_windows_update">
                     <input type="hidden" name="computer_id" value="<?php echo $pc->id; ?>">
@@ -108,7 +108,7 @@
             <!-- New Event / Checkup Card -->
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                 <h3 class="font-bold text-slate-900 mb-4">Novo Evento / Checkup</h3>
-                <form method="post" action="?">
+                <form method="post" action="?" data-ajax="true">
                     <?php wp_nonce_field('ccs_action_nonce'); ?>
                     <input type="hidden" name="ccs_action" value="add_checkup">
                     <input type="hidden" name="computer_id" value="<?php echo $pc->id; ?>">
@@ -124,7 +124,7 @@
             <!-- Photos Card -->
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                 <h3 class="font-bold text-slate-900 mb-4">Fotos do Equipamento</h3>
-                <form method="post" action="?" enctype="multipart/form-data" id="photoUploadForm">
+                <form method="post" action="?" enctype="multipart/form-data" id="photoUploadForm" data-ajax="true">
                     <?php wp_nonce_field('ccs_action_nonce'); ?>
                     <input type="hidden" name="ccs_action" value="upload_photo">
                     <input type="hidden" name="computer_id" value="<?php echo $pc->id; ?>">
