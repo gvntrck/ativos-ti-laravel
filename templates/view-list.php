@@ -101,6 +101,37 @@
 
                     <!-- Divider -->
                     <div class="w-px h-6 bg-slate-300 mx-1"></div>
+                    
+                    <!-- Status Filters -->
+                    <?php
+                    $statuses = [
+                        'active' => ['label' => 'Em Uso', 'class' => 'text-emerald-600'],
+                        'backup' => ['label' => 'Backup', 'class' => 'text-amber-600'],
+                        'maintenance' => ['label' => 'Manutenção', 'class' => 'text-rose-600'],
+                        'retired' => ['label' => 'Aposentado', 'class' => 'text-slate-600']
+                    ];
+                    
+                    foreach ($statuses as $key => $props):
+                        $param_name = 'status_' . $key;
+                        $is_active = isset($_GET[$param_name]) && $_GET[$param_name] === '1';
+                        // Colors for active state
+                        $active_class = $is_active 
+                            ? 'bg-indigo-100 text-indigo-700 border-indigo-200' 
+                            : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50';
+                    ?>
+                    <label class="flex items-center gap-2 px-2 py-1 border rounded-md text-sm font-medium transition-colors whitespace-nowrap <?php echo $active_class; ?>"
+                        title="Mostrar status: <?php echo $props['label']; ?>">
+                        <input type="checkbox" id="filter_<?php echo $param_name; ?>" 
+                            data-filter-param="<?php echo $param_name; ?>"
+                            class="h-4 w-4 <?php echo $props['class']; ?> border-slate-300 rounded"
+                            <?php echo $is_active ? 'checked' : ''; ?>
+                            onchange="applyFilters(this)">
+                        <span><?php echo $props['label']; ?></span>
+                    </label>
+                    <?php endforeach; ?>
+
+                    <!-- Divider -->
+                    <div class="w-px h-6 bg-slate-300 mx-1"></div>
 
                     <!-- Location Filters -->
                     <?php
@@ -136,8 +167,10 @@
             function applyFilters(element) {
                 const urlParams = new URLSearchParams(window.location.search);
                 
-                // Handle Status Filters (Mutually Exclusive)
+                // Handle Specific Logic Filters (updated, outdated, no_photos) - Mutually Exclusive logic within 'filter' param group
                 if (element.dataset.filterType === 'status') {
+                     // Note: 'status' here refers to 'updated/outdated' logic from previous code, not the new status field. 
+                     // Confusing naming in previous code preserved.
                     if (element.checked) {
                         urlParams.set('filter', element.dataset.filterValue);
                     } else {
@@ -158,7 +191,7 @@
                     else urlParams.delete('type_notebook');
                 }
 
-                // Handle Location Filters (Cumulative)
+                // Handle Generic Cumulative Filters (Locations & New Statuses)
                 if (element.dataset.filterParam) {
                     if (element.checked) urlParams.set(element.dataset.filterParam, '1');
                     else urlParams.delete(element.dataset.filterParam);

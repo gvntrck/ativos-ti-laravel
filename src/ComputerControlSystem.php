@@ -586,6 +586,25 @@ class ComputerControlSystem
             $where_add .= " AND (" . implode(' OR ', $loc_conditions) . ")";
         }
 
+        // Status Filters
+        $status_conditions = [];
+        $status_map = [
+            'status_active' => 'active',
+            'status_backup' => 'backup',
+            'status_maintenance' => 'maintenance',
+            'status_retired' => 'retired'
+        ];
+
+        foreach ($status_map as $param => $db_value) {
+            if (isset($_GET[$param]) && $_GET[$param] === '1') {
+                $status_conditions[] = "status = '" . esc_sql($db_value) . "'";
+            }
+        }
+
+        if (!empty($status_conditions)) {
+            $where_add .= " AND (" . implode(' OR ', $status_conditions) . ")";
+        }
+
         $computers = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$this->table_inventory} WHERE deleted = %d $where_add ORDER BY updated_at DESC", $deleted_val));
 
         // Buscar histórico concatenado para pesquisa (inclui hostnames antigos, mudanças de usuário, etc)
