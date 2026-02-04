@@ -1,5 +1,6 @@
 function filterTable() {
     const input = document.getElementById("searchInput");
+    if (!input) return; // Exit if search input doesn't exist
     const filter = input.value.toLowerCase();
     const rows = document.querySelectorAll("#computerTableBody tr:not(.no-results-row)");
     const noResultsRow = document.querySelector(".no-results-row");
@@ -33,6 +34,8 @@ document.addEventListener('DOMContentLoaded', filterTable);
 // Toggle filter panel visibility
 function toggleFilters() {
     const panel = document.getElementById('filterPanel');
+    if (!panel) return;
+
     const isHidden = panel.classList.contains('hidden');
 
     if (isHidden) {
@@ -48,6 +51,8 @@ function toggleFilters() {
 // Restore filter panel state on page load
 document.addEventListener('DOMContentLoaded', function () {
     const panel = document.getElementById('filterPanel');
+    if (!panel) return;
+
     const isOpen = localStorage.getItem('filterPanelOpen') === 'true';
 
     if (isOpen) {
