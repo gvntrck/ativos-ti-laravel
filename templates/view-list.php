@@ -160,6 +160,21 @@
                         <span><?php echo $label; ?></span>
                     </label>
                     <?php endforeach; ?>
+                    
+                    <?php
+                    // Filtro para computadores sem local definido
+                    $is_sem_local = isset($_GET['loc_sem_local']) && $_GET['loc_sem_local'] === '1';
+                    $sem_local_class = $is_sem_local ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50';
+                    ?>
+                    <label class="flex items-center gap-2 px-2 py-1 border rounded-md text-sm font-medium transition-colors whitespace-nowrap <?php echo $sem_local_class; ?>"
+                        title="Mostrar computadores sem local definido">
+                        <input type="checkbox" id="filter_loc_sem_local" 
+                            data-filter-param="loc_sem_local"
+                            class="h-4 w-4 text-indigo-600 border-slate-300 rounded"
+                            <?php echo $is_sem_local ? 'checked' : ''; ?>
+                            onchange="applyFilters(this)">
+                        <span>Sem Local</span>
+                    </label>
                 </div>
             </div>
 

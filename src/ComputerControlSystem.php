@@ -2,7 +2,7 @@
 
 class ComputerControlSystem
 {
-    public const VERSION = '1.4.0';
+    public const VERSION = '1.4.1';
 
     private $db_version = '1.1.0';
     private $table_inventory;
@@ -580,6 +580,11 @@ class ComputerControlSystem
             if (isset($_GET[$param]) && $_GET[$param] === '1') {
                 $loc_conditions[] = "location = '" . esc_sql($db_value) . "'";
             }
+        }
+
+        // Filtro para computadores sem local definido
+        if (isset($_GET['loc_sem_local']) && $_GET['loc_sem_local'] === '1') {
+            $loc_conditions[] = "(location IS NULL OR location = '')";
         }
 
         if (!empty($loc_conditions)) {
