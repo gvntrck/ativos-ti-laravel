@@ -109,6 +109,7 @@
     </style>
     <script src="assets/js/script.js"></script>
     <script src="assets/js/ajax-handler.js"></script>
+    <script src="assets/js/lightbox.js"></script>
     <!-- PWA Configuration -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4f46e5">

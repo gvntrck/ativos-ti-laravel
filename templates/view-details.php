@@ -229,10 +229,12 @@
                         if (!empty($photos)):
                             ?>
                             <div class="flex gap-2 mt-2 overflow-x-auto pb-2">
-                                <?php foreach ($photos as $photo_url): ?>
-                                    <a href="<?php echo esc_url($photo_url); ?>" target="_blank" class="block flex-shrink-0">
+                                <?php foreach ($photos as $photo_index => $photo_url): ?>
+                                    <a href="javascript:void(0)"
+                                        onclick="openLightboxFromHistory(<?php echo $h->id; ?>, <?php echo $photo_index; ?>)"
+                                        class="block flex-shrink-0 cursor-pointer">
                                         <img src="<?php echo esc_url($photo_url); ?>"
-                                            class="h-16 w-16 object-cover rounded-lg border border-slate-200 hover:opacity-75 transition-opacity">
+                                            class="h-16 w-16 object-cover rounded-lg border border-slate-200 hover:opacity-75 hover:ring-2 hover:ring-indigo-400 transition-all">
                                     </a>
                                 <?php endforeach; ?>
                             </div>
@@ -272,7 +274,7 @@
                 $u = get_userdata($h->user_id);
                 $photos = !empty($h->photos) ? json_decode($h->photos, true) : [];
                 ?>
-                {
+                        {
                     type: <?php echo json_encode($h->event_type); ?>,
                     date: <?php echo json_encode(date('d/m/Y H:i', strtotime($h->created_at))); ?>,
                     user: <?php echo json_encode($u ? $u->display_name : 'Sistema'); ?>,
@@ -287,11 +289,11 @@
     function copyComputerData() {
         // Formatar texto para WhatsApp (usando * para negrito)
         let text = '';
-        
+
         // Header
         text += '🖥️ *FICHA DO COMPUTADOR*\n';
         text += '━━━━━━━━━━━━━━━━━━━━━━\n\n';
-        
+
         // Dados principais
         text += `*Hostname:* ${computerData.hostname}\n`;
         text += `*Tipo:* ${computerData.type === 'desktop' ? 'Desktop' : 'Notebook'}\n`;
@@ -300,31 +302,31 @@
         text += `*Local:* ${computerData.location}\n`;
         text += `*Atualizado em:* ${computerData.updatedAt}\n`;
         text += `*Windows Update:* ${computerData.windowsUpdate}\n`;
-        
+
         // Especificações
         if (computerData.specs && computerData.specs !== '-') {
             text += '\n📋 *Especificações:*\n';
             text += computerData.specs + '\n';
         }
-        
+
         // Anotações
         if (computerData.notes && computerData.notes !== '-') {
             text += '\n📝 *Anotações:*\n';
             text += computerData.notes + '\n';
         }
-        
+
         // Histórico
         if (computerData.history.length > 0) {
             text += '\n━━━━━━━━━━━━━━━━━━━━━━\n';
             text += '📜 *HISTÓRICO*\n\n';
-            
+
             computerData.history.forEach((entry, index) => {
                 text += `*${entry.date}* - _${entry.type}_\n`;
                 text += `${entry.description}\n`;
                 if (entry.user) {
                     text += `👤 ${entry.user}\n`;
                 }
-                
+
                 // Links das fotos
                 if (entry.photos && entry.photos.length > 0) {
                     text += '📷 Fotos:\n';
@@ -332,28 +334,28 @@
                         text += `  ${photoIndex + 1}. ${photo}\n`;
                     });
                 }
-                
+
                 if (index < computerData.history.length - 1) {
                     text += '\n';
                 }
             });
         }
-        
+
         // Link direto
         text += '\n━━━━━━━━━━━━━━━━━━━━━━\n';
         text += `🔗 *Link:* ${computerData.pageUrl}`;
-        
+
         // Copiar para área de transferência
         navigator.clipboard.writeText(text).then(() => {
             // Feedback visual
             const btn = document.getElementById('copyDataBtn');
             const btnText = document.getElementById('copyBtnText');
             const originalText = btnText.textContent;
-            
+
             btn.classList.remove('bg-emerald-50', 'text-emerald-700', 'border-emerald-200', 'hover:bg-emerald-100');
             btn.classList.add('bg-emerald-500', 'text-white', 'border-emerald-600');
             btnText.textContent = 'Copiado! ✓';
-            
+
             setTimeout(() => {
                 btn.classList.remove('bg-emerald-500', 'text-white', 'border-emerald-600');
                 btn.classList.add('bg-emerald-50', 'text-emerald-700', 'border-emerald-200', 'hover:bg-emerald-100');
@@ -363,5 +365,52 @@
             alert('Erro ao copiar dados. Tente novamente.');
             console.error('Erro ao copiar:', err);
         });
+    }
+
+    // ========== Lightbox para Fotos ==========
+    // Mapeamento de fotos por item do histórico
+    const historyPhotos = {
+        <?php foreach ($history as $h):
+            $photos = !empty($h->photos) ? json_decode($h->photos, true) : [];
+            if (!empty($photos)):
+                ?>
+                <?php echo $h->id; ?>: <?php echo json_encode($photos); ?>,
+            <?php endif; endforeach; ?>
+    };
+
+    // Coletar TODAS as fotos do PC para navegação global
+    const allPhotos = [];
+    const photoIndexMap = {}; // Mapeia history_id + photo_index para índice global
+
+    <?php
+    $global_index = 0;
+    foreach ($history as $h):
+        $photos = !empty($h->photos) ? json_decode($h->photos, true) : [];
+        if (!empty($photos)):
+            foreach ($photos as $pIdx => $pUrl):
+                ?>
+                allPhotos.push(<?php echo json_encode($pUrl); ?>);
+                photoIndexMap['<?php echo $h->id; ?>_<?php echo $pIdx; ?>'] = <?php echo $global_index; ?>;
+                <?php
+                $global_index++;
+            endforeach;
+        endif;
+    endforeach;
+    ?>
+
+    /**
+     * Abre o lightbox com todas as fotos do PC a partir de um item do histórico
+     * @param {number} historyId - ID do item do histórico
+     * @param {number} photoIndex - Índice da foto dentro do histórico
+     */
+    function openLightboxFromHistory(historyId, photoIndex) {
+        // Encontrar o índice global da foto
+        const key = historyId + '_' + photoIndex;
+        const globalIndex = photoIndexMap[key] !== undefined ? photoIndexMap[key] : 0;
+
+        // Abrir lightbox com todas as fotos do PC
+        if (allPhotos.length > 0) {
+            openLightbox(allPhotos, globalIndex);
+        }
     }
 </script>
