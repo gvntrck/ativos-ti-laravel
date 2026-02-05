@@ -326,6 +326,21 @@
                                         Restaurar
                                     </button>
                                 </form>
+                                <form method="post" action="?" class="inline ml-2" data-ajax="true"
+                                    onsubmit="return confirm('Tem certeza que deseja excluir PERMANENTEMENTE este computador? Todo o histórico e dados serão apagados. Esta ação não pode ser desfeita.');">
+                                    <?php wp_nonce_field('ccs_action_nonce'); ?>
+                                    <input type="hidden" name="ccs_action" value="delete_permanent_computer">
+                                    <input type="hidden" name="computer_id" value="<?php echo $pc->id; ?>">
+                                    <button type="submit"
+                                        class="text-red-600 hover:text-red-900 font-medium text-xs flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                            </path>
+                                        </svg>
+                                        Excluir Permanentemente
+                                    </button>
+                                </form>
                             <?php else: ?>
                                 <a href="?view=details&id=<?php echo $pc->id; ?>"
                                     class="text-indigo-600 hover:text-indigo-900 font-medium text-xs">Gerenciar</a>

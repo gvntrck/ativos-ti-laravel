@@ -2,7 +2,7 @@
 
 class ComputerControlSystem
 {
-    public const VERSION = '1.7.0';
+    public const VERSION = '1.7.1';
 
     private $db_version = '1.1.0';
     private $table_inventory;
@@ -189,6 +189,9 @@ class ComputerControlSystem
                 break;
             case 'delete_history':
                 $result = $this->process_delete_history($current_user_id);
+                break;
+            case 'delete_permanent_computer':
+                $result = $this->process_delete_permanent_computer($current_user_id);
                 break;
         }
 
@@ -449,6 +452,34 @@ class ComputerControlSystem
             'message' => 'Item de histórico excluído com sucesso.',
             'redirect_url' => '?view=details&id=' . $computer_id . '&message=history_deleted',
             'data' => ['deleted_id' => $history_id]
+        ];
+    }
+
+    private function process_delete_permanent_computer($current_user_id)
+    {
+        global $wpdb;
+        $id = intval($_POST['computer_id']);
+
+        // Check if computer exists
+        $computer = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$this->table_inventory} WHERE id = %d", $id));
+
+        if (!$computer) {
+            return [
+                'success' => false,
+                'message' => 'Computador não encontrado.'
+            ];
+        }
+
+        // Delete history first
+        $wpdb->delete($this->table_history, ['computer_id' => $id]);
+
+        // Delete inventory record
+        $wpdb->delete($this->table_inventory, ['id' => $id]);
+
+        return [
+            'success' => true,
+            'message' => 'Computador excluído permanentemente.',
+            'redirect_url' => '?view=trash&message=permanently_deleted'
         ];
     }
 
