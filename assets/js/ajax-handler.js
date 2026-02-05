@@ -7,12 +7,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
     ajaxForms.forEach(form => {
         form.addEventListener('submit', async function (e) {
+            // data-confirm check
+            const confirmMsg = form.getAttribute('data-confirm');
+            if (confirmMsg) {
+                if (!confirm(confirmMsg)) {
+                    e.preventDefault();
+                    return;
+                }
+            }
+
             e.preventDefault();
 
-            // Check for confirmation if present (though usually handled by onsubmit inline, 
-            // but if we preventDefault, inline onsubmit might still run but return value ignored?
-            // Actually inline onsubmit runs before addEventListener. If it returns false, event is cancelled.
-            // So we are good here.
+            // Comment blocked removed as it is no longer relevant
+
 
             const submitBtn = form.querySelector('button[type="submit"]');
             const originalBtnText = submitBtn ? submitBtn.innerHTML : '';

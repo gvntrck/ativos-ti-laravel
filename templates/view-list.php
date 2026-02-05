@@ -316,7 +316,7 @@
                         <td class="px-4 py-2">
                             <?php if ($show_trash): ?>
                                 <form method="post" action="?" class="inline" data-ajax="true"
-                                    onsubmit="return confirm('Tem certeza que deseja restaurar este computador?');">
+                                    data-confirm="Tem certeza que deseja restaurar este computador?">
                                     <?php wp_nonce_field('ccs_action_nonce'); ?>
                                     <input type="hidden" name="ccs_action" value="restore_computer">
                                     <input type="hidden" name="computer_id" value="<?php echo $pc->id; ?>">
@@ -331,7 +331,7 @@
                                     </button>
                                 </form>
                                 <form method="post" action="?" class="inline ml-2" data-ajax="true"
-                                    onsubmit="return confirm('Tem certeza que deseja excluir PERMANENTEMENTE este computador? Todo o histórico e dados serão apagados. Esta ação não pode ser desfeita.');">
+                                    data-confirm="Tem certeza que deseja excluir PERMANENTEMENTE este computador? Todo o histórico e dados serão apagados. Esta ação não pode ser desfeita.">
                                     <?php wp_nonce_field('ccs_action_nonce'); ?>
                                     <input type="hidden" name="ccs_action" value="delete_permanent_computer">
                                     <input type="hidden" name="computer_id" value="<?php echo $pc->id; ?>">

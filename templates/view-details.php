@@ -12,7 +12,7 @@
             </div>
             <div class="flex flex-col items-end gap-2">
                 <form method="post" action="?" data-ajax="true"
-                    onsubmit="return confirm('Tem certeza que deseja enviar este computador para a lixeira? Ele não será excluído permanentemente, mas sairá da lista principal.');">
+                    data-confirm="Tem certeza que deseja enviar este computador para a lixeira? Ele não será excluído permanentemente, mas sairá da lista principal.">
                     <?php wp_nonce_field('ccs_action_nonce'); ?>
                     <input type="hidden" name="ccs_action" value="trash_computer">
                     <input type="hidden" name="computer_id" value="<?php echo $pc->id; ?>">
@@ -203,7 +203,7 @@
                                     <?php echo $u ? $u->display_name : 'Sistema'; ?>
                                 </span>
                                 <form method="post" action="?" data-ajax="true" class="inline"
-                                    onsubmit="return confirm('Tem certeza que deseja excluir este item do histórico?');">
+                                    data-confirm="Tem certeza que deseja excluir este item do histórico?">
                                     <?php wp_nonce_field('ccs_action_nonce'); ?>
                                     <input type="hidden" name="ccs_action" value="delete_history">
                                     <input type="hidden" name="computer_id" value="<?php echo $pc->id; ?>">
@@ -274,7 +274,7 @@
                 $u = get_userdata($h->user_id);
                 $photos = !empty($h->photos) ? json_decode($h->photos, true) : [];
                 ?>
-                        {
+                            {
                     type: <?php echo json_encode($h->event_type); ?>,
                     date: <?php echo json_encode(date('d/m/Y H:i', strtotime($h->created_at))); ?>,
                     user: <?php echo json_encode($u ? $u->display_name : 'Sistema'); ?>,
@@ -374,7 +374,7 @@
             $photos = !empty($h->photos) ? json_decode($h->photos, true) : [];
             if (!empty($photos)):
                 ?>
-                <?php echo $h->id; ?>: <?php echo json_encode($photos); ?>,
+                        <?php echo $h->id; ?>: <?php echo json_encode($photos); ?>,
             <?php endif; endforeach; ?>
     };
 
