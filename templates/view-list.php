@@ -249,6 +249,7 @@
                 <tr>
                     <th class="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
                     <th class="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Hostname</th>
+                    <th class="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Anotações</th>
                     <th class="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Tipo</th>
                     <th class="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Usuário / Local
                     </th>
@@ -297,6 +298,9 @@
                             <a href="?view=details&id=<?php echo $pc->id; ?>" class="text-indigo-600 hover:text-indigo-900">
                                 <?php echo esc_html(strtoupper($pc->hostname)); ?>
                             </a>
+                        </td>
+                        <td class="px-4 py-2 text-slate-600 text-xs">
+                            <?php echo esc_html($pc->notes); ?>
                         </td>
                         <td class="px-4 py-2 text-slate-600 capitalize">
                             <?php echo $pc->type; ?>
@@ -350,7 +354,7 @@
                 <?php endforeach; ?>
                 <?php if (empty($computers)): ?>
                     <tr class="no-results-row">
-                        <td colspan="5" class="px-4 py-8 text-center text-slate-400">Nenhum computador encontrado.</td>
+                        <td colspan="6" class="px-4 py-8 text-center text-slate-400">Nenhum computador encontrado.</td>
                     </tr>
                 <?php endif; ?>
             </tbody>
