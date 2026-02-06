@@ -164,11 +164,30 @@ html {
         right: 8px;
     }
     
+    /* Toolbar adjustments for mobile */
+    .lightbox-toolbar {
+        top: 16px;
+        gap: 8px;
+        padding: 6px 12px;
+    }
+
+    .lightbox-tool {
+        width: 36px;
+        height: 36px;
+    }
+    
     .lightbox-close {
-        top: 8px;
-        right: 8px;
-        width: 40px;
-        height: 40px;
+        position: relative;
+        top: auto;
+        right: auto;
+        width: 36px;
+        height: 36px;
+        margin-left: 8px;
+        border-left: 1px solid rgba(255, 255, 255, 0.2);
+        padding-left: 8px;
+        border-radius: 0;
+        background: transparent !important;
+        border: none;
     }
     
     .lightbox-counter {
@@ -182,3 +201,78 @@ html {
 .lightbox-nav.hidden {
     display: none;
 }
+
+/* Zoom Toolbar Styles */
+.lightbox-toolbar {
+    position: absolute;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    padding: 8px 16px;
+    border-radius: 99px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 10002;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.lightbox-tool {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1px solid transparent;
+    color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.lightbox-tool:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    transform: scale(1.1);
+}
+
+.lightbox-tool:active {
+    transform: scale(0.95);
+}
+
+/* Ajuste no botão de fechar para integrar à toolbar se desejado, 
+   ou manter separado (como no JS atual foi movido para dentro da toolbar, 
+   vamos estilizar para parecer parte do conjunto ou separado) */
+
+/* Se o botão fechar estiver DENTRO da toolbar (conforme html no JS) */
+.lightbox-toolbar .lightbox-close {
+    position: relative;
+    top: auto;
+    right: auto;
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    border: none;
+    margin-left: 8px;
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0;
+    padding-left: 12px; /* Espaço extra por causa da borda */
+}
+
+.lightbox-toolbar .lightbox-close:hover {
+    background: transparent;
+    color: #ef4444; /* Vermelho ao hover */
+    transform: scale(1.1);
+}
+
+/* Cursor styles for zoom */
+.lightbox-image {
+    /* ... existing styles ... */
+    cursor: default; /* Padrão */
+}
+/* These are handled via inline styles in JS, but good to have defaults */
+
