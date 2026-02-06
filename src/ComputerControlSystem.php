@@ -2,7 +2,7 @@
 
 class ComputerControlSystem
 {
-    public const VERSION = '1.7.3';
+    public const VERSION = '1.7.4';
 
     private $db_version = '1.1.0';
     private $table_inventory;
@@ -284,7 +284,14 @@ class ComputerControlSystem
     {
         global $wpdb;
         $id = intval($_POST['computer_id']);
-        $old_data = $wpdb->get_row("SELECT * FROM {$this->table_inventory} WHERE id = $id", ARRAY_A);
+        $old_data = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$this->table_inventory} WHERE id = %d", $id), ARRAY_A);
+
+        if (!$old_data) {
+            return [
+                'success' => false,
+                'message' => 'Computador não encontrado.',
+            ];
+        }
 
         $new_data = [
             'type' => sanitize_text_field($_POST['type']),
