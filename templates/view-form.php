@@ -44,13 +44,13 @@
                     <option value="active" <?php selected($val_status, 'active'); ?>>Em Uso</option>
                     <option value="backup" <?php selected($val_status, 'backup'); ?>>Backup</option>
                     <option value="maintenance" <?php selected($val_status, 'maintenance'); ?>>Em
-                        Manutenção</option>
+                        ManutenÃ§Ã£o</option>
                     <option value="retired" <?php selected($val_status, 'retired'); ?>>Aposentado
                     </option>
                 </select>
             </div>
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Nome do Usuário</label>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Nome do UsuÃ¡rio</label>
                 <?php $val_user_name = isset($form_data['user_name']) ? $form_data['user_name'] : ($is_edit ? $pc->user_name : ''); ?>
                 <input type="text" name="user_name" value="<?php echo esc_attr($val_user_name); ?>"
                     class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
@@ -58,10 +58,10 @@
         </div>
 
         <div class="mb-6">
-            <label class="block text-sm font-medium text-slate-700 mb-2">Localização</label>
+            <label class="block text-sm font-medium text-slate-700 mb-2">LocalizaÃ§Ã£o</label>
             <?php
             $val_location = isset($form_data['location']) ? $form_data['location'] : ($is_edit ? $pc->location : '');
-            $predefined_locations = ['Fabrica', 'Centro', 'Perdido', 'Manutenção'];
+            $predefined_locations = ['Fabrica', 'Centro', 'Perdido', 'ManutenÃ§Ã£o'];
             $is_other = !empty($val_location) && !in_array($val_location, $predefined_locations);
             $selected_option = $is_other ? 'other' : $val_location;
             ?>
@@ -81,7 +81,7 @@
                 <input type="text" id="locationOtherInput" name="location"
                     value="<?php echo esc_attr($val_location); ?>"
                     class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm <?php echo $is_other ? '' : 'hidden'; ?>"
-                    placeholder="Digite o local específico" <?php echo $is_other ? '' : 'disabled'; ?>>
+                    placeholder="Digite o local especÃ­fico" <?php echo $is_other ? '' : 'disabled'; ?>>
             </div>
 
             <script>
@@ -188,14 +188,14 @@
         </div>
 
         <div class="mb-6">
-            <label class="block text-sm font-medium text-slate-700 mb-2">Especificações</label>
+            <label class="block text-sm font-medium text-slate-700 mb-2">EspecificaÃ§Ãµes</label>
             <?php $val_specs = isset($form_data['specs']) ? $form_data['specs'] : ($is_edit ? $pc->specs : ''); ?>
             <textarea name="specs" rows="3"
                 class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm"><?php echo esc_textarea($val_specs); ?></textarea>
         </div>
 
         <div class="mb-8">
-            <label class="block text-sm font-medium text-slate-700 mb-2">Anotações</label>
+            <label class="block text-sm font-medium text-slate-700 mb-2">AnotaÃ§Ãµes</label>
             <?php $val_notes = isset($form_data['notes']) ? $form_data['notes'] : ($is_edit ? $pc->notes : ''); ?>
             <textarea name="notes" rows="2"
                 class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm"><?php echo esc_textarea($val_notes); ?></textarea>
@@ -203,7 +203,7 @@
 
         <?php if (!$is_edit): ?>
             <div class="mb-8 p-4 bg-slate-50 rounded-lg border border-slate-200">
-                <label class="block text-sm font-medium text-slate-700 mb-2">Foto Inicial (Câmera)</label>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Foto Inicial (CÃ¢mera)</label>
 
                 <div class="mb-2">
                     <label for="formCameraInput"
@@ -232,7 +232,7 @@
         <div class="flex justify-end gap-3 pt-6 border-t border-slate-100">
             <a href="?" class="btn btn-secondary">Cancelar</a>
             <button type="submit" class="btn btn-primary">
-                <?php echo $is_edit ? 'Salvar Alterações' : 'Cadastrar'; ?>
+                <?php echo $is_edit ? 'Salvar AlteraÃ§Ãµes' : 'Cadastrar'; ?>
             </button>
         </div>
     </form>

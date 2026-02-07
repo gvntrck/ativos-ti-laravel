@@ -244,11 +244,11 @@ html {
     transform: scale(0.95);
 }
 
-/* Ajuste no botão de fechar para integrar à toolbar se desejado, 
+/* Ajuste no botÃ£o de fechar para integrar Ã  toolbar se desejado, 
    ou manter separado (como no JS atual foi movido para dentro da toolbar, 
    vamos estilizar para parecer parte do conjunto ou separado) */
 
-/* Se o botão fechar estiver DENTRO da toolbar (conforme html no JS) */
+/* Se o botÃ£o fechar estiver DENTRO da toolbar (conforme html no JS) */
 .lightbox-toolbar .lightbox-close {
     position: relative;
     top: auto;
@@ -260,7 +260,7 @@ html {
     margin-left: 8px;
     border-left: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 0;
-    padding-left: 12px; /* Espaço extra por causa da borda */
+    padding-left: 12px; /* EspaÃ§o extra por causa da borda */
 }
 
 .lightbox-toolbar .lightbox-close:hover {
@@ -272,7 +272,7 @@ html {
 /* Cursor styles for zoom */
 .lightbox-image {
     /* ... existing styles ... */
-    cursor: default; /* Padrão */
+    cursor: default; /* PadrÃ£o */
 }
 /* These are handled via inline styles in JS, but good to have defaults */
 

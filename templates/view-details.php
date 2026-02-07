@@ -24,7 +24,7 @@
                     </svg>
                 </button>
                 <form method="post" action="?" data-ajax="true"
-                    data-confirm="Tem certeza que deseja enviar este computador para a lixeira? Ele não será excluído permanentemente, mas sairá da lista principal.">
+                    data-confirm="Tem certeza que deseja enviar este computador para a lixeira? Ele nÃ£o serÃ¡ excluÃ­do permanentemente, mas sairÃ¡ da lista principal.">
                     <?php wp_nonce_field('ccs_action_nonce'); ?>
                     <input type="hidden" name="ccs_action" value="trash_computer">
                     <input type="hidden" name="computer_id" value="<?php echo $pc->id; ?>">
@@ -39,7 +39,7 @@
                     </button>
                 </form>
                 <a href="?view=edit&id=<?php echo $pc->id; ?>"
-                    class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">Editar Informações</a>
+                    class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">Editar InformaÃ§Ãµes</a>
             </div>
         </div>
 
@@ -50,7 +50,7 @@
                     <?php echo ucfirst($pc->status); ?>
                 </span>
             </div>
-            <div><span class="block text-slate-400 text-xs uppercase tracking-wider font-semibold">Usuário</span>
+            <div><span class="block text-slate-400 text-xs uppercase tracking-wider font-semibold">UsuÃ¡rio</span>
                 <span class="font-medium">
                     <?php echo $pc->user_name ?: '-'; ?>
                 </span>
@@ -67,7 +67,7 @@
         </div>
         <?php if ($pc->specs): ?>
             <div class="mt-6 pt-6 border-t border-slate-100">
-                <span class="block text-slate-400 text-xs uppercase tracking-wider font-semibold mb-2">Especificações</span>
+                <span class="block text-slate-400 text-xs uppercase tracking-wider font-semibold mb-2">EspecificaÃ§Ãµes</span>
                 <p class="text-slate-700 bg-slate-50 p-3 rounded-lg">
                     <?php echo nl2br(esc_html($pc->specs)); ?>
                 </p>
@@ -75,7 +75,7 @@
         <?php endif; ?>
         <?php if ($pc->notes): ?>
             <div class="mt-6 pt-6 border-t border-slate-100">
-                <span class="block text-slate-400 text-xs uppercase tracking-wider font-semibold mb-2">Anotações</span>
+                <span class="block text-slate-400 text-xs uppercase tracking-wider font-semibold mb-2">AnotaÃ§Ãµes</span>
                 <p class="text-slate-700 bg-amber-50 border border-amber-100 p-3 rounded-lg text-sm">
                     <?php echo nl2br(esc_html($pc->notes)); ?>
                 </p>
@@ -88,9 +88,9 @@
         <div class="lg:sticky lg:top-8 space-y-6">
             <!-- Quick Actions Card -->
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <h3 class="font-bold text-slate-900 mb-4">Ações Rápidas</h3>
+                <h3 class="font-bold text-slate-900 mb-4">AÃ§Ãµes RÃ¡pidas</h3>
 
-                <!-- Botão Copiar Dados -->
+                <!-- BotÃ£o Copiar Dados -->
                 <button type="button" id="copyDataBtn" onclick="copyComputerData()"
                     class="w-full flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 p-3 rounded-lg transition-colors font-medium mb-3">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -127,7 +127,7 @@
                     <div class="mb-4">
                         <textarea name="description" rows="4"
                             class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm p-3"
-                            placeholder="Descreva a manutenção, checkup ou movimentação..." required></textarea>
+                            placeholder="Descreva a manutenÃ§Ã£o, checkup ou movimentaÃ§Ã£o..." required></textarea>
                     </div>
                     <button type="submit" class="w-full btn btn-primary">Registrar</button>
                 </form>
@@ -183,7 +183,7 @@
 
     <!-- History (Position: 3rd on Mobile, Left-Bottom on Desktop) -->
     <div class="lg:col-span-2 bg-white p-8 rounded-xl shadow-sm border border-slate-200">
-        <h3 class="text-lg font-bold text-slate-900 mb-6">Histórico</h3>
+        <h3 class="text-lg font-bold text-slate-900 mb-6">HistÃ³rico</h3>
         <div class="space-y-6 relative before:absolute before:inset-0 before:ml-2.5 before:w-0.5 before:bg-slate-200">
             <?php foreach ($history as $h):
                 $u = get_userdata($h->user_id);
@@ -203,14 +203,14 @@
                                     <?php echo $u ? $u->display_name : 'Sistema'; ?>
                                 </span>
                                 <form method="post" action="?" data-ajax="true" class="inline"
-                                    data-confirm="Tem certeza que deseja excluir este item do histórico?">
+                                    data-confirm="Tem certeza que deseja excluir este item do histÃ³rico?">
                                     <?php wp_nonce_field('ccs_action_nonce'); ?>
                                     <input type="hidden" name="ccs_action" value="delete_history">
                                     <input type="hidden" name="computer_id" value="<?php echo $pc->id; ?>">
                                     <input type="hidden" name="history_id" value="<?php echo $h->id; ?>">
                                     <button type="submit"
                                         class="text-slate-400 hover:text-red-500 p-1 rounded transition-colors"
-                                        title="Excluir item do histórico">
+                                        title="Excluir item do histÃ³rico">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
@@ -243,7 +243,7 @@
                 </div>
             <?php endforeach; ?>
             <?php if (empty($history)): ?>
-                <p class="ml-6 text-slate-400 italic">Sem histórico registrado.</p>
+                <p class="ml-6 text-slate-400 italic">Sem histÃ³rico registrado.</p>
             <?php endif; ?>
         </div>
     </div>
@@ -251,7 +251,7 @@
 
 <!-- Script para Copiar Dados -->
 <script>
-    // Dados do computador para cópia
+    // Dados do computador para cÃ³pia
     const computerData = {
         hostname: <?php echo json_encode(strtoupper($pc->hostname)); ?>,
         type: <?php echo json_encode($pc->type); ?>,
@@ -283,44 +283,44 @@
         let text = '';
 
         // Header
-        text += '🖥️ *FICHA DO COMPUTADOR*\n';
-        text += '━━━━━━━━━━━━━━━━━━━━━━\n\n';
+        text += 'ðŸ–¥ï¸ *FICHA DO COMPUTADOR*\n';
+        text += 'â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\n';
 
         // Dados principais
         text += `*Hostname:* ${computerData.hostname}\n`;
         text += `*Tipo:* ${computerData.type === 'desktop' ? 'Desktop' : 'Notebook'}\n`;
         text += `*Status:* ${computerData.status}\n`;
-        text += `*Usuário:* ${computerData.userName}\n`;
+        text += `*UsuÃ¡rio:* ${computerData.userName}\n`;
         text += `*Local:* ${computerData.location}\n`;
         text += `*Atualizado em:* ${computerData.updatedAt}\n`;
 
-        // Especificações
+        // EspecificaÃ§Ãµes
         if (computerData.specs && computerData.specs !== '-') {
-            text += '\n📋 *Especificações:*\n';
+            text += '\nðŸ“‹ *EspecificaÃ§Ãµes:*\n';
             text += computerData.specs + '\n';
         }
 
-        // Anotações
+        // AnotaÃ§Ãµes
         if (computerData.notes && computerData.notes !== '-') {
-            text += '\n📝 *Anotações:*\n';
+            text += '\nðŸ“ *AnotaÃ§Ãµes:*\n';
             text += computerData.notes + '\n';
         }
 
-        // Histórico
+        // HistÃ³rico
         if (computerData.history.length > 0) {
-            text += '\n━━━━━━━━━━━━━━━━━━━━━━\n';
-            text += '📜 *HISTÓRICO*\n\n';
+            text += '\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n';
+            text += 'ðŸ“œ *HISTÃ“RICO*\n\n';
 
             computerData.history.forEach((entry, index) => {
                 text += `*${entry.date}* - _${entry.type}_\n`;
                 text += `${entry.description}\n`;
                 if (entry.user) {
-                    text += `👤 ${entry.user}\n`;
+                    text += `ðŸ‘¤ ${entry.user}\n`;
                 }
 
                 // Links das fotos
                 if (entry.photos && entry.photos.length > 0) {
-                    text += '📷 Fotos:\n';
+                    text += 'ðŸ“· Fotos:\n';
                     entry.photos.forEach((photo, photoIndex) => {
                         text += `  ${photoIndex + 1}. ${photo}\n`;
                     });
@@ -333,10 +333,10 @@
         }
 
         // Link direto
-        text += '\n━━━━━━━━━━━━━━━━━━━━━━\n';
-        text += `🔗 *Link:* ${computerData.pageUrl}`;
+        text += '\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n';
+        text += `ðŸ”— *Link:* ${computerData.pageUrl}`;
 
-        // Copiar para área de transferência
+        // Copiar para Ã¡rea de transferÃªncia
         navigator.clipboard.writeText(text).then(() => {
             // Feedback visual
             const btn = document.getElementById('copyDataBtn');
@@ -345,7 +345,7 @@
 
             btn.classList.remove('bg-emerald-50', 'text-emerald-700', 'border-emerald-200', 'hover:bg-emerald-100');
             btn.classList.add('bg-emerald-500', 'text-white', 'border-emerald-600');
-            btnText.textContent = 'Copiado! ✓';
+            btnText.textContent = 'Copiado! âœ“';
 
             setTimeout(() => {
                 btn.classList.remove('bg-emerald-500', 'text-white', 'border-emerald-600');
@@ -359,7 +359,7 @@
     }
 
     // ========== Lightbox para Fotos ==========
-    // Mapeamento de fotos por item do histórico
+    // Mapeamento de fotos por item do histÃ³rico
     const historyPhotos = {
         <?php foreach ($history as $h):
             $photos = !empty($h->photos) ? json_decode($h->photos, true) : [];
@@ -369,9 +369,9 @@
             <?php endif; endforeach; ?>
     };
 
-    // Coletar TODAS as fotos do PC para navegação global
+    // Coletar TODAS as fotos do PC para navegaÃ§Ã£o global
     const allPhotos = [];
-    const photoIndexMap = {}; // Mapeia history_id + photo_index para índice global
+    const photoIndexMap = {}; // Mapeia history_id + photo_index para Ã­ndice global
 
     <?php
     $global_index = 0;
@@ -390,12 +390,12 @@
     ?>
 
     /**
-     * Abre o lightbox com todas as fotos do PC a partir de um item do histórico
-     * @param {number} historyId - ID do item do histórico
-     * @param {number} photoIndex - Índice da foto dentro do histórico
+     * Abre o lightbox com todas as fotos do PC a partir de um item do histÃ³rico
+     * @param {number} historyId - ID do item do histÃ³rico
+     * @param {number} photoIndex - Ãndice da foto dentro do histÃ³rico
      */
     function openLightboxFromHistory(historyId, photoIndex) {
-        // Encontrar o índice global da foto
+        // Encontrar o Ã­ndice global da foto
         const key = historyId + '_' + photoIndex;
         const globalIndex = photoIndexMap[key] !== undefined ? photoIndexMap[key] : 0;
 

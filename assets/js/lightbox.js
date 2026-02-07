@@ -1,6 +1,6 @@
 /**
- * Lightbox - Visualizador de Fotos com Navegação e Zoom
- * Suporta swipe touch para mobile, navegação por teclado e zoom/pan
+ * Lightbox - Visualizador de Fotos com NavegaÃ§Ã£o e Zoom
+ * Suporta swipe touch para mobile, navegaÃ§Ã£o por teclado e zoom/pan
  */
 
 class Lightbox {
@@ -70,7 +70,7 @@ class Lightbox {
                 <img class="lightbox-image" src="" alt="Foto ampliada">
             </div>
             
-            <button class="lightbox-nav next" aria-label="Próxima foto">
+            <button class="lightbox-nav next" aria-label="PrÃ³xima foto">
                 <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                 </svg>
@@ -81,7 +81,7 @@ class Lightbox {
 
         document.body.appendChild(this.overlay);
 
-        // Guardar referências aos elementos
+        // Guardar referÃªncias aos elementos
         this.imageElement = this.overlay.querySelector('.lightbox-image');
         this.counterElement = this.overlay.querySelector('.lightbox-counter');
         this.prevButton = this.overlay.querySelector('.lightbox-nav.prev');
@@ -102,7 +102,7 @@ class Lightbox {
             }
         });
 
-        // Navegação por botões
+        // NavegaÃ§Ã£o por botÃµes
         this.prevButton.addEventListener('click', (e) => {
             e.stopPropagation();
             this.prev();
@@ -113,7 +113,7 @@ class Lightbox {
             this.next();
         });
 
-        // Navegação por teclado
+        // NavegaÃ§Ã£o por teclado
         document.addEventListener('keydown', (e) => {
             if (!this.overlay.classList.contains('active')) return;
 
@@ -170,7 +170,7 @@ class Lightbox {
 
         this.overlay.addEventListener('touchmove', (e) => {
             if (this.isDragging) {
-                e.preventDefault(); // Impede scroll da página enquanto arrasta
+                e.preventDefault(); // Impede scroll da pÃ¡gina enquanto arrasta
                 this.onDrag(e.touches[0].clientX, e.touches[0].clientY);
             }
         }, { passive: false });
@@ -179,8 +179,8 @@ class Lightbox {
             this.touchEndX = e.changedTouches[0].screenX;
             this.endDrag();
 
-            // Só processa swipe se não estiver com zoom (ou se o zoom for 1)
-            // Se estiver com zoom, o movimento é interpretado como Pan
+            // SÃ³ processa swipe se nÃ£o estiver com zoom (ou se o zoom for 1)
+            // Se estiver com zoom, o movimento Ã© interpretado como Pan
             if (this.currentZoom === 1 && !this.isDragging) {
                 this.handleSwipe();
             }
@@ -228,7 +228,7 @@ class Lightbox {
         this.isDragging = true;
         this.startX = clientX - this.translateX;
         this.startY = clientY - this.translateY;
-        this.imageElement.style.transition = 'none'; // Desativa transição para arraste suave
+        this.imageElement.style.transition = 'none'; // Desativa transiÃ§Ã£o para arraste suave
         this.updateCursor();
     }
 
@@ -244,7 +244,7 @@ class Lightbox {
         if (!this.isDragging) return;
 
         this.isDragging = false;
-        this.imageElement.style.transition = 'transform 0.1s ease'; // Reativa transição
+        this.imageElement.style.transition = 'transform 0.1s ease'; // Reativa transiÃ§Ã£o
         this.updateCursor();
     }
 
@@ -264,7 +264,7 @@ class Lightbox {
         this.photos = photos;
         this.currentIndex = startIndex;
 
-        // Atualizar visibilidade dos botões de navegação
+        // Atualizar visibilidade dos botÃµes de navegaÃ§Ã£o
         const hasMultiple = photos.length > 1;
         this.prevButton.classList.toggle('hidden', !hasMultiple);
         this.nextButton.classList.toggle('hidden', !hasMultiple);
@@ -299,7 +299,7 @@ class Lightbox {
         // Resetar zoom ao trocar de imagem
         this.resetZoom();
 
-        // Animação de transição (opacidade apenas, já que transform é usado pelo zoom)
+        // AnimaÃ§Ã£o de transiÃ§Ã£o (opacidade apenas, jÃ¡ que transform Ã© usado pelo zoom)
         this.imageElement.style.opacity = '0';
         this.imageElement.style.transition = 'opacity 0.2s ease';
 
@@ -316,7 +316,7 @@ class Lightbox {
     }
 }
 
-// Instância global do lightbox
+// InstÃ¢ncia global do lightbox
 let lightbox = null;
 
 // Inicializar quando o DOM estiver pronto
@@ -327,7 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
 /**
  * Abre o lightbox com as fotos especificadas
  * @param {string[]} photos - Array de URLs das fotos
- * @param {number} startIndex - Índice inicial (qual foto mostrar primeiro)
+ * @param {number} startIndex - Ãndice inicial (qual foto mostrar primeiro)
  */
 function openLightbox(photos, startIndex = 0) {
     if (!lightbox) {
