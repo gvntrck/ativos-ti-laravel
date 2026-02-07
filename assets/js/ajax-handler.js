@@ -78,13 +78,15 @@ function handleAjaxSuccess(form, response) {
     // Check specific actions based on hidden input 'ccs_action'
     const actionInput = form.querySelector('input[name="ccs_action"]');
     const action = actionInput ? actionInput.value : '';
+    const payload = response.data || {};
+    const resultData = payload.data || {};
 
     if (action === 'add_checkup') {
         // Clear textarea
         form.reset();
 
         // Append history item
-        if (response.data && response.data.history_html) {
+        if (resultData.history_html) {
             const historyContainer = document.querySelector('.lg\\:col-span-2 .space-y-6');
             if (historyContainer) {
                 // Remove "No history" message if exists
@@ -93,13 +95,13 @@ function handleAjaxSuccess(form, response) {
 
                 // Insert after the vertical line div (which is pseudo-element actually) 
                 // We just prepend to the container
-                historyContainer.insertAdjacentHTML('afterbegin', response.data.history_html);
+                historyContainer.insertAdjacentHTML('afterbegin', resultData.history_html);
             }
         }
-        showToast(response.data.message || 'Checkup registrado!', 'success');
+        showToast(payload.message || 'Checkup registrado!', 'success');
     }
     else if (action === 'quick_windows_update') {
-        if (response.data && response.data.last_windows_update) {
+        if (resultData.last_windows_update) {
             // Update the display text
             // Need to find the exact DOM element. It's in the Info Card.
             // Search for "Windows Update" label and update next sibling or similar.
@@ -110,13 +112,13 @@ function handleAjaxSuccess(form, response) {
             const dateSpan = document.getElementById('windows-update-display');
             if (dateSpan) {
                 dateSpan.className = 'text-emerald-500 font-medium';
-                dateSpan.textContent = response.data.last_windows_update + ' (0d)'; // Approx
+                dateSpan.textContent = resultData.last_windows_update + ' (0d)'; // Approx
             } else {
                 // Fallback if we haven't added ID yet
                 window.location.reload();
             }
         }
-        showToast(response.data.message || 'Atualizado!', 'success');
+        showToast(payload.message || 'Atualizado!', 'success');
     }
     else if (action === 'upload_photo') {
         // Reload page to show photos for now, implementing gallery update is complex 
@@ -126,15 +128,15 @@ function handleAjaxSuccess(form, response) {
     else if (action === 'trash_computer' || action === 'restore_computer') {
         // Usually leads to redirect or list update.
         // For trash in details view, we probably want to redirect to list.
-        if (response.data && response.data.redirect_url) {
-            window.location.href = response.data.redirect_url;
+        if (payload.redirect_url) {
+            window.location.href = payload.redirect_url;
         } else {
             window.location.reload();
         }
     }
     else if (action === 'delete_history') {
         // Remove the history item from DOM
-        if (response.data && response.data.deleted_id) {
+        if (resultData.deleted_id) {
             // Find the form that was submitted (form is passed to this function)
             const historyItem = form.closest('.relative.flex.gap-4');
             if (historyItem) {
@@ -144,17 +146,17 @@ function handleAjaxSuccess(form, response) {
                 setTimeout(() => historyItem.remove(), 300);
             }
         }
-        showToast(response.data.message || 'Item excluído!', 'success');
+        showToast(payload.message || 'Item excluído!', 'success');
     }
     else if (action === 'add_computer' || action === 'update_computer') {
         // Redirect is usually expected here
-        if (response.data && response.data.redirect_url) {
-            window.location.href = response.data.redirect_url;
+        if (payload.redirect_url) {
+            window.location.href = payload.redirect_url;
         }
     }
     else {
         // Default fallback
-        showToast(response.data.message || 'Ação realizada com sucesso!', 'success');
+        showToast(payload.message || 'Ação realizada com sucesso!', 'success');
     }
 }
 
@@ -178,3 +180,4 @@ function showToast(message, type = 'success') {
         setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
+
