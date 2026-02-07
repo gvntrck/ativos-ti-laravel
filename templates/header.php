@@ -132,7 +132,7 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <div>
                 <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Controle de Computadores</h1>
-                <p class="text-slate-500 mt-1">Gerenciamento de InventÃ¡rio</p>
+                <p class="text-slate-500 mt-1">Gerenciamento de Inventário</p>
             </div>
             <div class="flex space-x-3 w-full sm:w-auto">
                 <?php if ($view !== 'list'): ?>

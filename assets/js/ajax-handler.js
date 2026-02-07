@@ -38,7 +38,7 @@ function bindAjaxForm(form) {
 
             const contentType = response.headers.get('content-type');
             if (!contentType || !contentType.includes('application/json')) {
-                throw new Error('Resposta invÃ¡lida do servidor (nÃ£o Ã© JSON).');
+                throw new Error('Resposta inválida do servidor (não é JSON).');
             }
 
             const data = await response.json();
@@ -50,7 +50,7 @@ function bindAjaxForm(form) {
             }
         } catch (error) {
             console.error('Erro AJAX:', error);
-            alert('Ocorreu um erro na requisiÃ§Ã£o. Verifique o console.');
+            alert('Ocorreu um erro na requisição. Verifique o console.');
         } finally {
             if (submitBtn) {
                 submitBtn.disabled = false;
@@ -126,7 +126,7 @@ function handleAjaxSuccess(form, response) {
             }
         }
 
-        showToast(payload.message || 'Item excluÃ­do!', 'success');
+        showToast(payload.message || 'Item excluído!', 'success');
     }
     else if (action === 'add_computer' || action === 'update_computer') {
         if (payload.redirect_url) {
@@ -134,7 +134,7 @@ function handleAjaxSuccess(form, response) {
         }
     }
     else {
-        showToast(payload.message || 'AÃ§Ã£o realizada com sucesso!', 'success');
+        showToast(payload.message || 'Ação realizada com sucesso!', 'success');
     }
 }
 

@@ -48,7 +48,7 @@
                     if (isset($_GET['error_message']) && !empty($_GET['error_message'])) {
                         echo htmlspecialchars(urldecode($_GET['error_message']));
                     } else {
-                        echo 'Credenciais invÃ¡lidas. Tente novamente.';
+                        echo 'Credenciais inválidas. Tente novamente.';
                     }
                     ?>
                 </div>
@@ -58,7 +58,7 @@
                 <input type="hidden" name="ccs_action" value="login">
 
                 <div>
-                    <label for="log" class="block text-sm font-medium text-slate-700">UsuÃ¡rio ou Email</label>
+                    <label for="log" class="block text-sm font-medium text-slate-700">Usuário ou Email</label>
                     <div class="mt-1">
                         <input id="log" name="log" type="text" autocomplete="username" required
                             class="block w-full appearance-none rounded-md border border-slate-300 px-3 py-2 placeholder-slate-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm">

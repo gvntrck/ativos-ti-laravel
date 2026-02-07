@@ -1,6 +1,6 @@
--- RelatÃ³rio: Auditoria de Check-in FotogrÃ¡fico (Todos os PCs)
+-- Relatório: Auditoria de Check-in Fotográfico (Todos os PCs)
 -- Objetivo: Listar todos os computadores com suas fotos mais recentes.
--- OrdenaÃ§Ã£o: Da foto mais recente para a mais antiga (PCs sem foto aparecem no final).
+-- Ordenação: Da foto mais recente para a mais antiga (PCs sem foto aparecem no final).
 
 SELECT 
     i.id,

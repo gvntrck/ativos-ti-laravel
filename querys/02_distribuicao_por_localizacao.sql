@@ -1,10 +1,10 @@
--- RelatÃ³rio 2: DistribuiÃ§Ã£o de Ativos por LocalizaÃ§Ã£o
+-- Relatório 2: Distribuição de Ativos por Localização
 -- Objetivo: Mostrar a quantidade de equipamentos (Desktop/Notebook) em cada localidade.
--- Ãštil para: GestÃ£o fÃ­sica de patrimÃ´nio e planejamento de infraestrutura.
+-- Útil para: Gestão física de patrimônio e planejamento de infraestrutura.
 
 SELECT 
-    -- Usa 'NÃ£o Definido' caso o campo location esteja vazio ou nulo
-    COALESCE(NULLIF(location, ''), 'NÃ£o Definido') as Localizacao,
+    -- Usa 'Não Definido' caso o campo location esteja vazio ou nulo
+    COALESCE(NULLIF(location, ''), 'Não Definido') as Localizacao,
     
     -- Tipo do equipamento (Desktop ou Notebook)
     type as Tipo,
@@ -12,7 +12,7 @@ SELECT
     -- Contagem total de itens naquele local e daquele tipo
     COUNT(*) as Quantidade_Total,
     
-    -- Contagem apenas dos ativos (exclui backup, manutenÃ§Ã£o, aposentados)
+    -- Contagem apenas dos ativos (exclui backup, manutenção, aposentados)
     SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as Em_Uso,
     
     -- Contagem de itens em backup/estoque naquele local

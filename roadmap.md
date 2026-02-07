@@ -1,10 +1,10 @@
-*Ordenar lista por data do Ãºltimo registro de histÃ³rico
+*Ordenar lista por data do último registro de histórico
 
-Tabela de PCs deve ter coluna as 2 Ãºltimas atualizaÃ§Ãµes de texto 
+Tabela de PCs deve ter coluna as 2 últimas atualizações de texto 
 
-Caixa de pesquisa precisa aceitar separar PCs por vÃ­rgula, para listar mais de um 
+Caixa de pesquisa precisa aceitar separar PCs por vírgula, para listar mais de um 
 
-AlteraÃ§Ãµes em lote na tabela
+Alterações em lote na tabela
 
 Menu fixo no footer no mobile
 
