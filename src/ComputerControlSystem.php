@@ -2,7 +2,7 @@
 
 class ComputerControlSystem
 {
-    public const VERSION = '1.7.5';
+    public const VERSION = '1.7.6';
 
     private $db_version = '1.2.0';
     private $table_inventory;
