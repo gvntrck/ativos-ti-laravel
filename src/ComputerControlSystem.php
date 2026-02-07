@@ -706,16 +706,16 @@ class ComputerControlSystem
         // Simulating the structure from view-details.php
         ob_start();
         ?>
-        <div class="relative flex gap-4 history-item-new fade-in">
+        <div class="relative flex gap-4 min-w-0 history-item-new fade-in">
             <div class="absolute -left-1 w-2.5 h-2.5 rounded-full bg-indigo-500 ring-4 ring-white mt-1.5 ml-1">
             </div>
-            <div class="ml-6 flex-1">
-                <div class="flex justify-between items-baseline mb-1">
+            <div class="ml-6 flex-1 min-w-0">
+                <div class="flex flex-col gap-1 sm:flex-row sm:justify-between sm:items-baseline mb-1 min-w-0">
                     <span class="font-semibold text-slate-900 capitalize">
                         <?php echo esc_html($event_type); ?>
                     </span>
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs text-slate-400">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="text-xs text-slate-400 break-words whitespace-normal">
                             <?php echo $time; ?>
                             -
                             <?php echo esc_html($display_name); ?>
@@ -740,7 +740,7 @@ class ComputerControlSystem
                         <?php endif; ?>
                     </div>
                 </div>
-                <p class="text-slate-600 text-sm">
+                <p class="text-slate-600 text-sm break-words whitespace-normal">
                     <?php echo esc_html($description); ?>
                 </p>
             </div>
