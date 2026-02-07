@@ -2,9 +2,9 @@
 
 class ComputerControlSystem
 {
-    public const VERSION = '1.7.4';
+    public const VERSION = '1.7.5';
 
-    private $db_version = '1.1.0';
+    private $db_version = '1.2.0';
     private $table_inventory;
     private $table_history;
     private $form_error = '';
@@ -81,24 +81,8 @@ class ComputerControlSystem
         }
 
         $row = $wpdb->get_row("SELECT * FROM {$this->table_inventory} LIMIT 1", ARRAY_A);
-        if ($row && !isset($row['last_windows_update'])) {
-            $wpdb->query("ALTER TABLE {$this->table_inventory} ADD last_windows_update datetime DEFAULT NULL AFTER updated_at");
-
-            // Populate based on history
-            $updates = $wpdb->get_results("
-                SELECT computer_id, MAX(created_at) as last_update 
-                FROM {$this->table_history} 
-                WHERE description LIKE '%Windows e Drivers Atualizados%' 
-                GROUP BY computer_id
-            ");
-
-            foreach ($updates as $update) {
-                $wpdb->update(
-                    $this->table_inventory,
-                    ['last_windows_update' => $update->last_update],
-                    ['id' => $update->computer_id]
-                );
-            }
+        if ($row && isset($row['last_windows_update'])) {
+            $wpdb->query("ALTER TABLE {$this->table_inventory} DROP COLUMN last_windows_update");
         }
     }
 
@@ -120,7 +104,6 @@ class ComputerControlSystem
             photo_url varchar(255) DEFAULT '',
             created_at datetime DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            last_windows_update datetime DEFAULT NULL,
             PRIMARY KEY  (id),
             KEY hostname (hostname)
         ) $charset_collate;";
@@ -412,22 +395,17 @@ class ComputerControlSystem
 
     private function process_quick_windows_update($current_user_id)
     {
-        global $wpdb;
         $id = intval($_POST['computer_id']);
-        $this->log_history($id, 'maintenance', 'Windows e Drivers Atualizados', $current_user_id);
-
-        $now = current_time('mysql');
-        $wpdb->update(
-            $this->table_inventory,
-            ['last_windows_update' => $now],
-            ['id' => $id]
-        );
+        $description = 'Windows Atualizado';
+        $history_id = $this->log_history($id, 'maintenance', $description, $current_user_id);
 
         return [
             'success' => true,
-            'message' => 'Status de atualização do Windows registrado.',
+            'message' => 'Atualizacao do Windows registrada no historico.',
             'redirect_url' => '?view=details&id=' . $id . '&message=windows_updated',
-            'data' => ['last_windows_update' => date('d/m/Y H:i', strtotime($now))]
+            'data' => [
+                'history_html' => $this->get_history_item_html($id, $description, 'maintenance', $current_user_id, $history_id)
+            ]
         ];
     }
 
@@ -580,13 +558,7 @@ class ComputerControlSystem
         $where_add = "";
         $filter = $_GET['filter'] ?? '';
 
-        if ($filter === 'outdated') {
-            // Desatualizados: last_windows_update nulo ou maior que 30 dias atrás
-            $where_add = " AND (last_windows_update IS NULL OR last_windows_update < DATE_SUB(NOW(), INTERVAL 30 DAY))";
-        } elseif ($filter === 'updated') {
-            // Atualizados: last_windows_update nos últimos 30 dias
-            $where_add = " AND last_windows_update >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
-        } elseif ($filter === 'no_photos') {
+        if ($filter === 'no_photos') {
             // Sem Fotos: sem photo_url E sem fotos no histórico
             $where_add = " AND (photo_url IS NULL OR photo_url = '') 
                 AND id NOT IN (

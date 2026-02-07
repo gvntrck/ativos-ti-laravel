@@ -52,18 +52,6 @@
                     em</span> <span class="font-medium">
                     <?php echo date('d/m/Y H:i', strtotime($pc->updated_at)); ?>
                 </span></div>
-            <div><span class="block text-slate-400 text-xs uppercase tracking-wider font-semibold">Windows Update</span>
-                <?php
-                if ($pc->last_windows_update) {
-                    $days = floor((time() - strtotime($pc->last_windows_update)) / (60 * 60 * 24));
-                    $color_class = $days > 30 ? 'text-red-500 font-bold' : 'text-emerald-500 font-medium';
-                    $date_str = date('d/m/Y H:i', strtotime($pc->last_windows_update));
-                    echo "<span id='windows-update-display' class='$color_class'>$date_str ({$days}d)</span>";
-                } else {
-                    echo "<span id='windows-update-display' class='text-red-500 font-bold'>Nunca Atualizado</span>";
-                }
-                ?>
-            </div>
         </div>
         <?php if ($pc->specs): ?>
             <div class="mt-6 pt-6 border-t border-slate-100">
@@ -259,14 +247,6 @@
         userName: <?php echo json_encode($pc->user_name ?: '-'); ?>,
         location: <?php echo json_encode($pc->location ?: '-'); ?>,
         updatedAt: <?php echo json_encode(date('d/m/Y H:i', strtotime($pc->updated_at))); ?>,
-        windowsUpdate: <?php
-        if ($pc->last_windows_update) {
-            $days = floor((time() - strtotime($pc->last_windows_update)) / (60 * 60 * 24));
-            echo json_encode(date('d/m/Y H:i', strtotime($pc->last_windows_update)) . ' (' . $days . ' dias)');
-        } else {
-            echo json_encode('Nunca Atualizado');
-        }
-        ?>,
         specs: <?php echo json_encode($pc->specs ?: '-'); ?>,
         notes: <?php echo json_encode($pc->notes ?: '-'); ?>,
         history: [
@@ -301,7 +281,6 @@
         text += `*Usuário:* ${computerData.userName}\n`;
         text += `*Local:* ${computerData.location}\n`;
         text += `*Atualizado em:* ${computerData.updatedAt}\n`;
-        text += `*Windows Update:* ${computerData.windowsUpdate}\n`;
 
         // Especificações
         if (computerData.specs && computerData.specs !== '-') {

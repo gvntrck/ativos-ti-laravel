@@ -65,6 +65,30 @@ document.addEventListener('DOMContentLoaded', function () {
     ajaxForms.forEach(bindAjaxForm);
 });
 
+function prependHistoryItem(historyHtml) {
+    if (!historyHtml) {
+        return;
+    }
+
+    const historyContainer = document.querySelector('.lg\\:col-span-2 .space-y-6');
+    if (!historyContainer) {
+        return;
+    }
+
+    const emptyMsg = historyContainer.querySelector('p.text-slate-400.italic');
+    if (emptyMsg) {
+        emptyMsg.remove();
+    }
+
+    historyContainer.insertAdjacentHTML('afterbegin', historyHtml);
+
+    const newHistoryItem = historyContainer.firstElementChild;
+    if (newHistoryItem) {
+        const newAjaxForms = newHistoryItem.querySelectorAll('form[data-ajax="true"]');
+        newAjaxForms.forEach(bindAjaxForm);
+    }
+}
+
 function handleAjaxSuccess(form, response) {
     const actionInput = form.querySelector('input[name="ccs_action"]');
     const action = actionInput ? actionInput.value : '';
@@ -73,38 +97,12 @@ function handleAjaxSuccess(form, response) {
 
     if (action === 'add_checkup') {
         form.reset();
-
-        if (resultData.history_html) {
-            const historyContainer = document.querySelector('.lg\\:col-span-2 .space-y-6');
-            if (historyContainer) {
-                const emptyMsg = historyContainer.querySelector('p.text-slate-400.italic');
-                if (emptyMsg) {
-                    emptyMsg.remove();
-                }
-
-                historyContainer.insertAdjacentHTML('afterbegin', resultData.history_html);
-
-                const newHistoryItem = historyContainer.firstElementChild;
-                if (newHistoryItem) {
-                    const newAjaxForms = newHistoryItem.querySelectorAll('form[data-ajax="true"]');
-                    newAjaxForms.forEach(bindAjaxForm);
-                }
-            }
-        }
+        prependHistoryItem(resultData.history_html);
 
         showToast(payload.message || 'Checkup registrado!', 'success');
     }
     else if (action === 'quick_windows_update') {
-        if (resultData.last_windows_update) {
-            const dateSpan = document.getElementById('windows-update-display');
-            if (dateSpan) {
-                dateSpan.className = 'text-emerald-500 font-medium';
-                dateSpan.textContent = resultData.last_windows_update + ' (0d)';
-            } else {
-                window.location.reload();
-            }
-        }
-
+        prependHistoryItem(resultData.history_html);
         showToast(payload.message || 'Atualizado!', 'success');
     }
     else if (action === 'upload_photo') {

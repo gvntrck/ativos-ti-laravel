@@ -18,7 +18,7 @@
                     <span class="hidden sm:inline">Filtros</span>
                     <?php 
                     $active_filter_count = 0;
-                    if (isset($_GET['filter']) && !empty($_GET['filter'])) {
+                    if (isset($_GET['filter']) && $_GET['filter'] === 'no_photos') {
                         $active_filter_count = 1;
                     }
                     if ($active_filter_count > 0): 
@@ -29,14 +29,6 @@
             </div>
 
             <?php
-            // Updated Filter (<= 30 days)
-            $is_filter_updated = isset($_GET['filter']) && $_GET['filter'] === 'updated';
-            $updated_class = $is_filter_updated ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50';
-            
-            // Outdated Filter (> 30 days or null)
-            $is_filter_outdated = isset($_GET['filter']) && $_GET['filter'] === 'outdated';
-            $filter_class = $is_filter_outdated ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50';
-            
             // No Photos Filter
             $is_filter_no_photos = isset($_GET['filter']) && $_GET['filter'] === 'no_photos';
             $no_photos_class = $is_filter_no_photos ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50';
@@ -52,24 +44,6 @@
             <!-- Collapsible Filter Panel -->
             <div id="filterPanel" class="hidden overflow-hidden transition-all duration-300 ease-in-out">
                 <div class="flex flex-wrap gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200 items-center">
-                    <label class="flex items-center gap-2 px-2 py-1 border rounded-md text-sm font-medium transition-colors whitespace-nowrap <?php echo $updated_class; ?>"
-                        title="Mostrar computadores atualizados (últimos 30 dias)">
-                        <input type="checkbox" class="h-4 w-4 text-emerald-600 border-slate-300 rounded"
-                            <?php echo $is_filter_updated ? 'checked' : ''; ?>
-                            data-filter-type="status" data-filter-value="updated"
-                            onchange="applyFilters(this)">
-                        <span>Atualizados</span>
-                    </label>
-
-                    <label class="flex items-center gap-2 px-2 py-1 border rounded-md text-sm font-medium transition-colors whitespace-nowrap <?php echo $filter_class; ?>"
-                        title="Mostrar computadores com Windows desatualizado (> 30 dias)">
-                        <input type="checkbox" class="h-4 w-4 text-indigo-600 border-slate-300 rounded"
-                            <?php echo $is_filter_outdated ? 'checked' : ''; ?>
-                            data-filter-type="status" data-filter-value="outdated"
-                            onchange="applyFilters(this)">
-                        <span>Desatualizados</span>
-                    </label>
-
                     <label class="flex items-center gap-2 px-2 py-1 border rounded-md text-sm font-medium transition-colors whitespace-nowrap <?php echo $no_photos_class; ?>"
                         title="Mostrar computadores sem fotos">
                         <input type="checkbox" class="h-4 w-4 text-amber-600 border-slate-300 rounded"
@@ -79,7 +53,7 @@
                         <span>Sem Fotos</span>
                     </label>
                     
-    <!-- Divider -->
+                    <!-- Divider -->
                     <div class="w-px h-6 bg-slate-300 mx-1"></div>
 
                     <!-- Type Filters -->
@@ -182,10 +156,8 @@
             function applyFilters(element) {
                 const urlParams = new URLSearchParams(window.location.search);
                 
-                // Handle Specific Logic Filters (updated, outdated, no_photos) - Mutually Exclusive logic within 'filter' param group
+                // Handle specific logic filters in "filter" URL param
                 if (element.dataset.filterType === 'status') {
-                     // Note: 'status' here refers to 'updated/outdated' logic from previous code, not the new status field. 
-                     // Confusing naming in previous code preserved.
                     if (element.checked) {
                         urlParams.set('filter', element.dataset.filterValue);
                     } else {
@@ -268,24 +240,6 @@
                         'active' => 'Em Uso', 'backup' => 'Backup', 'maintenance' => 'Manutenção', default => 'Aposentado'
                     };
 
-                    // Windows Update Status Logic
-                    $last_update = $pc->last_windows_update ? strtotime($pc->last_windows_update) : 0;
-                    $days_since_update = floor((time() - $last_update) / (60 * 60 * 24));
-                    $is_outdated = $days_since_update > 30;
-
-                    if (!$pc->last_windows_update) {
-                        $win_status_color = 'text-red-500';
-                        $win_status_icon = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>';
-                        $win_tooltip = 'Windows nunca atualizado';
-                    } elseif ($is_outdated) {
-                        $win_status_color = 'text-red-500';
-                        $win_status_icon = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
-                        $win_tooltip = "Atualizado há $days_since_update dias";
-                    } else {
-                        $win_status_color = 'text-emerald-500';
-                        $win_status_icon = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
-                        $win_tooltip = "Atualizado há $days_since_update dia(s)";
-                    }
                     ?>
                     <tr class="computer-row hover:bg-slate-50"
                         data-search-terms="<?php echo esc_attr(strtolower(($pc->hostname ?? '') . ' ' . ($pc->user_name ?? '') . ' ' . ($pc->location ?? '') . ' ' . ($pc->type ?? '') . ' ' . ($pc->search_meta ?? ''))); ?>">
