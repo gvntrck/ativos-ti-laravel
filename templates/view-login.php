@@ -7,6 +7,7 @@
     <title>Login - Controle de Computadores</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <?php $manifest_version = file_exists(__DIR__ . '/../manifest.json') ? filemtime(__DIR__ . '/../manifest.json') : time(); ?>
     <style type="text/tailwindcss">
         <?php
         $css_path = __DIR__ . '/../assets/css/tailwind-custom.css';
@@ -16,14 +17,38 @@
         ?>
     </style>
     <!-- PWA Configuration -->
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest.json?v=<?php echo $manifest_version; ?>">
     <meta name="theme-color" content="#4f46e5">
     <link rel="apple-touch-icon" href="assets/icons/icon-192x192.png">
     <script>
         if ('serviceWorker' in navigator) {
+            let isRefreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (isRefreshing) return;
+                isRefreshing = true;
+                window.location.reload();
+            });
+
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('service-worker.js')
-                    .then(registration => console.log('SW registered'))
+                navigator.serviceWorker.register('service-worker.js', { updateViaCache: 'none' })
+                    .then(registration => {
+                        registration.update();
+
+                        if (registration.waiting) {
+                            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                        }
+
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            if (!newWorker) return;
+
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    newWorker.postMessage({ type: 'SKIP_WAITING' });
+                                }
+                            });
+                        });
+                    })
                     .catch(err => console.log('SW registration failed: ', err));
             });
         }

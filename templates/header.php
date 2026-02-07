@@ -107,18 +107,48 @@
     <style type="text/tailwindcss">
         <?php include __DIR__ . '/../assets/css/tailwind-custom.css'; ?>
     </style>
-    <script src="assets/js/script.js"></script>
-    <script src="assets/js/ajax-handler.js"></script>
-    <script src="assets/js/lightbox.js"></script>
+    <?php
+    $script_version = file_exists(__DIR__ . '/../assets/js/script.js') ? filemtime(__DIR__ . '/../assets/js/script.js') : time();
+    $ajax_handler_version = file_exists(__DIR__ . '/../assets/js/ajax-handler.js') ? filemtime(__DIR__ . '/../assets/js/ajax-handler.js') : time();
+    $lightbox_version = file_exists(__DIR__ . '/../assets/js/lightbox.js') ? filemtime(__DIR__ . '/../assets/js/lightbox.js') : time();
+    $manifest_version = file_exists(__DIR__ . '/../manifest.json') ? filemtime(__DIR__ . '/../manifest.json') : time();
+    ?>
+    <script src="assets/js/script.js?v=<?php echo $script_version; ?>"></script>
+    <script src="assets/js/ajax-handler.js?v=<?php echo $ajax_handler_version; ?>"></script>
+    <script src="assets/js/lightbox.js?v=<?php echo $lightbox_version; ?>"></script>
     <!-- PWA Configuration -->
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest.json?v=<?php echo $manifest_version; ?>">
     <meta name="theme-color" content="#4f46e5">
     <link rel="apple-touch-icon" href="assets/icons/icon-192x192.png">
     <script>
         if ('serviceWorker' in navigator) {
+            let isRefreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (isRefreshing) return;
+                isRefreshing = true;
+                window.location.reload();
+            });
+
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('service-worker.js')
-                    .then(registration => console.log('SW registered'))
+                navigator.serviceWorker.register('service-worker.js', { updateViaCache: 'none' })
+                    .then(registration => {
+                        registration.update();
+
+                        if (registration.waiting) {
+                            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                        }
+
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            if (!newWorker) return;
+
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    newWorker.postMessage({ type: 'SKIP_WAITING' });
+                                }
+                            });
+                        });
+                    })
                     .catch(err => console.log('SW registration failed: ', err));
             });
         }
