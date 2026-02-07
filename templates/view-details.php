@@ -11,6 +11,18 @@
                 </span>
             </div>
             <div class="flex flex-col items-end gap-2">
+                <button type="button"
+                    class="lg:hidden text-indigo-600 hover:text-indigo-800 p-2 rounded-lg border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-colors"
+                    title="Tirar Foto"
+                    onclick="triggerCameraCapture()">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                        </path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </button>
                 <form method="post" action="?" data-ajax="true"
                     data-confirm="Tem certeza que deseja enviar este computador para a lixeira? Ele não será excluído permanentemente, mas sairá da lista principal.">
                     <?php wp_nonce_field('ccs_action_nonce'); ?>
@@ -148,7 +160,7 @@
                         </label>
                         <input id="cameraInput" type="file" name="computer_photos[]" accept="image/*"
                             capture="environment" class="hidden"
-                            onchange="if(this.files.length > 0) { document.getElementById('loadingOverlay').classList.remove('hidden'); document.getElementById('photoUploadForm').submit(); }">
+                            onchange="handleCameraInputChange(this)">
                     </div>
 
                     <!-- Loading Overlay -->
@@ -390,6 +402,28 @@
         // Abrir lightbox com todas as fotos do PC
         if (allPhotos.length > 0) {
             openLightbox(allPhotos, globalIndex);
+        }
+    }
+    function triggerCameraCapture() {
+        const cameraInput = document.getElementById('cameraInput');
+        if (cameraInput) {
+            cameraInput.click();
+        }
+    }
+
+    function handleCameraInputChange(input) {
+        if (!input || input.files.length === 0) {
+            return;
+        }
+
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        if (loadingOverlay) {
+            loadingOverlay.classList.remove('hidden');
+        }
+
+        const photoUploadForm = document.getElementById('photoUploadForm');
+        if (photoUploadForm) {
+            photoUploadForm.submit();
         }
     }
 </script>
