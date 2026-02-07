@@ -346,14 +346,14 @@ class ComputerControlSystem
     {
         $id = intval($_POST['computer_id']);
         $description = sanitize_textarea_field($_POST['description']);
-        $this->log_history($id, 'checkup', $description, $current_user_id);
+        $history_id = $this->log_history($id, 'checkup', $description, $current_user_id);
 
         return [
             'success' => true,
             'message' => 'Checkup adicionado com sucesso.',
             'redirect_url' => '?view=details&id=' . $id . '&message=checkup_added',
             'data' => [
-                'history_html' => $this->get_history_item_html($id, $description, 'checkup', $current_user_id) // We'll need a helper for this
+                'history_html' => $this->get_history_item_html($id, $description, 'checkup', $current_user_id, $history_id)
             ]
         ];
     }
@@ -540,6 +540,8 @@ class ComputerControlSystem
             'photos' => $photos_json,
             'user_id' => $user_id
         ]);
+
+        return intval($wpdb->insert_id);
     }
 
     private function render_page()
@@ -723,7 +725,7 @@ class ComputerControlSystem
         }
         require __DIR__ . '/../templates/view-login.php';
     }
-    private function get_history_item_html($computer_id, $description, $event_type, $user_id)
+    private function get_history_item_html($computer_id, $description, $event_type, $user_id, $history_id = 0)
     {
         $u = get_userdata($user_id);
         $display_name = $u ? $u->display_name : 'Sistema';
@@ -740,11 +742,31 @@ class ComputerControlSystem
                     <span class="font-semibold text-slate-900 capitalize">
                         <?php echo esc_html($event_type); ?>
                     </span>
-                    <span class="text-xs text-slate-400">
-                        <?php echo $time; ?>
-                        -
-                        <?php echo esc_html($display_name); ?>
-                    </span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-slate-400">
+                            <?php echo $time; ?>
+                            -
+                            <?php echo esc_html($display_name); ?>
+                        </span>
+                        <?php if (!empty($history_id)): ?>
+                            <form method="post" action="?" data-ajax="true" class="inline"
+                                data-confirm="Tem certeza que deseja excluir este item do historico?">
+                                <?php wp_nonce_field('ccs_action_nonce'); ?>
+                                <input type="hidden" name="ccs_action" value="delete_history">
+                                <input type="hidden" name="computer_id" value="<?php echo intval($computer_id); ?>">
+                                <input type="hidden" name="history_id" value="<?php echo intval($history_id); ?>">
+                                <button type="submit"
+                                    class="text-slate-400 hover:text-red-500 p-1 rounded transition-colors"
+                                    title="Excluir item do historico">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                        </path>
+                                    </svg>
+                                </button>
+                            </form>
+                        <?php endif; ?>
+                    </div>
                 </div>
                 <p class="text-slate-600 text-sm">
                     <?php echo esc_html($description); ?>
