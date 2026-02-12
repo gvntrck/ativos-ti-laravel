@@ -15,6 +15,7 @@ $checkup_action = $is_cellphone_module ? 'add_cellphone_checkup' : 'add_checkup'
 $upload_action = $is_cellphone_module ? 'upload_cellphone_photo' : 'upload_photo';
 $delete_history_action = $is_cellphone_module ? 'delete_cellphone_history' : 'delete_history';
 $edit_url = '?module=' . urlencode($current_module) . '&view=edit&id=' . intval($pc->id);
+$next_edit_url = isset($next_edit_url) ? (string) $next_edit_url : '';
 $cellphone_code = trim((string) ($pc->asset_code ?? ''));
 $identifier_value = $is_cellphone_module
     ? ($cellphone_code !== '' ? $cellphone_code : trim((string) ($pc->phone_number ?? '')))
@@ -149,6 +150,18 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                     </svg>
                     <span id="copyBtnText">Copiar Dados</span>
                 </button>
+
+                <?php if ($can_edit && !empty($next_edit_url)): ?>
+                    <a href="<?php echo esc_url($next_edit_url); ?>"
+                        class="w-full flex items-center justify-center gap-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 p-3 rounded-lg transition-colors font-medium mb-3">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 7l5 5m0 0l-5 5m5-5H6">
+                            </path>
+                        </svg>
+                        Editar Proximo
+                    </a>
+                <?php endif; ?>
 
                 <?php if ($can_edit && !$is_cellphone_module): ?>
                     <form method="post" action="?" data-ajax="true">

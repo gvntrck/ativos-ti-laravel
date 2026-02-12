@@ -1794,6 +1794,29 @@ class ComputerControlSystem
         if (!$this->is_computer_module()) {
             $pc->phone_number = $this->format_phone_number($pc->phone_number ?? '');
         }
+
+        $next_edit_url = '';
+        if ($can_edit) {
+            $deleted_filter = isset($pc->deleted) ? intval($pc->deleted) : 0;
+
+            $next_edit_id = intval($wpdb->get_var($wpdb->prepare(
+                "SELECT id FROM {$this->table_inventory} WHERE deleted = %d AND id > %d ORDER BY id ASC LIMIT 1",
+                $deleted_filter,
+                $id
+            )));
+
+            if ($next_edit_id <= 0) {
+                $next_edit_id = intval($wpdb->get_var($wpdb->prepare(
+                    "SELECT id FROM {$this->table_inventory} WHERE deleted = %d ORDER BY id ASC LIMIT 1",
+                    $deleted_filter
+                )));
+            }
+
+            if ($next_edit_id > 0 && $next_edit_id !== intval($id)) {
+                $next_edit_url = $this->build_url(['view' => 'edit', 'id' => $next_edit_id]);
+            }
+        }
+
         $history_fk = $this->module_config['history_foreign_key'];
         $history = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$this->table_history} WHERE {$history_fk} = %d ORDER BY created_at DESC", $id));
         $current_module = $this->current_module;
