@@ -108,10 +108,12 @@ foreach ($report_columns as $column) {
     $is_date_column = in_array($column, ['created_at', 'updated_at'], true);
     $is_long_text_column = in_array($column, ['specs', 'notes'], true);
     $is_url_column = $column === 'photo_url';
+    $force_text_filter = $column === 'phone_number';
 
     $use_select_filter = !$is_date_column
         && !$is_long_text_column
         && !$is_url_column
+        && !$force_text_filter
         && count($unique_values) <= 15;
 
     $column_filter_meta[$column] = [
