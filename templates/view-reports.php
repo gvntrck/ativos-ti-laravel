@@ -216,7 +216,7 @@ foreach ($report_columns as $column) {
                                         data-report-photos="<?php echo esc_attr($photos_json); ?>"
                                         data-report-photo-index="<?php echo esc_attr((string) $start_index); ?>"
                                         class="text-indigo-600 hover:text-indigo-900 underline break-all block text-left">
-                                        <?php echo count($row_photos) > 1 ? 'Abrir fotos (' . count($row_photos) . ')' : 'Abrir foto'; ?>
+                                        <?php echo count($row_photos) > 1 ? 'Fotos (' . count($row_photos) . ')' : 'Foto'; ?>
                                     </button>
                                 <?php elseif ($column === 'photo_url'): ?>
                                     <span class="text-slate-500">-</span>
