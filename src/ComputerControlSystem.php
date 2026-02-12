@@ -553,7 +553,7 @@ class ComputerControlSystem
     private function render_content($view)
     {
         if ($view === 'list') {
-            $this->render_list_view();
+            $this->render_reports_view(false);
         } elseif ($view === 'add') {
             $this->render_form();
         } elseif ($view === 'details') {
@@ -563,7 +563,7 @@ class ComputerControlSystem
         } elseif ($view === 'trash') {
             $this->render_list_view(true);
         } elseif ($view === 'reports') {
-            $this->render_reports_view();
+            $this->render_reports_view(null);
         }
     }
 
@@ -658,7 +658,7 @@ class ComputerControlSystem
         require __DIR__ . '/../templates/view-list.php';
     }
 
-    private function render_reports_view()
+    private function render_reports_view($deleted_filter = null)
     {
         global $wpdb;
 
@@ -677,60 +677,85 @@ class ComputerControlSystem
             $report_columns = ['id', 'type', 'hostname', 'status', 'deleted', 'user_name', 'location', 'property', 'specs', 'notes', 'photo_url', 'created_at', 'updated_at'];
         }
 
-        $report_rows = $wpdb->get_results("SELECT * FROM {$this->table_inventory} ORDER BY updated_at DESC");
+        if ($deleted_filter === null) {
+            $report_rows = $wpdb->get_results("SELECT * FROM {$this->table_inventory} ORDER BY updated_at DESC");
+        } else {
+            $report_rows = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT * FROM {$this->table_inventory} WHERE deleted = %d ORDER BY updated_at DESC",
+                    $deleted_filter ? 1 : 0
+                )
+            );
+        }
+
         $report_photos_map = [];
 
-        $history_photo_rows = $wpdb->get_results("
-            SELECT computer_id, photos
-            FROM {$this->table_history}
-            WHERE photos IS NOT NULL AND photos != '' AND photos != 'null'
-            ORDER BY created_at ASC
-        ");
-
-        foreach ($history_photo_rows as $history_row) {
-            $computer_id = intval($history_row->computer_id);
-            if ($computer_id <= 0) {
-                continue;
+        if (!empty($report_rows)) {
+            $report_ids = [];
+            foreach ($report_rows as $row) {
+                $computer_id = intval($row->id ?? 0);
+                if ($computer_id > 0) {
+                    $report_ids[] = $computer_id;
+                }
             }
 
-            $decoded_photos = json_decode($history_row->photos, true);
-            if (!is_array($decoded_photos)) {
-                continue;
+            if (!empty($report_ids)) {
+                $ids_sql = implode(',', array_map('intval', array_unique($report_ids)));
+
+                $history_photo_rows = $wpdb->get_results("
+                    SELECT computer_id, photos
+                    FROM {$this->table_history}
+                    WHERE photos IS NOT NULL AND photos != '' AND photos != 'null'
+                      AND computer_id IN ($ids_sql)
+                    ORDER BY created_at ASC
+                ");
+
+                foreach ($history_photo_rows as $history_row) {
+                    $computer_id = intval($history_row->computer_id);
+                    if ($computer_id <= 0) {
+                        continue;
+                    }
+
+                    $decoded_photos = json_decode($history_row->photos, true);
+                    if (!is_array($decoded_photos)) {
+                        continue;
+                    }
+
+                    if (!isset($report_photos_map[$computer_id])) {
+                        $report_photos_map[$computer_id] = [];
+                    }
+
+                    foreach ($decoded_photos as $photo_url) {
+                        $photo_url = esc_url_raw(trim((string) $photo_url));
+                        if ($photo_url === '') {
+                            continue;
+                        }
+
+                        if (!in_array($photo_url, $report_photos_map[$computer_id], true)) {
+                            $report_photos_map[$computer_id][] = $photo_url;
+                        }
+                    }
+                }
             }
 
-            if (!isset($report_photos_map[$computer_id])) {
-                $report_photos_map[$computer_id] = [];
-            }
-
-            foreach ($decoded_photos as $photo_url) {
-                $photo_url = esc_url_raw(trim((string) $photo_url));
-                if ($photo_url === '') {
+            foreach ($report_rows as $row) {
+                $computer_id = intval($row->id ?? 0);
+                if ($computer_id <= 0) {
                     continue;
                 }
 
-                if (!in_array($photo_url, $report_photos_map[$computer_id], true)) {
-                    $report_photos_map[$computer_id][] = $photo_url;
+                $primary_photo = esc_url_raw(trim((string) ($row->photo_url ?? '')));
+                if ($primary_photo === '') {
+                    continue;
                 }
-            }
-        }
 
-        foreach ($report_rows as $row) {
-            $computer_id = intval($row->id ?? 0);
-            if ($computer_id <= 0) {
-                continue;
-            }
+                if (!isset($report_photos_map[$computer_id])) {
+                    $report_photos_map[$computer_id] = [];
+                }
 
-            $primary_photo = esc_url_raw(trim((string) ($row->photo_url ?? '')));
-            if ($primary_photo === '') {
-                continue;
-            }
-
-            if (!isset($report_photos_map[$computer_id])) {
-                $report_photos_map[$computer_id] = [];
-            }
-
-            if (!in_array($primary_photo, $report_photos_map[$computer_id], true)) {
-                array_unshift($report_photos_map[$computer_id], $primary_photo);
+                if (!in_array($primary_photo, $report_photos_map[$computer_id], true)) {
+                    array_unshift($report_photos_map[$computer_id], $primary_photo);
+                }
             }
         }
 
