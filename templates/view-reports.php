@@ -188,10 +188,11 @@ foreach ($report_columns as $column) {
                                         <?php echo esc_html(strtoupper($raw_value)); ?>
                                     </a>
                                 <?php elseif ($column === 'photo_url' && $raw_value !== ''): ?>
-                                    <a href="<?php echo esc_url($raw_value); ?>" target="_blank" rel="noopener noreferrer"
-                                        class="text-indigo-600 hover:text-indigo-900 underline break-all block">
+                                    <button type="button"
+                                        data-report-photo-url="<?php echo esc_url($raw_value); ?>"
+                                        class="text-indigo-600 hover:text-indigo-900 underline break-all block text-left">
                                         Abrir foto
-                                    </a>
+                                    </button>
                                 <?php else: ?>
                                     <span
                                         class="<?php echo $is_long_text ? 'whitespace-pre-wrap break-words text-xs text-slate-700 block w-full text-left' : 'text-slate-700 block whitespace-nowrap overflow-hidden text-ellipsis'; ?>"

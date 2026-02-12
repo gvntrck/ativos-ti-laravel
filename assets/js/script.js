@@ -171,3 +171,24 @@ function initReportsFilters() {
 }
 
 document.addEventListener('DOMContentLoaded', initReportsFilters);
+
+function initReportsPhotoLightbox() {
+    document.addEventListener('click', (event) => {
+        const trigger = event.target.closest('[data-report-photo-url]');
+        if (!trigger) return;
+
+        event.preventDefault();
+
+        const photoUrl = (trigger.getAttribute('data-report-photo-url') || '').trim();
+        if (!photoUrl) return;
+
+        if (typeof openLightbox === 'function') {
+            openLightbox([photoUrl], 0);
+            return;
+        }
+
+        window.open(photoUrl, '_blank', 'noopener,noreferrer');
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initReportsPhotoLightbox);
