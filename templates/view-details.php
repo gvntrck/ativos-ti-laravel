@@ -39,12 +39,10 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                         class="lg:hidden inline-flex items-center justify-center w-11 h-11 text-indigo-600 hover:text-indigo-800 rounded-lg border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-colors"
                         title="Tirar Foto"
                         onclick="triggerCameraCapture()">
-                        <svg class="w-5 h-5 lg:w-4 lg:h-4" fill="none" stroke="currentColor" stroke-width="2.2"
-                            viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M4 7h3l2-2h6l2 2h3v11H4V7z">
-                            </path>
-                            <circle cx="12" cy="12.5" r="3.25"></circle>
+                        <svg class="w-6 h-6 lg:w-4 lg:h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd"
+                                d="M6.7 3.2a1.1 1.1 0 00-.86.4L4.86 5H3.5A1.5 1.5 0 002 6.5v8A1.5 1.5 0 003.5 16h13a1.5 1.5 0 001.5-1.5v-8A1.5 1.5 0 0016.5 5h-1.36l-.98-1.4a1.1 1.1 0 00-.9-.4H6.7zM10 8a3 3 0 100 6 3 3 0 000-6z"
+                                clip-rule="evenodd"></path>
                         </svg>
                     </button>
                     <a href="<?php echo esc_url($edit_url); ?>"
@@ -66,10 +64,11 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                         <button type="submit"
                             class="inline-flex items-center justify-center w-11 h-11 lg:w-9 lg:h-9 text-red-500 hover:text-red-700 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 transition-colors"
                             title="Mover para Lixeira">
-                            <svg class="w-5 h-5 lg:w-4 lg:h-4" fill="none" stroke="currentColor" stroke-width="2.2"
-                                viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M5 7h14M9 7V5h6v2m-8 0 1 12h8l1-12M10 11v5m4-5v5">
+                            <svg class="w-6 h-6 lg:w-4 lg:h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd"
+                                    d="M8 1.5A1.5 1.5 0 006.5 3v.5H4.75a.75.75 0 000 1.5h.54l.61 10.95A2 2 0 007.9 18h4.2a2 2 0 001.99-1.86l.61-10.95h.55a.75.75 0 000-1.5H13.5V3A1.5 1.5 0 0012 1.5H8zm4 2V3h-4v.5h4z"
+                                    clip-rule="evenodd"></path>
+                                <path d="M8.75 8a.75.75 0 011.5 0v6a.75.75 0 01-1.5 0V8zM11.25 8a.75.75 0 011.5 0v6a.75.75 0 01-1.5 0V8z">
                                 </path>
                             </svg>
                         </button>
