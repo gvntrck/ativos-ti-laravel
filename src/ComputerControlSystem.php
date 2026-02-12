@@ -663,6 +663,61 @@ class ComputerControlSystem
         }
 
         $report_rows = $wpdb->get_results("SELECT * FROM {$this->table_inventory} ORDER BY updated_at DESC");
+        $report_photos_map = [];
+
+        $history_photo_rows = $wpdb->get_results("
+            SELECT computer_id, photos
+            FROM {$this->table_history}
+            WHERE photos IS NOT NULL AND photos != '' AND photos != 'null'
+            ORDER BY created_at ASC
+        ");
+
+        foreach ($history_photo_rows as $history_row) {
+            $computer_id = intval($history_row->computer_id);
+            if ($computer_id <= 0) {
+                continue;
+            }
+
+            $decoded_photos = json_decode($history_row->photos, true);
+            if (!is_array($decoded_photos)) {
+                continue;
+            }
+
+            if (!isset($report_photos_map[$computer_id])) {
+                $report_photos_map[$computer_id] = [];
+            }
+
+            foreach ($decoded_photos as $photo_url) {
+                $photo_url = esc_url_raw(trim((string) $photo_url));
+                if ($photo_url === '') {
+                    continue;
+                }
+
+                if (!in_array($photo_url, $report_photos_map[$computer_id], true)) {
+                    $report_photos_map[$computer_id][] = $photo_url;
+                }
+            }
+        }
+
+        foreach ($report_rows as $row) {
+            $computer_id = intval($row->id ?? 0);
+            if ($computer_id <= 0) {
+                continue;
+            }
+
+            $primary_photo = esc_url_raw(trim((string) ($row->photo_url ?? '')));
+            if ($primary_photo === '') {
+                continue;
+            }
+
+            if (!isset($report_photos_map[$computer_id])) {
+                $report_photos_map[$computer_id] = [];
+            }
+
+            if (!in_array($primary_photo, $report_photos_map[$computer_id], true)) {
+                array_unshift($report_photos_map[$computer_id], $primary_photo);
+            }
+        }
 
         require __DIR__ . '/../templates/view-reports.php';
     }

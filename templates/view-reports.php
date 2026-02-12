@@ -171,6 +171,11 @@ foreach ($report_columns as $column) {
 
                     $row_search = trim(implode(' ', $search_terms));
                     $row_id = isset($row->id) ? intval($row->id) : 0;
+                    $row_photos = [];
+
+                    if ($row_id > 0 && isset($report_photos_map[$row_id]) && is_array($report_photos_map[$row_id])) {
+                        $row_photos = array_values($report_photos_map[$row_id]);
+                    }
                     ?>
                     <tr class="report-row hover:bg-slate-50"
                         data-report-search="<?php echo esc_attr($row_search); ?>" <?php echo implode(' ', $row_attributes); ?>>
@@ -187,12 +192,34 @@ foreach ($report_columns as $column) {
                                         class="text-indigo-600 hover:text-indigo-900 font-medium">
                                         <?php echo esc_html(strtoupper($raw_value)); ?>
                                     </a>
-                                <?php elseif ($column === 'photo_url' && $raw_value !== ''): ?>
+                                <?php elseif ($column === 'photo_url' && !empty($row_photos)): ?>
+                                    <?php
+                                    $primary_photo = esc_url_raw(trim($raw_value));
+                                    $fallback_photo = esc_url_raw((string) $row_photos[0]);
+                                    $trigger_photo = $primary_photo !== '' ? $primary_photo : $fallback_photo;
+
+                                    $start_index = 0;
+                                    if ($primary_photo !== '') {
+                                        $found_index = array_search($primary_photo, $row_photos, true);
+                                        if ($found_index !== false) {
+                                            $start_index = intval($found_index);
+                                        }
+                                    }
+
+                                    $photos_json = wp_json_encode($row_photos);
+                                    if ($photos_json === false) {
+                                        $photos_json = '[]';
+                                    }
+                                    ?>
                                     <button type="button"
-                                        data-report-photo-url="<?php echo esc_url($raw_value); ?>"
+                                        data-report-photo-url="<?php echo esc_url($trigger_photo); ?>"
+                                        data-report-photos="<?php echo esc_attr($photos_json); ?>"
+                                        data-report-photo-index="<?php echo esc_attr((string) $start_index); ?>"
                                         class="text-indigo-600 hover:text-indigo-900 underline break-all block text-left">
-                                        Abrir foto
+                                        <?php echo count($row_photos) > 1 ? 'Abrir fotos (' . count($row_photos) . ')' : 'Abrir foto'; ?>
                                     </button>
+                                <?php elseif ($column === 'photo_url'): ?>
+                                    <span class="text-slate-500">-</span>
                                 <?php else: ?>
                                     <span
                                         class="<?php echo $is_long_text ? 'whitespace-pre-wrap break-words text-xs text-slate-700 block w-full text-left' : 'text-slate-700 block whitespace-nowrap overflow-hidden text-ellipsis'; ?>"

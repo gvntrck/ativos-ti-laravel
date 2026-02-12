@@ -180,14 +180,40 @@ function initReportsPhotoLightbox() {
         event.preventDefault();
 
         const photoUrl = (trigger.getAttribute('data-report-photo-url') || '').trim();
-        if (!photoUrl) return;
+        const photosAttr = (trigger.getAttribute('data-report-photos') || '').trim();
+
+        let photos = [];
+
+        if (photosAttr) {
+            try {
+                const parsed = JSON.parse(photosAttr);
+                if (Array.isArray(parsed)) {
+                    photos = parsed
+                        .map((item) => (item || '').toString().trim())
+                        .filter((item) => item.length > 0);
+                }
+            } catch (error) {
+                photos = [];
+            }
+        }
+
+        if (photos.length === 0 && photoUrl) {
+            photos = [photoUrl];
+        }
+
+        if (photos.length === 0) return;
+
+        let startIndex = parseInt(trigger.getAttribute('data-report-photo-index') || '0', 10);
+        if (Number.isNaN(startIndex) || startIndex < 0 || startIndex >= photos.length) {
+            startIndex = 0;
+        }
 
         if (typeof openLightbox === 'function') {
-            openLightbox([photoUrl], 0);
+            openLightbox(photos, startIndex);
             return;
         }
 
-        window.open(photoUrl, '_blank', 'noopener,noreferrer');
+        window.open(photos[startIndex], '_blank', 'noopener,noreferrer');
     });
 }
 
