@@ -179,11 +179,9 @@ foreach ($report_columns as $column) {
                             $raw_value = isset($row->$column) ? (string) $row->$column : '';
                             $formatted_value = $format_report_value($column, $raw_value);
                             $is_long_text = in_array($column, ['specs', 'notes'], true);
-                            $is_specs_or_notes = $is_long_text;
                             $display_value = $is_long_text ? trim($formatted_value) : $formatted_value;
                             ?>
-                            <td class="px-3 py-2 align-top <?php echo $is_specs_or_notes ? 'text-right' : ''; ?>"
-                                <?php if ($is_specs_or_notes): ?>style="text-align: right !important;"<?php endif; ?>>
+                            <td class="px-3 py-2 align-top">
                                 <?php if ($column === 'hostname' && $row_id > 0): ?>
                                     <a href="?view=details&id=<?php echo $row_id; ?>"
                                         class="text-indigo-600 hover:text-indigo-900 font-medium">
@@ -196,8 +194,7 @@ foreach ($report_columns as $column) {
                                     </a>
                                 <?php else: ?>
                                     <span
-                                        class="<?php echo $is_long_text ? 'whitespace-pre-wrap break-words text-xs text-slate-700 block w-full text-right' : 'text-slate-700 block whitespace-nowrap overflow-hidden text-ellipsis'; ?>"
-                                        <?php if ($is_long_text): ?>style="text-align: right !important;"<?php endif; ?>
+                                        class="<?php echo $is_long_text ? 'whitespace-pre-wrap break-words text-xs text-slate-700 block w-full text-left' : 'text-slate-700 block whitespace-nowrap overflow-hidden text-ellipsis'; ?>"
                                         title="<?php echo esc_attr($display_value); ?>"><?php echo esc_html($display_value); ?></span>
                                 <?php endif; ?>
                             </td>
