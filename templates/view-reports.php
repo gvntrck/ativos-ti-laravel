@@ -193,7 +193,7 @@ foreach ($report_columns as $column) {
                                     </a>
                                 <?php else: ?>
                                     <span
-                                        class="<?php echo $is_long_text ? 'whitespace-pre-wrap break-words text-xs text-slate-700 block' : 'text-slate-700 block whitespace-nowrap overflow-hidden text-ellipsis'; ?>"
+                                        class="<?php echo $is_long_text ? 'whitespace-pre-wrap break-words text-xs text-slate-700 block text-right' : 'text-slate-700 block whitespace-nowrap overflow-hidden text-ellipsis'; ?>"
                                         title="<?php echo esc_attr($formatted_value); ?>">
                                         <?php echo esc_html($formatted_value); ?>
                                     </span>
