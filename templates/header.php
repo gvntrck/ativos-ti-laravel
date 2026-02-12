@@ -157,7 +157,23 @@
 </head>
 
 <body class="wp-core-ui">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-8">
+    <?php
+    $current_user = wp_get_current_user();
+    $user_first_name = trim((string) get_user_meta($current_user->ID, 'first_name', true));
+    if ($user_first_name === '') {
+        $user_first_name = $current_user->display_name ?: $current_user->user_login;
+    }
+    $logout_url = wp_logout_url(home_url('/'));
+    ?>
+
+    <div class="ccs-topbar">
+        <div class="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-end gap-3 text-xs">
+            <span class="text-slate-500">Usuario: <strong class="text-slate-700"><?php echo esc_html($user_first_name); ?></strong></span>
+            <a href="<?php echo esc_url($logout_url); ?>" class="text-slate-600 hover:text-slate-900 hover:underline">Sair</a>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-8">
 
         <!-- Header -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
