@@ -26,20 +26,20 @@ $status_label = $status_labels[$status_value] ?? $status_value;
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
     <div class="lg:col-span-2 bg-white p-8 rounded-xl shadow-sm border border-slate-200">
-        <div class="flex justify-between items-start mb-6">
-            <div>
+        <div class="relative mb-6 lg:flex lg:justify-between lg:items-start">
+            <div class="<?php echo $can_edit ? 'pr-16 lg:pr-0' : ''; ?>">
                 <h2 class="text-2xl font-bold text-slate-900"><?php echo esc_html($identifier_value); ?></h2>
                 <span class="text-sm text-slate-500 capitalize">
                     <?php echo esc_html($is_cellphone_module ? 'celular' : (string) ($pc->type ?? '')); ?>
                 </span>
             </div>
-            <div class="flex flex-col items-end gap-2">
+            <div class="<?php echo $can_edit ? 'absolute top-0 right-0 flex flex-col items-end gap-2 lg:static' : 'flex flex-col items-end gap-2'; ?>">
                 <?php if ($can_edit): ?>
                     <button type="button"
-                        class="lg:hidden text-indigo-600 hover:text-indigo-800 p-2 rounded-lg border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-colors"
+                        class="lg:hidden inline-flex items-center justify-center w-11 h-11 text-indigo-600 hover:text-indigo-800 rounded-lg border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-colors"
                         title="Tirar Foto"
                         onclick="triggerCameraCapture()">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
                             </path>
@@ -48,10 +48,10 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                         </svg>
                     </button>
                     <a href="<?php echo esc_url($edit_url); ?>"
-                        class="inline-flex items-center justify-center text-indigo-600 hover:text-indigo-800 p-2 rounded-lg border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-colors"
+                        class="inline-flex items-center justify-center w-11 h-11 lg:w-9 lg:h-9 text-indigo-600 hover:text-indigo-800 rounded-lg border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-colors"
                         title="Editar item"
                         aria-label="Editar item">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 lg:w-4 lg:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
                             </path>
@@ -64,9 +64,9 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                         <input type="hidden" name="<?php echo esc_attr($id_field); ?>" value="<?php echo intval($pc->id); ?>">
                         <input type="hidden" name="module" value="<?php echo esc_attr($current_module); ?>">
                         <button type="submit"
-                            class="text-red-500 hover:text-red-700 p-2 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 transition-colors"
+                            class="inline-flex items-center justify-center w-11 h-11 lg:w-9 lg:h-9 text-red-500 hover:text-red-700 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 transition-colors"
                             title="Mover para Lixeira">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 lg:w-4 lg:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
                                 </path>
