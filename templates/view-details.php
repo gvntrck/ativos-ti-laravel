@@ -189,13 +189,14 @@ $status_label = $status_labels[$status_value] ?? $status_value;
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                 <h3 class="font-bold text-slate-900 mb-4">Fotos do Equipamento</h3>
                 <?php if ($can_edit): ?>
-                    <form method="post" action="?" enctype="multipart/form-data" id="photoUploadForm" data-ajax="true">
+                    <form method="post" action="?" enctype="multipart/form-data" id="photoUploadForm" data-ajax="true"
+                        data-loading-overlay-id="loadingOverlay" class="relative">
                         <?php wp_nonce_field('ccs_action_nonce'); ?>
                         <input type="hidden" name="ccs_action" value="<?php echo esc_attr($upload_action); ?>">
                         <input type="hidden" name="<?php echo esc_attr($id_field); ?>" value="<?php echo intval($pc->id); ?>">
                         <input type="hidden" name="module" value="<?php echo esc_attr($current_module); ?>">
 
-                        <div class="mb-0">
+                        <div class="mb-3">
                             <label for="cameraInput"
                                 class="cursor-pointer flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-indigo-300 rounded-xl bg-indigo-50 hover:bg-indigo-100 transition-colors group">
                                 <div class="p-3 bg-indigo-100 rounded-full group-hover:bg-indigo-200 transition-colors mb-2">
@@ -207,12 +208,27 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                                             d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     </svg>
                                 </div>
-                                <span class="text-indigo-700 font-semibold text-sm">Tirar Foto</span>
-                                <span class="text-indigo-400 text-xs mt-1">Toque para capturar e enviar</span>
+                                <span class="text-indigo-700 font-semibold text-sm">Adicionar Foto</span>
+                                <span class="text-indigo-400 text-xs mt-1">Toque para capturar varias e enviar de uma vez</span>
                             </label>
                             <input id="cameraInput" type="file" name="asset_photos[]" accept="image/*"
-                                capture="environment" class="hidden" onchange="handleCameraInputChange(this)">
+                                capture="environment" multiple class="hidden" onchange="handleCameraInputChange(this)">
                         </div>
+
+                        <div id="photoQueuePanel" class="hidden mb-4 p-3 rounded-lg border border-slate-200 bg-slate-50">
+                            <div class="flex items-center justify-between gap-2 mb-2">
+                                <span id="photoQueueCount" class="text-xs text-slate-600">Nenhuma foto selecionada.</span>
+                                <button type="button" id="clearPhotoQueueBtn"
+                                    class="text-xs text-slate-500 hover:text-red-600 underline">Limpar</button>
+                            </div>
+                            <div id="photoQueuePreview" class="flex gap-2 overflow-x-auto pb-1"></div>
+                        </div>
+
+                        <button type="submit" id="submitPhotoBatchBtn"
+                            class="w-full btn btn-primary opacity-60 cursor-not-allowed"
+                            disabled>
+                            Enviar fotos selecionadas
+                        </button>
 
                         <div id="loadingOverlay"
                             class="hidden absolute inset-0 bg-white/80 flex flex-col items-center justify-center rounded-xl z-10">
@@ -223,7 +239,7 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                                 </path>
                             </svg>
-                            <span class="text-sm font-medium text-indigo-700">Enviando foto...</span>
+                            <span class="text-sm font-medium text-indigo-700">Enviando fotos...</span>
                         </div>
                     </form>
                 <?php else: ?>
@@ -436,19 +452,154 @@ $status_label = $status_labels[$status_value] ?? $status_value;
         }
     }
 
-    function handleCameraInputChange(input) {
-        if (!input || input.files.length === 0) {
+    const queuedPhotoFiles = [];
+    const queuedPhotoPreviewUrls = [];
+    const supportsDataTransfer = typeof DataTransfer !== 'undefined';
+
+    function buildPhotoFingerprint(file) {
+        return [file.name, file.size, file.lastModified].join(':');
+    }
+
+    function syncQueuedFilesToInput() {
+        const cameraInput = document.getElementById('cameraInput');
+        if (!cameraInput) {
+            return false;
+        }
+
+        if (!supportsDataTransfer) {
+            return false;
+        }
+
+        const dt = new DataTransfer();
+        queuedPhotoFiles.forEach((file) => dt.items.add(file));
+        cameraInput.files = dt.files;
+        return true;
+    }
+
+    function clearQueuePreviewUrls() {
+        while (queuedPhotoPreviewUrls.length > 0) {
+            const previewUrl = queuedPhotoPreviewUrls.pop();
+            URL.revokeObjectURL(previewUrl);
+        }
+    }
+
+    function renderPhotoQueue() {
+        const panel = document.getElementById('photoQueuePanel');
+        const countLabel = document.getElementById('photoQueueCount');
+        const preview = document.getElementById('photoQueuePreview');
+        const submitButton = document.getElementById('submitPhotoBatchBtn');
+
+        if (!panel || !countLabel || !preview || !submitButton) {
             return;
         }
 
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        if (loadingOverlay) {
-            loadingOverlay.classList.remove('hidden');
+        clearQueuePreviewUrls();
+        preview.innerHTML = '';
+
+        if (queuedPhotoFiles.length === 0) {
+            panel.classList.add('hidden');
+            countLabel.textContent = 'Nenhuma foto selecionada.';
+            submitButton.disabled = true;
+            submitButton.classList.add('opacity-60', 'cursor-not-allowed');
+            return;
         }
 
-        const photoUploadForm = document.getElementById('photoUploadForm');
-        if (photoUploadForm) {
-            photoUploadForm.submit();
+        panel.classList.remove('hidden');
+        countLabel.textContent = queuedPhotoFiles.length + (queuedPhotoFiles.length === 1 ? ' foto selecionada.' : ' fotos selecionadas.');
+        submitButton.disabled = false;
+        submitButton.classList.remove('opacity-60', 'cursor-not-allowed');
+
+        queuedPhotoFiles.forEach((file, index) => {
+            const item = document.createElement('div');
+            item.className = 'relative flex-shrink-0';
+
+            const img = document.createElement('img');
+            const previewUrl = URL.createObjectURL(file);
+            queuedPhotoPreviewUrls.push(previewUrl);
+            img.src = previewUrl;
+            img.className = 'h-16 w-16 object-cover rounded-lg border border-slate-200';
+            img.alt = 'Foto ' + (index + 1);
+
+            item.appendChild(img);
+            preview.appendChild(item);
+        });
+    }
+
+    function queueSelectedPhotos(fileList) {
+        const incoming = Array.from(fileList || []).filter((file) => file && /^image\//.test(file.type));
+        if (incoming.length === 0) {
+            return;
+        }
+
+        if (!supportsDataTransfer) {
+            queuedPhotoFiles.length = 0;
+            incoming.forEach((file) => queuedPhotoFiles.push(file));
+            renderPhotoQueue();
+            return;
+        }
+
+        const known = new Set(queuedPhotoFiles.map(buildPhotoFingerprint));
+        incoming.forEach((file) => {
+            const fingerprint = buildPhotoFingerprint(file);
+            if (!known.has(fingerprint)) {
+                queuedPhotoFiles.push(file);
+                known.add(fingerprint);
+            }
+        });
+
+        syncQueuedFilesToInput();
+        renderPhotoQueue();
+    }
+
+    function clearPhotoQueue() {
+        queuedPhotoFiles.length = 0;
+        syncQueuedFilesToInput();
+
+        const cameraInput = document.getElementById('cameraInput');
+        if (cameraInput) {
+            cameraInput.value = '';
+        }
+
+        renderPhotoQueue();
+    }
+
+    function handleCameraInputChange(input) {
+        if (!input || !input.files || input.files.length === 0) {
+            return;
+        }
+
+        queueSelectedPhotos(input.files);
+        if (supportsDataTransfer) {
+            input.value = '';
         }
     }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const photoUploadForm = document.getElementById('photoUploadForm');
+        const clearBtn = document.getElementById('clearPhotoQueueBtn');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', clearPhotoQueue);
+        }
+
+        if (photoUploadForm) {
+            photoUploadForm.addEventListener('submit', function (event) {
+                if (queuedPhotoFiles.length === 0) {
+                    event.preventDefault();
+                    alert('Selecione pelo menos uma foto antes de enviar.');
+                    return;
+                }
+
+                if (supportsDataTransfer) {
+                    syncQueuedFilesToInput();
+                }
+                if (loadingOverlay) {
+                    loadingOverlay.classList.remove('hidden');
+                }
+            });
+        }
+
+        renderPhotoQueue();
+    });
 </script>

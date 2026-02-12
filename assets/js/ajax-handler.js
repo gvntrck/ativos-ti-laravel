@@ -18,10 +18,16 @@ function bindAjaxForm(form) {
 
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalBtnText = submitBtn ? submitBtn.innerHTML : '';
+        const loadingOverlayId = form.getAttribute('data-loading-overlay-id') || '';
+        const loadingOverlay = loadingOverlayId ? document.getElementById(loadingOverlayId) : null;
 
         if (submitBtn) {
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span> Processando...';
+        }
+
+        if (loadingOverlay) {
+            loadingOverlay.classList.remove('hidden');
         }
 
         const formData = new FormData(form);
@@ -52,6 +58,10 @@ function bindAjaxForm(form) {
             console.error('Erro AJAX:', error);
             alert('Ocorreu um erro na requisicao. Verifique o console.');
         } finally {
+            if (loadingOverlay) {
+                loadingOverlay.classList.add('hidden');
+            }
+
             if (submitBtn) {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalBtnText;
