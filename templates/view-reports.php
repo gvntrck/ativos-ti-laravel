@@ -219,11 +219,18 @@ $table_preferences_config = [
                                     <?php endforeach; ?>
                                 </select>
                             <?php else: ?>
+                                <?php
+                                $is_mobile_numeric_filter = in_array($column, ['asset_code', 'phone_number'], true);
+                                $filter_input_mode = $is_mobile_numeric_filter ? 'numeric' : 'text';
+                                $filter_placeholder = $is_mobile_numeric_filter ? 'Digite numeros...' : 'Filtrar...';
+                                ?>
                                 <input type="text"
                                     data-report-filter="<?php echo esc_attr($column); ?>"
                                     data-report-filter-type="text"
+                                    inputmode="<?php echo esc_attr($filter_input_mode); ?>"
+                                    enterkeyhint="search"
                                     class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:border-indigo-500 focus:ring-indigo-500"
-                                    placeholder="Filtrar...">
+                                    placeholder="<?php echo esc_attr($filter_placeholder); ?>">
                             <?php endif; ?>
                         </th>
                     <?php endforeach; ?>
