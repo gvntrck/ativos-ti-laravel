@@ -1,4 +1,5 @@
 <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+    <?php $details_return_to = $show_trash ? 'trash' : 'list'; ?>
     <div
         class="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-center gap-4">
 
@@ -249,7 +250,8 @@
                             </span>
                         </td>
                         <td class="px-4 py-2 font-medium text-slate-900">
-                            <a href="?view=details&id=<?php echo $pc->id; ?>" class="text-indigo-600 hover:text-indigo-900">
+                            <a href="?view=details&id=<?php echo $pc->id; ?>&return_to=<?php echo esc_attr($details_return_to); ?>"
+                                class="text-indigo-600 hover:text-indigo-900">
                                 <?php echo esc_html(strtoupper($pc->hostname)); ?>
                             </a>
                         </td>
@@ -300,7 +302,7 @@
                                     </button>
                                 </form>
                             <?php else: ?>
-                                <a href="?view=details&id=<?php echo $pc->id; ?>"
+                                <a href="?view=details&id=<?php echo $pc->id; ?>&return_to=<?php echo esc_attr($details_return_to); ?>"
                                     class="text-indigo-600 hover:text-indigo-900 font-medium text-xs">Gerenciar</a>
                             <?php endif; ?>
                         </td>
@@ -322,11 +324,12 @@
 // Salvar filtros atuais no sessionStorage para preservar ao voltar da página de detalhes
 (function() {
     const currentParams = window.location.search;
-    if (currentParams) {
-        sessionStorage.setItem('ccs_list_filters', currentParams);
+    if (currentParams && currentParams.includes('view=trash')) {
+        sessionStorage.setItem('ccs_trash_filters', currentParams);
     } else {
         // Se não há filtros, limpar o sessionStorage
-        sessionStorage.removeItem('ccs_list_filters');
+        sessionStorage.removeItem('ccs_trash_filters');
     }
 })();
 </script>
+

@@ -2,6 +2,10 @@
 $column_labels = [];
 $column_filter_meta = [];
 $column_widths = [];
+$report_origin_view = isset($_GET['view']) ? sanitize_text_field((string) $_GET['view']) : 'list';
+if (!in_array($report_origin_view, ['list', 'reports'], true)) {
+    $report_origin_view = 'list';
+}
 
 if (in_array('property', $report_columns, true)) {
     $report_columns = array_values(array_filter($report_columns, static function ($column) {
@@ -225,7 +229,7 @@ $table_preferences_config = [
                             ?>
                             <td data-report-cell="<?php echo esc_attr($column); ?>" class="px-3 py-2 align-top">
                                 <?php if ($column === 'hostname' && $row_id > 0): ?>
-                                    <a href="?view=details&id=<?php echo $row_id; ?>"
+                                    <a href="?view=details&id=<?php echo $row_id; ?>&return_to=<?php echo esc_attr($report_origin_view); ?>"
                                         class="text-indigo-600 hover:text-indigo-900 font-medium">
                                         <?php echo esc_html(strtoupper($raw_value)); ?>
                                     </a>
@@ -320,6 +324,7 @@ $table_preferences_config = [
 </div>
 
 <script>
+    window.ccsReportContext = <?php echo wp_json_encode($report_origin_view); ?>;
     window.ccsTablePreferencesConfig = <?php echo wp_json_encode($table_preferences_config); ?>;
 </script>
 

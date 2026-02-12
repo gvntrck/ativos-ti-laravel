@@ -64,6 +64,73 @@ function normalizeReportValue(value) {
     return (value || '').toString().trim().toLowerCase();
 }
 
+function getReportsFiltersStateKey() {
+    const context = ((window.ccsReportContext || 'list') + '').toLowerCase();
+    return context === 'reports' ? 'ccs_reports_filters_reports' : 'ccs_reports_filters_list';
+}
+
+function saveReportsFiltersState() {
+    const tableBody = document.getElementById('reportsTableBody');
+    if (!tableBody) return;
+
+    const filterControls = document.querySelectorAll('[data-report-filter]');
+    const globalInput = document.getElementById('reportGlobalSearch');
+    const filters = {};
+
+    filterControls.forEach((control) => {
+        const column = control.getAttribute('data-report-filter');
+        if (!column) return;
+        filters[column] = control.value || '';
+    });
+
+    const state = {
+        global: globalInput ? (globalInput.value || '') : '',
+        filters: filters,
+    };
+
+    try {
+        sessionStorage.setItem(getReportsFiltersStateKey(), JSON.stringify(state));
+    } catch (error) {
+        // Ignore storage quota/privacy mode errors.
+    }
+}
+
+function restoreReportsFiltersState(filterControls, globalInput) {
+    let rawState = null;
+    try {
+        rawState = sessionStorage.getItem(getReportsFiltersStateKey());
+    } catch (error) {
+        rawState = null;
+    }
+
+    if (!rawState) return;
+
+    let state = null;
+    try {
+        state = JSON.parse(rawState);
+    } catch (error) {
+        state = null;
+    }
+
+    if (!state || typeof state !== 'object') return;
+
+    if (globalInput && typeof state.global === 'string') {
+        globalInput.value = state.global;
+    }
+
+    const savedFilters = state.filters && typeof state.filters === 'object' ? state.filters : null;
+    if (!savedFilters) return;
+
+    filterControls.forEach((control) => {
+        const column = control.getAttribute('data-report-filter');
+        if (!column) return;
+
+        if (Object.prototype.hasOwnProperty.call(savedFilters, column)) {
+            control.value = savedFilters[column] || '';
+        }
+    });
+}
+
 function rowMatchesReportFilter(row, control) {
     const column = control.getAttribute('data-report-filter');
     if (!column) return true;
@@ -174,6 +241,7 @@ function applyReportsFilters() {
     }
 
     updateReportsFilterHighlights(filterControls);
+    saveReportsFiltersState();
 }
 
 function initReportsFilters() {
@@ -208,6 +276,7 @@ function initReportsFilters() {
         });
     }
 
+    restoreReportsFiltersState(filterControls, globalInput);
     applyReportsFilters();
 }
 
