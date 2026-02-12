@@ -8,6 +8,10 @@ function bindAjaxForm(form) {
     form.dataset.ajaxBound = '1';
 
     form.addEventListener('submit', async function (e) {
+        if (e.defaultPrevented) {
+            return;
+        }
+
         const confirmMsg = form.getAttribute('data-confirm');
         if (confirmMsg && !confirm(confirmMsg)) {
             e.preventDefault();

@@ -569,9 +569,6 @@ $status_label = $status_labels[$status_value] ?? $status_value;
         }
 
         queueSelectedPhotos(input.files);
-        if (supportsDataTransfer) {
-            input.value = '';
-        }
     }
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -584,9 +581,11 @@ $status_label = $status_labels[$status_value] ?? $status_value;
         }
 
         if (photoUploadForm) {
+            // Capture phase ensures queue sync runs before generic AJAX submit handlers.
             photoUploadForm.addEventListener('submit', function (event) {
                 if (queuedPhotoFiles.length === 0) {
                     event.preventDefault();
+                    event.stopImmediatePropagation();
                     alert('Selecione pelo menos uma foto antes de enviar.');
                     return;
                 }
@@ -597,7 +596,7 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                 if (loadingOverlay) {
                     loadingOverlay.classList.remove('hidden');
                 }
-            });
+            }, true);
         }
 
         renderPhotoQueue();
