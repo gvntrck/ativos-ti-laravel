@@ -1,10 +1,14 @@
+<?php
+$head_module_config = isset($module_config) && is_array($module_config) ? $module_config : [];
+$html_title = !empty($head_module_config['title']) ? $head_module_config['title'] : 'Controle de Computadores';
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controle de Computadores</title>
+    <title><?php echo esc_html($html_title); ?></title>
     <?php
     // Shim for Elementor frontend config to prevent JS errors
     ?>
@@ -166,7 +170,24 @@
     $logout_url = wp_logout_url(home_url('/'));
     $can_edit = isset($can_edit) ? (bool) $can_edit : false;
     $is_read_only = isset($is_read_only) ? (bool) $is_read_only : false;
+    $current_module = isset($current_module) ? (string) $current_module : 'computers';
+    $module_config = isset($module_config) && is_array($module_config) ? $module_config : [];
+    $message_map = isset($message_map) && is_array($message_map) ? $message_map : [];
+    $module_switch_urls = isset($module_switch_urls) && is_array($module_switch_urls) ? $module_switch_urls : [];
+    $module_param = 'module=' . urlencode($current_module);
+    $module_list_url = '?' . $module_param . '&view=list';
+    $module_trash_url = '?' . $module_param . '&view=trash';
+    $module_add_url = '?' . $module_param . '&view=add';
+    $trash_filters_storage_key = !empty($module_config['trash_filters_storage_key']) ? $module_config['trash_filters_storage_key'] : 'ccs_trash_filters';
+    $module_title = !empty($module_config['title']) ? $module_config['title'] : 'Controle';
+    $module_subtitle = !empty($module_config['subtitle']) ? $module_config['subtitle'] : 'Gerenciamento';
+    $module_new_label = !empty($module_config['new_label']) ? $module_config['new_label'] : 'Novo Registro';
+    $module_is_computers = $current_module === 'computers';
     ?>
+
+    <script>
+        window.ccsCurrentModule = <?php echo wp_json_encode($current_module); ?>;
+    </script>
 
     <div class="ccs-topbar">
         <div class="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-end gap-3 text-xs">
@@ -180,79 +201,96 @@
         <!-- Header -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <div>
-                <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Controle de Computadores</h1>
-                <p class="text-slate-500 mt-1">Gerenciamento de Inventário</p>
+                <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight"><?php echo esc_html($module_title); ?></h1>
+                <p class="text-slate-500 mt-1"><?php echo esc_html($module_subtitle); ?></p>
+                <div class="mt-3 inline-flex rounded-lg border border-slate-200 bg-white p-1 gap-1">
+                    <a href="<?php echo esc_url($module_switch_urls['computers'] ?? '?module=computers&view=list'); ?>"
+                        class="px-3 py-1.5 text-sm rounded-md transition-colors <?php echo $module_is_computers ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-100'; ?>">
+                        Computadores
+                    </a>
+                    <a href="<?php echo esc_url($module_switch_urls['cellphones'] ?? '?module=cellphones&view=list'); ?>"
+                        class="px-3 py-1.5 text-sm rounded-md transition-colors <?php echo !$module_is_computers ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-100'; ?>">
+                        Celulares
+                    </a>
+                </div>
             </div>
             <div class="flex space-x-3 w-full sm:w-auto">
                 <?php if ($view !== 'list'): ?>
-                    <a href="?" id="backToListBtn" class="btn btn-secondary">Voltar para Lista</a>
+                    <a href="<?php echo esc_url($module_list_url); ?>" id="backToListBtn" class="btn btn-secondary">Voltar para Lista</a>
                     <script>
-                        // Restaurar contexto ao clicar em Voltar para Lista
                         (function () {
                             const backBtn = document.getElementById('backToListBtn');
-                            if (backBtn) {
-                                const currentParams = new URLSearchParams(window.location.search);
-                                const returnTo = (currentParams.get('return_to') || '').toLowerCase();
+                            if (!backBtn) return;
 
-                                if (returnTo === 'trash') {
-                                    const savedTrashFilters = sessionStorage.getItem('ccs_trash_filters');
-                                    if (savedTrashFilters) {
-                                        try {
-                                            const params = new URLSearchParams(savedTrashFilters.replace(/^\?/, ''));
-                                            const allowedKeys = new Set([
-                                                'view',
-                                                'filter',
-                                                'type_desktop',
-                                                'type_notebook',
-                                                'status_active',
-                                                'status_backup',
-                                                'status_maintenance',
-                                                'status_retired',
-                                                'loc_fabrica',
-                                                'loc_centro',
-                                                'loc_perdido',
-                                                'loc_manutencao',
-                                                'loc_sem_local'
-                                            ]);
+                            const currentParams = new URLSearchParams(window.location.search);
+                            const returnTo = (currentParams.get('return_to') || '').toLowerCase();
+                            const module = (currentParams.get('module') || '<?php echo esc_js($current_module); ?>').toLowerCase();
+                            const storageKey = <?php echo wp_json_encode($trash_filters_storage_key); ?>;
 
-                                            const sanitized = new URLSearchParams();
-                                            params.forEach((value, key) => {
-                                                if (allowedKeys.has(key)) {
-                                                    sanitized.set(key, value);
-                                                }
-                                            });
+                            if (returnTo === 'trash') {
+                                const savedTrashFilters = sessionStorage.getItem(storageKey);
+                                if (savedTrashFilters) {
+                                    try {
+                                        const params = new URLSearchParams(savedTrashFilters.replace(/^\?/, ''));
+                                        const allowedKeys = new Set([
+                                            'module',
+                                            'view',
+                                            'filter',
+                                            'type_desktop',
+                                            'type_notebook',
+                                            'status_active',
+                                            'status_backup',
+                                            'status_maintenance',
+                                            'status_retired',
+                                            'loc_fabrica',
+                                            'loc_centro',
+                                            'loc_perdido',
+                                            'loc_manutencao',
+                                            'loc_sem_local',
+                                            'dept_comercial_rn',
+                                            'dept_fabrica_rn',
+                                            'dept_outro',
+                                            'dept_sem'
+                                        ]);
 
-                                            sanitized.set('view', 'trash');
-                                            backBtn.href = '?' + sanitized.toString();
-                                            return;
-                                        } catch (error) {
-                                            backBtn.href = '?view=trash';
-                                            return;
-                                        }
+                                        const sanitized = new URLSearchParams();
+                                        params.forEach((value, key) => {
+                                            if (allowedKeys.has(key)) {
+                                                sanitized.set(key, value);
+                                            }
+                                        });
+
+                                        sanitized.set('view', 'trash');
+                                        sanitized.set('module', module);
+                                        backBtn.href = '?' + sanitized.toString();
+                                        return;
+                                    } catch (error) {
+                                        backBtn.href = '?module=' + encodeURIComponent(module) + '&view=trash';
+                                        return;
                                     }
-
-                                    backBtn.href = '?view=trash';
-                                    return;
                                 }
 
-                                if (returnTo === 'reports') {
-                                    backBtn.href = '?view=reports';
-                                    return;
-                                }
-
-                                backBtn.href = '?view=list';
+                                backBtn.href = '?module=' + encodeURIComponent(module) + '&view=trash';
+                                return;
                             }
+
+                            if (returnTo === 'reports') {
+                                backBtn.href = '?module=' + encodeURIComponent(module) + '&view=reports';
+                                return;
+                            }
+
+                            backBtn.href = '?module=' + encodeURIComponent(module) + '&view=list';
                         })();
                     </script>
                 <?php endif; ?>
                 <?php if ($view === 'list'): ?>
-                    <a href="?view=trash" class="btn btn-secondary">Lixeira</a>
+                    <a href="<?php echo esc_url($module_trash_url); ?>" class="btn btn-secondary">Lixeira</a>
                 <?php endif; ?>
                 <?php if ($can_edit && $view !== 'add'): ?>
-                    <a href="?view=add" class="btn btn-primary"><svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor"
+                    <a href="<?php echo esc_url($module_add_url); ?>" class="btn btn-primary"><svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>Novo Computador</a>
+                        </svg><?php echo esc_html($module_new_label); ?></a>
                 <?php endif; ?>
             </div>
         </div>
@@ -264,28 +302,8 @@
         }
 
         if (isset($_GET['message'])) {
-            $msg = '';
-            $type = 'success';
-            switch ($_GET['message']) {
-                case 'created':
-                    $msg = 'Computador cadastrado com sucesso!';
-                    break;
-                case 'updated':
-                    $msg = 'Dados atualizados com sucesso!';
-                    break;
-                case 'checkup_added':
-                    $msg = 'Checkup registrado!';
-                    break;
-                case 'photo_uploaded':
-                    $msg = 'Foto atualizada com sucesso!';
-                    break;
-                case 'trashed':
-                    $msg = 'Computador movido para a lixeira!';
-                    break;
-                case 'restored':
-                    $msg = 'Computador restaurado com sucesso!';
-                    break;
-            }
+            $msg_key = sanitize_key((string) $_GET['message']);
+            $msg = $message_map[$msg_key] ?? '';
             if ($msg) {
                 echo "<div class='mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg flex items-center shadow-sm'><svg class='w-5 h-5 mr-2' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 13l4 4L19 7'></path></svg> $msg</div>";
             }

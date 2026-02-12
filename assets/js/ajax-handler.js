@@ -38,7 +38,7 @@ function bindAjaxForm(form) {
 
             const contentType = response.headers.get('content-type');
             if (!contentType || !contentType.includes('application/json')) {
-                throw new Error('Resposta inválida do servidor (não é JSON).');
+                throw new Error('Resposta invalida do servidor (nao e JSON).');
             }
 
             const data = await response.json();
@@ -50,7 +50,7 @@ function bindAjaxForm(form) {
             }
         } catch (error) {
             console.error('Erro AJAX:', error);
-            alert('Ocorreu um erro na requisição. Verifique o console.');
+            alert('Ocorreu um erro na requisicao. Verifique o console.');
         } finally {
             if (submitBtn) {
                 submitBtn.disabled = false;
@@ -95,7 +95,7 @@ function handleAjaxSuccess(form, response) {
     const payload = response.data || {};
     const resultData = payload.data || {};
 
-    if (action === 'add_checkup') {
+    if (action === 'add_checkup' || action === 'add_cellphone_checkup') {
         form.reset();
         prependHistoryItem(resultData.history_html);
 
@@ -105,17 +105,22 @@ function handleAjaxSuccess(form, response) {
         prependHistoryItem(resultData.history_html);
         showToast(payload.message || 'Atualizado!', 'success');
     }
-    else if (action === 'upload_photo') {
+    else if (action === 'upload_photo' || action === 'upload_cellphone_photo') {
         window.location.reload();
     }
-    else if (action === 'trash_computer' || action === 'restore_computer') {
+    else if (
+        action === 'trash_computer' ||
+        action === 'restore_computer' ||
+        action === 'trash_cellphone' ||
+        action === 'restore_cellphone'
+    ) {
         if (payload.redirect_url) {
             window.location.href = payload.redirect_url;
         } else {
             window.location.reload();
         }
     }
-    else if (action === 'delete_history') {
+    else if (action === 'delete_history' || action === 'delete_cellphone_history') {
         if (resultData.deleted_id) {
             const historyItem = form.closest('.relative.flex.gap-4');
             if (historyItem) {
@@ -126,15 +131,25 @@ function handleAjaxSuccess(form, response) {
             }
         }
 
-        showToast(payload.message || 'Item excluído!', 'success');
+        showToast(payload.message || 'Item excluido!', 'success');
     }
-    else if (action === 'add_computer' || action === 'update_computer') {
+    else if (
+        action === 'add_computer' ||
+        action === 'update_computer' ||
+        action === 'add_cellphone' ||
+        action === 'update_cellphone' ||
+        action === 'delete_permanent_computer' ||
+        action === 'delete_permanent_cellphone'
+    ) {
         if (payload.redirect_url) {
             window.location.href = payload.redirect_url;
         }
     }
+    else if (payload.redirect_url) {
+        window.location.href = payload.redirect_url;
+    }
     else {
-        showToast(payload.message || 'Ação realizada com sucesso!', 'success');
+        showToast(payload.message || 'Acao realizada com sucesso!', 'success');
     }
 }
 
@@ -154,4 +169,3 @@ function showToast(message, type = 'success') {
         setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
-

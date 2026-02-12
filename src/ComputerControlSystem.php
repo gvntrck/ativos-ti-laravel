@@ -2,11 +2,20 @@
 
 class ComputerControlSystem
 {
-    public const VERSION = '1.8.9';
+    public const VERSION = '1.9.0';
 
-    private $db_version = '1.3.0';
+    private const MODULE_COMPUTERS = 'computers';
+    private const MODULE_CELLPHONES = 'cellphones';
+
+    private $db_version = '1.4.0';
     private $table_inventory;
     private $table_history;
+    private $table_computer_inventory;
+    private $table_computer_history;
+    private $table_cellphone_inventory;
+    private $table_cellphone_history;
+    private $current_module = self::MODULE_COMPUTERS;
+    private $module_config = [];
     private $form_error = '';
     private $form_data = [];
     private $permissions = [];
@@ -21,13 +30,24 @@ class ComputerControlSystem
         'quick_windows_update',
         'delete_history',
         'delete_permanent_computer',
+        'add_cellphone',
+        'update_cellphone',
+        'add_cellphone_checkup',
+        'upload_cellphone_photo',
+        'trash_cellphone',
+        'restore_cellphone',
+        'delete_cellphone_history',
+        'delete_permanent_cellphone',
     ];
 
     public function __construct()
     {
         global $wpdb;
-        $this->table_inventory = $wpdb->prefix . 'computer_inventory';
-        $this->table_history = $wpdb->prefix . 'computer_history';
+        $this->table_computer_inventory = $wpdb->prefix . 'computer_inventory';
+        $this->table_computer_history = $wpdb->prefix . 'computer_history';
+        $this->table_cellphone_inventory = $wpdb->prefix . 'cellphone_inventory';
+        $this->table_cellphone_history = $wpdb->prefix . 'cellphone_history';
+        $this->set_current_module(self::MODULE_COMPUTERS);
 
         // Set MySQL session time zone to GMT-3
         $wpdb->query("SET time_zone = '-03:00'");
@@ -53,6 +73,8 @@ class ComputerControlSystem
             $this->deny_request('Acesso negado. Sua role nao possui permissao para acessar este sistema.', false, 403);
         }
 
+        $this->set_current_module($this->resolve_requested_module());
+
         $view = $this->get_requested_view();
         if (!$this->can_access_view($view)) {
             $this->deny_request('Acesso negado. Seu perfil possui somente permissao de visualizacao.', false, 403);
@@ -70,6 +92,186 @@ class ComputerControlSystem
             $this->deny_request('Acesso negado. Seu perfil possui somente permissao de visualizacao.', false, 403);
         }
         $this->render_page($render_view);
+    }
+
+    private function get_module_configs()
+    {
+        return [
+            self::MODULE_COMPUTERS => [
+                'key' => self::MODULE_COMPUTERS,
+                'inventory_table' => $this->table_computer_inventory,
+                'history_table' => $this->table_computer_history,
+                'history_foreign_key' => 'computer_id',
+                'id_field' => 'computer_id',
+                'identifier_field' => 'hostname',
+                'identifier_required' => true,
+                'table_preferences_meta_key' => 'ccs_report_table_preferences',
+                'report_primary_column' => 'hostname',
+                'add_action' => 'add_computer',
+                'update_action' => 'update_computer',
+                'checkup_action' => 'add_checkup',
+                'upload_photo_action' => 'upload_photo',
+                'trash_action' => 'trash_computer',
+                'restore_action' => 'restore_computer',
+                'delete_history_action' => 'delete_history',
+                'delete_permanent_action' => 'delete_permanent_computer',
+                'quick_action' => 'quick_windows_update',
+                'trash_filters_storage_key' => 'ccs_trash_filters_computers',
+                'report_filters_storage_key' => 'ccs_reports_filters_computers',
+                'title' => 'Controle de Computadores',
+                'subtitle' => 'Gerenciamento de Inventario',
+                'plural_label' => 'Computadores',
+                'singular_label' => 'Computador',
+                'new_label' => 'Novo Computador',
+                'report_title' => 'Relatorios de PCs',
+                'report_search_placeholder' => 'Busca global (hostname, usuario, local...)',
+                'list_search_placeholder' => 'Filtrar computadores...',
+                'copy_title' => 'FICHA DO COMPUTADOR',
+            ],
+            self::MODULE_CELLPHONES => [
+                'key' => self::MODULE_CELLPHONES,
+                'inventory_table' => $this->table_cellphone_inventory,
+                'history_table' => $this->table_cellphone_history,
+                'history_foreign_key' => 'cellphone_id',
+                'id_field' => 'cellphone_id',
+                'identifier_field' => 'phone_number',
+                'identifier_required' => false,
+                'table_preferences_meta_key' => 'ccs_report_table_preferences_cellphones',
+                'report_primary_column' => 'phone_number',
+                'add_action' => 'add_cellphone',
+                'update_action' => 'update_cellphone',
+                'checkup_action' => 'add_cellphone_checkup',
+                'upload_photo_action' => 'upload_cellphone_photo',
+                'trash_action' => 'trash_cellphone',
+                'restore_action' => 'restore_cellphone',
+                'delete_history_action' => 'delete_cellphone_history',
+                'delete_permanent_action' => 'delete_permanent_cellphone',
+                'quick_action' => null,
+                'trash_filters_storage_key' => 'ccs_trash_filters_cellphones',
+                'report_filters_storage_key' => 'ccs_reports_filters_cellphones',
+                'title' => 'Controle de Celulares',
+                'subtitle' => 'Gerenciamento de Inventario',
+                'plural_label' => 'Celulares',
+                'singular_label' => 'Celular',
+                'new_label' => 'Novo Celular',
+                'report_title' => 'Relatorios de Celulares',
+                'report_search_placeholder' => 'Busca global (numero, usuario, departamento...)',
+                'list_search_placeholder' => 'Filtrar celulares...',
+                'copy_title' => 'FICHA DO CELULAR',
+            ],
+        ];
+    }
+
+    private function set_current_module($module)
+    {
+        $configs = $this->get_module_configs();
+        if (!isset($configs[$module])) {
+            $module = self::MODULE_COMPUTERS;
+        }
+
+        $this->current_module = $module;
+        $this->module_config = $configs[$module];
+        $this->table_inventory = $this->module_config['inventory_table'];
+        $this->table_history = $this->module_config['history_table'];
+    }
+
+    private function resolve_requested_module()
+    {
+        $module = isset($_REQUEST['module']) ? sanitize_key((string) $_REQUEST['module']) : self::MODULE_COMPUTERS;
+        if (!in_array($module, [self::MODULE_COMPUTERS, self::MODULE_CELLPHONES], true)) {
+            $module = self::MODULE_COMPUTERS;
+        }
+
+        return $module;
+    }
+
+    private function get_module_from_action($action)
+    {
+        $configs = $this->get_module_configs();
+
+        foreach ($configs as $module => $config) {
+            $action_keys = [
+                'add_action',
+                'update_action',
+                'checkup_action',
+                'upload_photo_action',
+                'trash_action',
+                'restore_action',
+                'delete_history_action',
+                'delete_permanent_action',
+                'quick_action',
+            ];
+
+            foreach ($action_keys as $action_key) {
+                if (!empty($config[$action_key]) && $config[$action_key] === $action) {
+                    return $module;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private function is_computer_module()
+    {
+        return $this->current_module === self::MODULE_COMPUTERS;
+    }
+
+    private function get_status_labels()
+    {
+        return [
+            'active' => 'Em Uso',
+            'backup' => 'Backup',
+            'maintenance' => 'Manutencao',
+            'retired' => 'Aposentado',
+        ];
+    }
+
+    private function get_message_map()
+    {
+        $entity = $this->module_config['singular_label'];
+        $messages = [
+            'created' => $entity . ' cadastrado com sucesso!',
+            'updated' => 'Dados atualizados com sucesso!',
+            'checkup_added' => 'Checkup registrado!',
+            'photo_uploaded' => 'Foto atualizada com sucesso!',
+            'trashed' => $entity . ' movido para a lixeira!',
+            'restored' => $entity . ' restaurado com sucesso!',
+            'history_deleted' => 'Item de historico excluido com sucesso!',
+            'permanently_deleted' => $entity . ' excluido permanentemente.',
+        ];
+
+        if ($this->is_computer_module()) {
+            $messages['windows_updated'] = 'Atualizacao do Windows registrada!';
+        }
+
+        return $messages;
+    }
+
+    private function build_url($params = [])
+    {
+        $query = ['module' => $this->current_module];
+        foreach ($params as $key => $value) {
+            if ($value === null || $value === '') {
+                continue;
+            }
+            $query[$key] = $value;
+        }
+
+        return '?' . http_build_query($query);
+    }
+
+    private function build_module_url($module, $params = [])
+    {
+        $query = ['module' => $module];
+        foreach ($params as $key => $value) {
+            if ($value === null || $value === '') {
+                continue;
+            }
+            $query[$key] = $value;
+        }
+
+        return '?' . http_build_query($query);
     }
 
     private function initialize_permissions()
@@ -240,6 +442,10 @@ class ComputerControlSystem
     private function ensure_action_is_allowed($action, $is_ajax)
     {
         if (in_array($action, $this->edit_actions, true)) {
+            if ($action === 'quick_windows_update' && !$this->is_computer_module()) {
+                $this->deny_request('Acao desconhecida ou nao permitida para este modulo.', $is_ajax, 403);
+            }
+
             if (!$this->user_can_edit()) {
                 $this->deny_request(
                     'Permissao insuficiente. Seu perfil esta em modo somente visualizacao.',
@@ -274,37 +480,49 @@ class ComputerControlSystem
         }
     }
 
+    private function table_exists($table_name)
+    {
+        global $wpdb;
+        $like = $wpdb->esc_like((string) $table_name);
+        $result = $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $like));
+        return $result === $table_name;
+    }
+
     private function maybe_migrate()
     {
         global $wpdb;
-        $row = $wpdb->get_row("SELECT * FROM {$this->table_inventory} LIMIT 1", ARRAY_A);
-        if ($row && isset($row['user_email']) && !isset($row['user_name'])) {
-            $wpdb->query("ALTER TABLE {$this->table_inventory} CHANGE user_email user_name varchar(100) DEFAULT ''");
+        if ($this->table_exists($this->table_computer_inventory)) {
+            $row = $wpdb->get_row("SELECT * FROM {$this->table_computer_inventory} LIMIT 1", ARRAY_A);
+            if ($row && isset($row['user_email']) && !isset($row['user_name'])) {
+                $wpdb->query("ALTER TABLE {$this->table_computer_inventory} CHANGE user_email user_name varchar(100) DEFAULT ''");
+            }
+
+            $row = $wpdb->get_row("SELECT * FROM {$this->table_computer_inventory} LIMIT 1", ARRAY_A);
+            if ($row && !isset($row['photo_url'])) {
+                $wpdb->query("ALTER TABLE {$this->table_computer_inventory} ADD photo_url varchar(255) DEFAULT '' AFTER notes");
+            }
+
+            $row = $wpdb->get_row("SELECT * FROM {$this->table_computer_inventory} LIMIT 1", ARRAY_A);
+            if ($row && !isset($row['deleted'])) {
+                $wpdb->query("ALTER TABLE {$this->table_computer_inventory} ADD deleted tinyint(1) NOT NULL DEFAULT 0 AFTER status");
+            }
+
+            $row = $wpdb->get_row("SELECT * FROM {$this->table_computer_inventory} LIMIT 1", ARRAY_A);
+            if ($row && isset($row['last_windows_update'])) {
+                $wpdb->query("ALTER TABLE {$this->table_computer_inventory} DROP COLUMN last_windows_update");
+            }
+
+            $row = $wpdb->get_row("SELECT * FROM {$this->table_computer_inventory} LIMIT 1", ARRAY_A);
+            if ($row && !isset($row['property'])) {
+                $wpdb->query("ALTER TABLE {$this->table_computer_inventory} ADD property varchar(20) DEFAULT '' AFTER location");
+            }
         }
 
-        $row = $wpdb->get_row("SELECT * FROM {$this->table_inventory} LIMIT 1", ARRAY_A);
-        if ($row && !isset($row['photo_url'])) {
-            $wpdb->query("ALTER TABLE {$this->table_inventory} ADD photo_url varchar(255) DEFAULT '' AFTER notes");
-        }
-
-        $row_hist = $wpdb->get_row("SELECT * FROM {$this->table_history} LIMIT 1", ARRAY_A);
-        if ($row_hist && !isset($row_hist['photos'])) {
-            $wpdb->query("ALTER TABLE {$this->table_history} ADD photos text AFTER description");
-        }
-
-        $row = $wpdb->get_row("SELECT * FROM {$this->table_inventory} LIMIT 1", ARRAY_A);
-        if ($row && !isset($row['deleted'])) {
-            $wpdb->query("ALTER TABLE {$this->table_inventory} ADD deleted tinyint(1) NOT NULL DEFAULT 0 AFTER status");
-        }
-
-        $row = $wpdb->get_row("SELECT * FROM {$this->table_inventory} LIMIT 1", ARRAY_A);
-        if ($row && isset($row['last_windows_update'])) {
-            $wpdb->query("ALTER TABLE {$this->table_inventory} DROP COLUMN last_windows_update");
-        }
-
-        $row = $wpdb->get_row("SELECT * FROM {$this->table_inventory} LIMIT 1", ARRAY_A);
-        if ($row && !isset($row['property'])) {
-            $wpdb->query("ALTER TABLE {$this->table_inventory} ADD property varchar(20) DEFAULT '' AFTER location");
+        if ($this->table_exists($this->table_computer_history)) {
+            $row_hist = $wpdb->get_row("SELECT * FROM {$this->table_computer_history} LIMIT 1", ARRAY_A);
+            if ($row_hist && !isset($row_hist['photos'])) {
+                $wpdb->query("ALTER TABLE {$this->table_computer_history} ADD photos text AFTER description");
+            }
         }
     }
 
@@ -313,7 +531,7 @@ class ComputerControlSystem
         global $wpdb;
         $charset_collate = $wpdb->get_charset_collate();
 
-        $sql_inventory = "CREATE TABLE {$this->table_inventory} (
+        $sql_computer_inventory = "CREATE TABLE {$this->table_computer_inventory} (
             id mediumint(9) NOT NULL AUTO_INCREMENT,
             type enum('desktop','notebook') NOT NULL DEFAULT 'desktop',
             hostname varchar(100) NOT NULL,
@@ -331,7 +549,7 @@ class ComputerControlSystem
             KEY hostname (hostname)
         ) $charset_collate;";
 
-        $sql_history = "CREATE TABLE {$this->table_history} (
+        $sql_computer_history = "CREATE TABLE {$this->table_computer_history} (
             id mediumint(9) NOT NULL AUTO_INCREMENT,
             computer_id mediumint(9) NOT NULL,
             event_type varchar(50) NOT NULL,
@@ -343,9 +561,38 @@ class ComputerControlSystem
             KEY computer_id (computer_id)
         ) $charset_collate;";
 
+        $sql_cellphone_inventory = "CREATE TABLE {$this->table_cellphone_inventory} (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            phone_number varchar(30) DEFAULT '',
+            status varchar(20) NOT NULL DEFAULT 'active',
+            deleted tinyint(1) NOT NULL DEFAULT 0,
+            user_name varchar(100) DEFAULT '',
+            department varchar(100) DEFAULT '',
+            notes text,
+            photo_url varchar(255) DEFAULT '',
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY  (id),
+            KEY phone_number (phone_number)
+        ) $charset_collate;";
+
+        $sql_cellphone_history = "CREATE TABLE {$this->table_cellphone_history} (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            cellphone_id mediumint(9) NOT NULL,
+            event_type varchar(50) NOT NULL,
+            description text NOT NULL,
+            photos text,
+            user_id bigint(20) NOT NULL,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY  (id),
+            KEY cellphone_id (cellphone_id)
+        ) $charset_collate;";
+
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-        dbDelta($sql_inventory);
-        dbDelta($sql_history);
+        dbDelta($sql_computer_inventory);
+        dbDelta($sql_computer_history);
+        dbDelta($sql_cellphone_inventory);
+        dbDelta($sql_cellphone_history);
 
         update_option('ccs_db_version', $this->db_version);
     }
@@ -356,50 +603,68 @@ class ComputerControlSystem
             return;
         }
 
-        // Verify Nonce
         if (!isset($_POST['_wpnonce']) || !wp_verify_nonce($_POST['_wpnonce'], 'ccs_action_nonce')) {
             if ($this->is_ajax()) {
-                wp_send_json_error(['message' => 'Erro de segurança: Nonce inválido ou expirado.']);
+                wp_send_json_error(['message' => 'Erro de seguranca: Nonce invalido ou expirado.']);
             }
-            wp_die('Erro de segurança: Nonce inválido ou expirado.');
+            wp_die('Erro de seguranca: Nonce invalido ou expirado.');
         }
 
-        global $wpdb;
         $current_user_id = get_current_user_id();
         $is_ajax = $this->is_ajax();
         $action = sanitize_key((string) $_POST['ccs_action']);
+        $request_module = $this->resolve_requested_module();
+        $request_has_module = isset($_REQUEST['module']);
+
+        $action_module = $this->get_module_from_action($action);
+        if ($action_module !== null) {
+            if ($request_has_module && $request_module !== $action_module) {
+                $this->deny_request('Acao desconhecida ou nao permitida para este modulo.', $is_ajax, 403);
+            }
+            $this->set_current_module($action_module);
+        } else {
+            $this->set_current_module($request_module);
+        }
 
         $this->ensure_action_is_allowed($action, $is_ajax);
 
-        $result = ['success' => false, 'message' => 'Ação desconhecida.'];
+        $result = ['success' => false, 'message' => 'Acao desconhecida.'];
 
         switch ($action) {
             case 'add_computer':
-                $result = $this->process_add_computer($current_user_id);
+            case 'add_cellphone':
+                $result = $this->process_add_inventory_item($current_user_id);
                 break;
             case 'update_computer':
-                $result = $this->process_update_computer($current_user_id);
+            case 'update_cellphone':
+                $result = $this->process_update_inventory_item($current_user_id);
                 break;
             case 'add_checkup':
+            case 'add_cellphone_checkup':
                 $result = $this->process_add_checkup($current_user_id);
                 break;
             case 'upload_photo':
+            case 'upload_cellphone_photo':
                 $result = $this->process_upload_photo($current_user_id);
                 break;
             case 'trash_computer':
-                $result = $this->process_trash_computer($current_user_id);
+            case 'trash_cellphone':
+                $result = $this->process_trash_item($current_user_id);
                 break;
             case 'restore_computer':
-                $result = $this->process_restore_computer($current_user_id);
+            case 'restore_cellphone':
+                $result = $this->process_restore_item($current_user_id);
                 break;
             case 'quick_windows_update':
                 $result = $this->process_quick_windows_update($current_user_id);
                 break;
             case 'delete_history':
+            case 'delete_cellphone_history':
                 $result = $this->process_delete_history($current_user_id);
                 break;
             case 'delete_permanent_computer':
-                $result = $this->process_delete_permanent_computer($current_user_id);
+            case 'delete_permanent_cellphone':
+                $result = $this->process_delete_permanent_item($current_user_id);
                 break;
             case 'save_table_preferences':
                 $result = $this->process_save_table_preferences($current_user_id);
@@ -407,26 +672,22 @@ class ComputerControlSystem
         }
 
         if ($is_ajax) {
-            if ($result['success']) {
+            if (!empty($result['success'])) {
                 wp_send_json_success($result);
             } else {
                 wp_send_json_error($result);
             }
         } else {
-            if ($result['success']) {
+            if (!empty($result['success'])) {
                 $this->redirect($result['redirect_url']);
             } else {
-                // Handle form errors in non-ajax mode (populate form_error and form_data)
-                // This logic is slightly simplistic for "stay on page" errors like invalid hostname
-                // Ideally process methods should set class state if they fail? 
-                // For now let's rely on what we have. Most errors were redirecting or setting state.
-
                 if (isset($result['form_error'])) {
                     $this->form_error = $result['form_error'];
                     $this->form_data = $result['form_data'] ?? $_POST;
                     $_GET['view'] = $result['view'] ?? $_GET['view'];
-                    if (isset($result['id']))
+                    if (isset($result['id'])) {
                         $_GET['id'] = $result['id'];
+                    }
                 } else {
                     wp_die($result['message']);
                 }
@@ -440,106 +701,221 @@ class ComputerControlSystem
             || (isset($_POST['ajax']) && $_POST['ajax'] === '1');
     }
 
-    private function process_add_computer($current_user_id)
+    private function get_post_item_id()
+    {
+        $module_id_field = $this->module_config['id_field'] ?? 'computer_id';
+        if (isset($_POST[$module_id_field])) {
+            return intval($_POST[$module_id_field]);
+        }
+
+        if (isset($_POST['computer_id'])) {
+            return intval($_POST['computer_id']);
+        }
+
+        if (isset($_POST['cellphone_id'])) {
+            return intval($_POST['cellphone_id']);
+        }
+
+        return 0;
+    }
+
+    private function build_form_error($message, $view, $id = 0, $form_data = null)
+    {
+        $result = [
+            'success' => false,
+            'message' => $message,
+            'form_error' => $message,
+            'form_data' => is_array($form_data) ? $form_data : $_POST,
+            'view' => $view,
+        ];
+
+        if ($id > 0) {
+            $result['id'] = $id;
+        }
+
+        return $result;
+    }
+
+    private function build_inventory_payload_from_post()
+    {
+        if ($this->is_computer_module()) {
+            return [
+                'type' => sanitize_text_field($_POST['type'] ?? 'desktop'),
+                'hostname' => strtoupper(sanitize_text_field($_POST['hostname'] ?? '')),
+                'status' => sanitize_text_field($_POST['status'] ?? 'active'),
+                'user_name' => sanitize_text_field($_POST['user_name'] ?? ''),
+                'location' => sanitize_text_field($_POST['location'] ?? ''),
+                'property' => $this->sanitize_property($_POST['property'] ?? ''),
+                'specs' => sanitize_textarea_field($_POST['specs'] ?? ''),
+                'notes' => sanitize_textarea_field($_POST['notes'] ?? ''),
+            ];
+        }
+
+        return [
+            'phone_number' => sanitize_text_field($_POST['phone_number'] ?? ''),
+            'status' => sanitize_text_field($_POST['status'] ?? 'active'),
+            'user_name' => sanitize_text_field($_POST['user_name'] ?? ''),
+            'department' => $this->sanitize_department($_POST['department'] ?? ''),
+            'notes' => sanitize_textarea_field($_POST['notes'] ?? ''),
+        ];
+    }
+
+    private function validate_unique_identifier_on_create($payload)
     {
         global $wpdb;
-        $hostname = strtoupper(sanitize_text_field($_POST['hostname']));
 
-        // Handle Photos
+        if ($this->is_computer_module()) {
+            $hostname = $payload['hostname'];
+            if ($hostname === '') {
+                return $this->build_form_error('Hostname e obrigatorio.', 'add', 0, array_merge($_POST, ['hostname' => $hostname]));
+            }
+
+            $exists = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$this->table_inventory} WHERE hostname = %s AND deleted = 0", $hostname));
+            if (intval($exists) > 0) {
+                return $this->build_form_error(
+                    "O hostname '{$hostname}' ja esta em uso por outro computador.",
+                    'add',
+                    0,
+                    array_merge($_POST, ['hostname' => $hostname])
+                );
+            }
+
+            return null;
+        }
+
+        $phone_number = trim((string) $payload['phone_number']);
+        $normalized_phone = $this->normalize_phone_number($phone_number);
+
+        if ($normalized_phone !== '' && !$this->is_phone_number_unique($normalized_phone, 0)) {
+            return $this->build_form_error(
+                "O numero '{$phone_number}' ja esta em uso por outro celular.",
+                'add',
+                0,
+                array_merge($_POST, ['phone_number' => $phone_number])
+            );
+        }
+
+        return null;
+    }
+
+    private function validate_unique_identifier_on_update($payload, $id)
+    {
+        global $wpdb;
+
+        if ($this->is_computer_module()) {
+            $hostname = $payload['hostname'];
+            if ($hostname === '') {
+                return $this->build_form_error('Hostname e obrigatorio.', 'edit', $id, array_merge($_POST, ['hostname' => $hostname]));
+            }
+
+            $exists = $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM {$this->table_inventory} WHERE hostname = %s AND id != %d AND deleted = 0",
+                $hostname,
+                $id
+            ));
+
+            if (intval($exists) > 0) {
+                return $this->build_form_error(
+                    "O hostname '{$hostname}' ja esta em uso por outro computador.",
+                    'edit',
+                    $id,
+                    array_merge($_POST, ['hostname' => $hostname])
+                );
+            }
+
+            return null;
+        }
+
+        $phone_number = trim((string) $payload['phone_number']);
+        $normalized_phone = $this->normalize_phone_number($phone_number);
+
+        if ($normalized_phone !== '' && !$this->is_phone_number_unique($normalized_phone, $id)) {
+            return $this->build_form_error(
+                "O numero '{$phone_number}' ja esta em uso por outro celular.",
+                'edit',
+                $id,
+                array_merge($_POST, ['phone_number' => $phone_number])
+            );
+        }
+
+        return null;
+    }
+
+    private function process_add_inventory_item($current_user_id)
+    {
+        global $wpdb;
+
         $photo_url = '';
         $photos_json = null;
 
         if (!empty($_FILES['photo']['name'])) {
-            $uploaded_photos = $this->handle_file_uploads(['name' => [$_FILES['photo']['name']], 'type' => [$_FILES['photo']['type']], 'tmp_name' => [$_FILES['photo']['tmp_name']], 'error' => [$_FILES['photo']['error']], 'size' => [$_FILES['photo']['size']]]);
+            $single_photo_files = [
+                'name' => [$_FILES['photo']['name']],
+                'type' => [$_FILES['photo']['type']],
+                'tmp_name' => [$_FILES['photo']['tmp_name']],
+                'error' => [$_FILES['photo']['error']],
+                'size' => [$_FILES['photo']['size']],
+            ];
+            $uploaded_photos = $this->handle_file_uploads($single_photo_files);
             if (!empty($uploaded_photos)) {
                 $photo_url = $uploaded_photos[0];
                 $photos_json = json_encode($uploaded_photos);
             }
         }
 
-        // Validation
-        $exists = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$this->table_inventory} WHERE hostname = %s AND deleted = 0", $hostname));
-        if ($exists > 0) {
+        $payload = $this->build_inventory_payload_from_post();
+        $validation_error = $this->validate_unique_identifier_on_create($payload);
+        if ($validation_error !== null) {
+            return $validation_error;
+        }
+
+        $payload['photo_url'] = $photo_url;
+        $wpdb->insert($this->table_inventory, $payload);
+        $item_id = intval($wpdb->insert_id);
+
+        if ($item_id <= 0) {
             return [
                 'success' => false,
-                'message' => "O hostname '$hostname' já está em uso por outro computador.",
-                'form_error' => "O hostname '$hostname' já está em uso por outro computador.",
-                'form_data' => array_merge($_POST, ['hostname' => $hostname]),
-                'view' => 'add'
+                'message' => 'Erro ao cadastrar registro.',
             ];
         }
 
-        $wpdb->insert($this->table_inventory, [
-            'type' => sanitize_text_field($_POST['type']),
-            'hostname' => $hostname,
-            'status' => sanitize_text_field($_POST['status']),
-            'user_name' => sanitize_text_field($_POST['user_name']),
-            'location' => sanitize_text_field($_POST['location']),
-            'property' => $this->sanitize_property($_POST['property'] ?? ''),
-            'specs' => sanitize_textarea_field($_POST['specs']),
-            'notes' => sanitize_textarea_field($_POST['notes']),
-            'photo_url' => $photo_url
-        ]);
-
-        $computer_id = $wpdb->insert_id;
-        $this->log_history($computer_id, 'create', 'Computador cadastrado', $current_user_id, $photos_json);
+        $this->log_history($item_id, 'create', $this->module_config['singular_label'] . ' cadastrado', $current_user_id, $photos_json);
 
         return [
             'success' => true,
-            'message' => 'Computador cadastrado com sucesso!',
-            'redirect_url' => '?message=created',
-            'data' => ['id' => $computer_id]
+            'message' => $this->module_config['singular_label'] . ' cadastrado com sucesso!',
+            'redirect_url' => $this->build_url(['message' => 'created']),
+            'data' => ['id' => $item_id],
         ];
     }
 
-    private function process_update_computer($current_user_id)
+    private function process_update_inventory_item($current_user_id)
     {
         global $wpdb;
-        $id = intval($_POST['computer_id']);
+        $id = $this->get_post_item_id();
         $old_data = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$this->table_inventory} WHERE id = %d", $id), ARRAY_A);
 
         if (!$old_data) {
             return [
                 'success' => false,
-                'message' => 'Computador não encontrado.',
+                'message' => $this->module_config['singular_label'] . ' nao encontrado.',
             ];
         }
 
-        $new_data = [
-            'type' => sanitize_text_field($_POST['type']),
-            'hostname' => strtoupper(sanitize_text_field($_POST['hostname'])),
-            'status' => sanitize_text_field($_POST['status']),
-            'user_name' => sanitize_text_field($_POST['user_name']),
-            'location' => sanitize_text_field($_POST['location']),
-            'property' => $this->sanitize_property($_POST['property'] ?? ''),
-            'specs' => sanitize_textarea_field($_POST['specs']),
-            'notes' => sanitize_textarea_field($_POST['notes']),
-        ];
-
-        // Validation
-        $exists = $wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(*) FROM {$this->table_inventory} WHERE hostname = %s AND id != %d AND deleted = 0",
-            $new_data['hostname'],
-            $id
-        ));
-
-        if ($exists > 0) {
-            return [
-                'success' => false,
-                'message' => "O hostname '{$new_data['hostname']}' já está em uso por outro computador.",
-                'form_error' => "O hostname '{$new_data['hostname']}' já está em uso por outro computador.",
-                'form_data' => array_merge($_POST, ['hostname' => $new_data['hostname']]),
-                'view' => 'edit',
-                'id' => $id
-            ];
+        $new_data = $this->build_inventory_payload_from_post();
+        $validation_error = $this->validate_unique_identifier_on_update($new_data, $id);
+        if ($validation_error !== null) {
+            return $validation_error;
         }
 
         $wpdb->update($this->table_inventory, $new_data, ['id' => $id]);
 
         $changes = [];
         foreach ($new_data as $key => $value) {
-            if ($old_data[$key] != $value) {
-                $changes[] = "$key alterado de '{$old_data[$key]}' para '$value'";
+            $old_value = isset($old_data[$key]) ? (string) $old_data[$key] : '';
+            if ((string) $old_value !== (string) $value) {
+                $changes[] = "{$key} alterado de '{$old_value}' para '{$value}'";
             }
         }
 
@@ -549,152 +925,192 @@ class ComputerControlSystem
 
         return [
             'success' => true,
-            'message' => 'Computador atualizado com sucesso!',
-            'redirect_url' => '?view=details&id=' . $id . '&message=updated',
-            'data' => ['id' => $id]
+            'message' => $this->module_config['singular_label'] . ' atualizado com sucesso!',
+            'redirect_url' => $this->build_url(['view' => 'details', 'id' => $id, 'message' => 'updated']),
+            'data' => ['id' => $id],
         ];
     }
 
     private function process_add_checkup($current_user_id)
     {
-        $id = intval($_POST['computer_id']);
-        $description = sanitize_textarea_field($_POST['description']);
+        $id = $this->get_post_item_id();
+        $description = sanitize_textarea_field($_POST['description'] ?? '');
+        if ($description === '') {
+            return [
+                'success' => false,
+                'message' => 'Descricao obrigatoria.',
+            ];
+        }
+
         $history_id = $this->log_history($id, 'checkup', $description, $current_user_id);
 
         return [
             'success' => true,
             'message' => 'Checkup adicionado com sucesso.',
-            'redirect_url' => '?view=details&id=' . $id . '&message=checkup_added',
+            'redirect_url' => $this->build_url(['view' => 'details', 'id' => $id, 'message' => 'checkup_added']),
             'data' => [
                 'history_html' => $this->get_history_item_html($id, $description, 'checkup', $current_user_id, $history_id)
-            ]
+            ],
         ];
+    }
+
+    private function get_uploaded_photos_from_request()
+    {
+        $file_candidates = ['computer_photos', 'cellphone_photos', 'asset_photos'];
+        foreach ($file_candidates as $file_key) {
+            if (isset($_FILES[$file_key]) && !empty($_FILES[$file_key]['name'])) {
+                return $this->handle_file_uploads($_FILES[$file_key]);
+            }
+        }
+
+        return [];
     }
 
     private function process_upload_photo($current_user_id)
     {
         global $wpdb;
-        $id = intval($_POST['computer_id']);
-        $uploaded_photos = $this->handle_file_uploads($_FILES['computer_photos']);
+        $id = $this->get_post_item_id();
+        $uploaded_photos = $this->get_uploaded_photos_from_request();
 
-        if (!empty($uploaded_photos)) {
-            $photo_url = $uploaded_photos[0];
-            $photos_json = json_encode($uploaded_photos);
-
-            $wpdb->update($this->table_inventory, ['photo_url' => $photo_url], ['id' => $id]);
-            $this->log_history($id, 'update', 'Novas fotos adicionadas', $current_user_id, $photos_json);
-
-            return [
-                'success' => true,
-                'message' => 'Fotos enviadas com sucesso!',
-                'redirect_url' => '?view=details&id=' . $id . '&message=photo_uploaded',
-                'data' => ['photo_url' => $photo_url]
-            ];
-        } else {
+        if (empty($uploaded_photos)) {
             return ['success' => false, 'message' => 'Erro ao enviar imagens.'];
         }
+
+        $photo_url = $uploaded_photos[0];
+        $photos_json = json_encode($uploaded_photos);
+
+        $wpdb->update($this->table_inventory, ['photo_url' => $photo_url], ['id' => $id]);
+        $this->log_history($id, 'update', 'Novas fotos adicionadas', $current_user_id, $photos_json);
+
+        return [
+            'success' => true,
+            'message' => 'Fotos enviadas com sucesso!',
+            'redirect_url' => $this->build_url(['view' => 'details', 'id' => $id, 'message' => 'photo_uploaded']),
+            'data' => ['photo_url' => $photo_url],
+        ];
     }
 
-    private function process_trash_computer($current_user_id)
+    private function process_trash_item($current_user_id)
     {
         global $wpdb;
-        $id = intval($_POST['computer_id']);
+        $id = $this->get_post_item_id();
         $wpdb->update($this->table_inventory, ['deleted' => 1], ['id' => $id]);
         $this->log_history($id, 'trash', 'Movido para a lixeira', $current_user_id);
 
         return [
             'success' => true,
-            'message' => 'Computador movido para a lixeira.',
-            'redirect_url' => '?message=trashed'
+            'message' => $this->module_config['singular_label'] . ' movido para a lixeira.',
+            'redirect_url' => $this->build_url(['view' => 'list', 'message' => 'trashed']),
         ];
     }
 
-    private function process_restore_computer($current_user_id)
+    private function process_restore_item($current_user_id)
     {
         global $wpdb;
-        $id = intval($_POST['computer_id']);
+        $id = $this->get_post_item_id();
+        $item = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$this->table_inventory} WHERE id = %d", $id), ARRAY_A);
+        if (!$item) {
+            return [
+                'success' => false,
+                'message' => $this->module_config['singular_label'] . ' nao encontrado.',
+            ];
+        }
+
+        if (!$this->is_computer_module()) {
+            $phone_number = trim((string) ($item['phone_number'] ?? ''));
+            $normalized_phone = $this->normalize_phone_number($phone_number);
+            if ($normalized_phone !== '' && !$this->is_phone_number_unique($normalized_phone, $id)) {
+                return [
+                    'success' => false,
+                    'message' => "Nao foi possivel restaurar: o numero '{$phone_number}' ja esta em uso por outro celular ativo.",
+                ];
+            }
+        }
+
         $wpdb->update($this->table_inventory, ['deleted' => 0], ['id' => $id]);
         $this->log_history($id, 'restore', 'Restaurado da lixeira', $current_user_id);
 
         return [
             'success' => true,
-            'message' => 'Computador restaurado.',
-            'redirect_url' => '?view=details&id=' . $id . '&message=restored'
+            'message' => $this->module_config['singular_label'] . ' restaurado.',
+            'redirect_url' => $this->build_url(['view' => 'details', 'id' => $id, 'message' => 'restored']),
         ];
     }
 
     private function process_quick_windows_update($current_user_id)
     {
-        $id = intval($_POST['computer_id']);
+        if (!$this->is_computer_module()) {
+            return [
+                'success' => false,
+                'message' => 'Acao nao disponivel para este modulo.',
+            ];
+        }
+
+        $id = $this->get_post_item_id();
         $description = 'Windows Atualizado';
         $history_id = $this->log_history($id, 'maintenance', $description, $current_user_id);
 
         return [
             'success' => true,
             'message' => 'Atualizacao do Windows registrada no historico.',
-            'redirect_url' => '?view=details&id=' . $id . '&message=windows_updated',
+            'redirect_url' => $this->build_url(['view' => 'details', 'id' => $id, 'message' => 'windows_updated']),
             'data' => [
                 'history_html' => $this->get_history_item_html($id, $description, 'maintenance', $current_user_id, $history_id)
-            ]
+            ],
         ];
     }
 
     private function process_delete_history($current_user_id)
     {
         global $wpdb;
-        $history_id = intval($_POST['history_id']);
-        $computer_id = intval($_POST['computer_id']);
+        $history_id = intval($_POST['history_id'] ?? 0);
+        $item_id = $this->get_post_item_id();
+        $fk = $this->module_config['history_foreign_key'];
 
-        // Verificar se o item existe
         $history_item = $wpdb->get_row($wpdb->prepare(
-            "SELECT * FROM {$this->table_history} WHERE id = %d AND computer_id = %d",
+            "SELECT * FROM {$this->table_history} WHERE id = %d AND {$fk} = %d",
             $history_id,
-            $computer_id
+            $item_id
         ));
 
         if (!$history_item) {
             return [
                 'success' => false,
-                'message' => 'Item de histórico não encontrado.'
+                'message' => 'Item de historico nao encontrado.',
             ];
         }
 
-        // Excluir o item do histórico
         $wpdb->delete($this->table_history, ['id' => $history_id]);
 
         return [
             'success' => true,
-            'message' => 'Item de histórico excluído com sucesso.',
-            'redirect_url' => '?view=details&id=' . $computer_id . '&message=history_deleted',
-            'data' => ['deleted_id' => $history_id]
+            'message' => 'Item de historico excluido com sucesso.',
+            'redirect_url' => $this->build_url(['view' => 'details', 'id' => $item_id, 'message' => 'history_deleted']),
+            'data' => ['deleted_id' => $history_id],
         ];
     }
 
-    private function process_delete_permanent_computer($current_user_id)
+    private function process_delete_permanent_item($current_user_id)
     {
         global $wpdb;
-        $id = intval($_POST['computer_id']);
+        $id = $this->get_post_item_id();
+        $item = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$this->table_inventory} WHERE id = %d", $id));
 
-        // Check if computer exists
-        $computer = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$this->table_inventory} WHERE id = %d", $id));
-
-        if (!$computer) {
+        if (!$item) {
             return [
                 'success' => false,
-                'message' => 'Computador não encontrado.'
+                'message' => $this->module_config['singular_label'] . ' nao encontrado.',
             ];
         }
 
-        // Delete history first
-        $wpdb->delete($this->table_history, ['computer_id' => $id]);
-
-        // Delete inventory record
+        $fk = $this->module_config['history_foreign_key'];
+        $wpdb->delete($this->table_history, [$fk => $id]);
         $wpdb->delete($this->table_inventory, ['id' => $id]);
 
         return [
             'success' => true,
-            'message' => 'Computador excluído permanentemente.',
-            'redirect_url' => '?view=trash&message=permanently_deleted'
+            'message' => $this->module_config['singular_label'] . ' excluido permanentemente.',
+            'redirect_url' => $this->build_url(['view' => 'trash', 'message' => 'permanently_deleted']),
         ];
     }
 
@@ -758,7 +1174,7 @@ class ComputerControlSystem
             'zebra' => $zebra,
         ];
 
-        update_user_meta($current_user_id, 'ccs_report_table_preferences', $sanitized_preferences);
+        update_user_meta($current_user_id, $this->module_config['table_preferences_meta_key'], $sanitized_preferences);
 
         return [
             'success' => true,
@@ -806,21 +1222,67 @@ class ComputerControlSystem
         return in_array($value, $allowed, true) ? $value : '';
     }
 
+    private function sanitize_department($value)
+    {
+        $value = sanitize_text_field((string) $value);
+        $normalized = strtoupper(remove_accents($value));
+        $allowed = ['COMERCIAL-RN', 'FABRICA-RN'];
+        if (in_array($normalized, $allowed, true)) {
+            return $normalized;
+        }
+
+        return $value;
+    }
+
+    private function normalize_phone_number($value)
+    {
+        return preg_replace('/\D+/', '', (string) $value);
+    }
+
+    private function is_phone_number_unique($normalized_phone, $exclude_id = 0)
+    {
+        if ($normalized_phone === '') {
+            return true;
+        }
+
+        global $wpdb;
+        if ($exclude_id > 0) {
+            $rows = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT phone_number FROM {$this->table_inventory} WHERE deleted = 0 AND id != %d",
+                    $exclude_id
+                )
+            );
+        } else {
+            $rows = $wpdb->get_results("SELECT phone_number FROM {$this->table_inventory} WHERE deleted = 0");
+        }
+
+        foreach ($rows as $row) {
+            $existing = $this->normalize_phone_number($row->phone_number ?? '');
+            if ($existing !== '' && $existing === $normalized_phone) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private function redirect($url)
     {
         header("Location: $url");
         exit;
     }
 
-    private function log_history($computer_id, $type, $description, $user_id, $photos_json = null)
+    private function log_history($item_id, $type, $description, $user_id, $photos_json = null)
     {
         global $wpdb;
+        $fk = $this->module_config['history_foreign_key'];
         $wpdb->insert($this->table_history, [
-            'computer_id' => $computer_id,
+            $fk => $item_id,
             'event_type' => $type,
             'description' => $description,
             'photos' => $photos_json,
-            'user_id' => $user_id
+            'user_id' => $user_id,
         ]);
 
         return intval($wpdb->insert_id);
@@ -838,6 +1300,13 @@ class ComputerControlSystem
 
         $can_edit = $this->user_can_edit();
         $is_read_only = $this->is_read_only_user();
+        $current_module = $this->current_module;
+        $module_config = $this->module_config;
+        $message_map = $this->get_message_map();
+        $module_switch_urls = [
+            self::MODULE_COMPUTERS => $this->build_module_url(self::MODULE_COMPUTERS, ['view' => 'list']),
+            self::MODULE_CELLPHONES => $this->build_module_url(self::MODULE_CELLPHONES, ['view' => 'list']),
+        ];
 
         require_once __DIR__ . '/../templates/header.php';
         $this->render_content($view);
@@ -867,62 +1336,88 @@ class ComputerControlSystem
     {
         global $wpdb;
         $deleted_val = $show_trash ? 1 : 0;
-
-        $where_add = "";
+        $where_add = '';
         $filter = $_GET['filter'] ?? '';
 
         if ($filter === 'no_photos') {
-            // Sem Fotos: sem photo_url E sem fotos no histórico
-            $where_add = " AND (photo_url IS NULL OR photo_url = '') 
+            $history_fk = $this->module_config['history_foreign_key'];
+            $where_add = " AND (photo_url IS NULL OR photo_url = '')
                 AND id NOT IN (
-                    SELECT DISTINCT computer_id 
-                    FROM {$this->table_history} 
+                    SELECT DISTINCT {$history_fk}
+                    FROM {$this->table_history}
                     WHERE photos IS NOT NULL AND photos != '' AND photos != 'null'
                 )";
         }
 
-        // Type Filters
-        $type_desktop = isset($_GET['type_desktop']) && $_GET['type_desktop'] === '1';
-        $type_notebook = isset($_GET['type_notebook']) && $_GET['type_notebook'] === '1';
+        if ($this->is_computer_module()) {
+            $type_desktop = isset($_GET['type_desktop']) && $_GET['type_desktop'] === '1';
+            $type_notebook = isset($_GET['type_notebook']) && $_GET['type_notebook'] === '1';
 
-        if ($type_desktop && !$type_notebook) {
-            $where_add .= " AND type = 'desktop'";
-        } elseif ($type_notebook && !$type_desktop) {
-            $where_add .= " AND type = 'notebook'";
-        }
-        // If both are checked or neither is checked, we show all (no filter needed)
+            if ($type_desktop && !$type_notebook) {
+                $where_add .= " AND type = 'desktop'";
+            } elseif ($type_notebook && !$type_desktop) {
+                $where_add .= " AND type = 'notebook'";
+            }
 
-        // Location Filters
-        $loc_conditions = [];
-        $locations_map = [
-            'loc_fabrica' => 'Fabrica',
-            'loc_centro' => 'Centro',
-            'loc_perdido' => 'Perdido',
-            'loc_manutencao' => 'Manutenção'
-        ];
+            $loc_conditions = [];
+            $locations_map = [
+                'loc_fabrica' => 'Fabrica',
+                'loc_centro' => 'Centro',
+                'loc_perdido' => 'Perdido',
+                'loc_manutencao' => ['Manutencao', 'MANUTENCAO'],
+            ];
 
-        foreach ($locations_map as $param => $db_value) {
-            if (isset($_GET[$param]) && $_GET[$param] === '1') {
-                $loc_conditions[] = "location = '" . esc_sql($db_value) . "'";
+            foreach ($locations_map as $param => $db_value) {
+                if (isset($_GET[$param]) && $_GET[$param] === '1') {
+                    if (is_array($db_value)) {
+                        $escaped_values = array_map('esc_sql', $db_value);
+                        $quoted_values = "'" . implode("','", $escaped_values) . "'";
+                        $loc_conditions[] = "location IN ({$quoted_values})";
+                    } else {
+                        $loc_conditions[] = "location = '" . esc_sql($db_value) . "'";
+                    }
+                }
+            }
+
+            if (isset($_GET['loc_sem_local']) && $_GET['loc_sem_local'] === '1') {
+                $loc_conditions[] = "(location IS NULL OR location = '')";
+            }
+
+            if (!empty($loc_conditions)) {
+                $where_add .= " AND (" . implode(' OR ', $loc_conditions) . ")";
+            }
+        } else {
+            $department_conditions = [];
+            $departments_map = [
+                'dept_comercial_rn' => 'COMERCIAL-RN',
+                'dept_fabrica_rn' => 'FABRICA-RN',
+            ];
+
+            foreach ($departments_map as $param => $db_value) {
+                if (isset($_GET[$param]) && $_GET[$param] === '1') {
+                    $department_conditions[] = "department = '" . esc_sql($db_value) . "'";
+                }
+            }
+
+            if (isset($_GET['dept_outro']) && $_GET['dept_outro'] === '1') {
+                $department_conditions[] = "(department IS NOT NULL AND department != '' AND department NOT IN ('COMERCIAL-RN', 'FABRICA-RN'))";
+            }
+
+            if (isset($_GET['dept_sem']) && $_GET['dept_sem'] === '1') {
+                $department_conditions[] = "(department IS NULL OR department = '')";
+            }
+
+            if (!empty($department_conditions)) {
+                $where_add .= " AND (" . implode(' OR ', $department_conditions) . ")";
             }
         }
 
-        // Filtro para computadores sem local definido
-        if (isset($_GET['loc_sem_local']) && $_GET['loc_sem_local'] === '1') {
-            $loc_conditions[] = "(location IS NULL OR location = '')";
-        }
-
-        if (!empty($loc_conditions)) {
-            $where_add .= " AND (" . implode(' OR ', $loc_conditions) . ")";
-        }
-
-        // Status Filters
         $status_conditions = [];
         $status_map = [
             'status_active' => 'active',
             'status_backup' => 'backup',
             'status_maintenance' => 'maintenance',
-            'status_retired' => 'retired'
+            'status_retired' => 'retired',
         ];
 
         foreach ($status_map as $param => $db_value) {
@@ -935,23 +1430,29 @@ class ComputerControlSystem
             $where_add .= " AND (" . implode(' OR ', $status_conditions) . ")";
         }
 
-        $computers = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$this->table_inventory} WHERE deleted = %d $where_add ORDER BY updated_at DESC", $deleted_val));
+        $rows = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT * FROM {$this->table_inventory} WHERE deleted = %d {$where_add} ORDER BY updated_at DESC",
+                $deleted_val
+            )
+        );
 
-        // Buscar histórico concatenado para pesquisa (inclui hostnames antigos, mudanças de usuário, etc)
-        // Usamos OBJECT_K para indexar o array pelo computer_id para acesso r\u00e1pido
+        $history_fk = $this->module_config['history_foreign_key'];
         $history_data = $wpdb->get_results("
-            SELECT computer_id, GROUP_CONCAT(description SEPARATOR ' ') as full_history 
-            FROM {$this->table_history} 
-            GROUP BY computer_id
+            SELECT {$history_fk} AS item_id, GROUP_CONCAT(description SEPARATOR ' ') as full_history
+            FROM {$this->table_history}
+            GROUP BY {$history_fk}
         ", OBJECT_K);
 
-        foreach ($computers as $pc) {
-            // Anexa o hist\u00f3rico ao objeto do computador
-            // Removemos tags HTML se houver e normalizamos
-            $pc->search_meta = isset($history_data[$pc->id]) ? strip_tags($history_data[$pc->id]->full_history) : '';
+        foreach ($rows as $row) {
+            $row->search_meta = isset($history_data[$row->id]) ? strip_tags($history_data[$row->id]->full_history) : '';
         }
 
+        $computers = $rows;
         $can_edit = $this->user_can_edit();
+        $current_module = $this->current_module;
+        $module_config = $this->module_config;
+        $status_labels = $this->get_status_labels();
 
         require __DIR__ . '/../templates/view-list.php';
     }
@@ -974,13 +1475,14 @@ class ComputerControlSystem
         }
 
         $report_photos_map = [];
+        $history_fk = $this->module_config['history_foreign_key'];
 
         if (!empty($report_rows)) {
             $report_ids = [];
             foreach ($report_rows as $row) {
-                $computer_id = intval($row->id ?? 0);
-                if ($computer_id > 0) {
-                    $report_ids[] = $computer_id;
+                $item_id = intval($row->id ?? 0);
+                if ($item_id > 0) {
+                    $report_ids[] = $item_id;
                 }
             }
 
@@ -988,16 +1490,16 @@ class ComputerControlSystem
                 $ids_sql = implode(',', array_map('intval', array_unique($report_ids)));
 
                 $history_photo_rows = $wpdb->get_results("
-                    SELECT computer_id, photos
+                    SELECT {$history_fk} AS item_id, photos
                     FROM {$this->table_history}
                     WHERE photos IS NOT NULL AND photos != '' AND photos != 'null'
-                      AND computer_id IN ($ids_sql)
+                      AND {$history_fk} IN ($ids_sql)
                     ORDER BY created_at ASC
                 ");
 
                 foreach ($history_photo_rows as $history_row) {
-                    $computer_id = intval($history_row->computer_id);
-                    if ($computer_id <= 0) {
+                    $item_id = intval($history_row->item_id);
+                    if ($item_id <= 0) {
                         continue;
                     }
 
@@ -1006,8 +1508,8 @@ class ComputerControlSystem
                         continue;
                     }
 
-                    if (!isset($report_photos_map[$computer_id])) {
-                        $report_photos_map[$computer_id] = [];
+                    if (!isset($report_photos_map[$item_id])) {
+                        $report_photos_map[$item_id] = [];
                     }
 
                     foreach ($decoded_photos as $photo_url) {
@@ -1016,16 +1518,16 @@ class ComputerControlSystem
                             continue;
                         }
 
-                        if (!in_array($photo_url, $report_photos_map[$computer_id], true)) {
-                            $report_photos_map[$computer_id][] = $photo_url;
+                        if (!in_array($photo_url, $report_photos_map[$item_id], true)) {
+                            $report_photos_map[$item_id][] = $photo_url;
                         }
                     }
                 }
             }
 
             foreach ($report_rows as $row) {
-                $computer_id = intval($row->id ?? 0);
-                if ($computer_id <= 0) {
+                $item_id = intval($row->id ?? 0);
+                if ($item_id <= 0) {
                     continue;
                 }
 
@@ -1034,24 +1536,26 @@ class ComputerControlSystem
                     continue;
                 }
 
-                if (!isset($report_photos_map[$computer_id])) {
-                    $report_photos_map[$computer_id] = [];
+                if (!isset($report_photos_map[$item_id])) {
+                    $report_photos_map[$item_id] = [];
                 }
 
-                if (!in_array($primary_photo, $report_photos_map[$computer_id], true)) {
-                    array_unshift($report_photos_map[$computer_id], $primary_photo);
+                if (!in_array($primary_photo, $report_photos_map[$item_id], true)) {
+                    array_unshift($report_photos_map[$item_id], $primary_photo);
                 }
             }
         }
 
         $current_user_id = get_current_user_id();
-        $table_preferences = get_user_meta($current_user_id, 'ccs_report_table_preferences', true);
+        $table_preferences = get_user_meta($current_user_id, $this->module_config['table_preferences_meta_key'], true);
         if (!is_array($table_preferences)) {
             $table_preferences = [];
         }
 
         $can_edit = $this->user_can_edit();
         $can_save_table_preferences = $this->user_can_save_table_preferences();
+        $current_module = $this->current_module;
+        $module_config = $this->module_config;
 
         require __DIR__ . '/../templates/view-reports.php';
     }
@@ -1072,7 +1576,11 @@ class ComputerControlSystem
         }
 
         if (empty($columns)) {
-            $columns = ['id', 'type', 'hostname', 'status', 'deleted', 'user_name', 'location', 'property', 'specs', 'notes', 'photo_url', 'created_at', 'updated_at'];
+            if ($this->is_computer_module()) {
+                $columns = ['id', 'type', 'hostname', 'status', 'deleted', 'user_name', 'location', 'property', 'specs', 'notes', 'photo_url', 'created_at', 'updated_at'];
+            } else {
+                $columns = ['id', 'phone_number', 'status', 'deleted', 'user_name', 'department', 'notes', 'photo_url', 'created_at', 'updated_at'];
+            }
         }
 
         return $columns;
@@ -1093,9 +1601,11 @@ class ComputerControlSystem
         }
         $is_edit = !empty($pc);
 
-        // Pass error/data to view
         $error_message = $this->form_error;
         $form_data = $this->form_data;
+        $current_module = $this->current_module;
+        $module_config = $this->module_config;
+        $status_labels = $this->get_status_labels();
 
         require __DIR__ . '/../templates/view-form.php';
     }
@@ -1106,10 +1616,14 @@ class ComputerControlSystem
         $can_edit = $this->user_can_edit();
         $pc = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$this->table_inventory} WHERE id = %d", $id));
         if (!$pc) {
-            echo "<div class='text-red-500'>Computador não encontrado.</div>";
+            echo "<div class='text-red-500'>{$this->module_config['singular_label']} nao encontrado.</div>";
             return;
         }
-        $history = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$this->table_history} WHERE computer_id = %d ORDER BY created_at DESC", $id));
+        $history_fk = $this->module_config['history_foreign_key'];
+        $history = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$this->table_history} WHERE {$history_fk} = %d ORDER BY created_at DESC", $id));
+        $current_module = $this->current_module;
+        $module_config = $this->module_config;
+        $status_labels = $this->get_status_labels();
 
         require __DIR__ . '/../templates/view-details.php';
     }
@@ -1141,13 +1655,14 @@ class ComputerControlSystem
         }
         require __DIR__ . '/../templates/view-login.php';
     }
-    private function get_history_item_html($computer_id, $description, $event_type, $user_id, $history_id = 0)
+    private function get_history_item_html($item_id, $description, $event_type, $user_id, $history_id = 0)
     {
         $u = get_userdata($user_id);
         $display_name = $u ? $u->display_name : 'Sistema';
         $time = date('d/m H:i', current_time('timestamp'));
+        $delete_action = $this->module_config['delete_history_action'];
+        $id_field = $this->module_config['id_field'];
 
-        // Simulating the structure from view-details.php
         ob_start();
         ?>
         <div class="relative flex gap-4 min-w-0 history-item-new fade-in">
@@ -1168,9 +1683,11 @@ class ComputerControlSystem
                             <form method="post" action="?" data-ajax="true" class="inline"
                                 data-confirm="Tem certeza que deseja excluir este item do historico?">
                                 <?php wp_nonce_field('ccs_action_nonce'); ?>
-                                <input type="hidden" name="ccs_action" value="delete_history">
-                                <input type="hidden" name="computer_id" value="<?php echo intval($computer_id); ?>">
+                                <input type="hidden" name="ccs_action" value="<?php echo esc_attr($delete_action); ?>">
+                                <input type="hidden" name="<?php echo esc_attr($id_field); ?>"
+                                    value="<?php echo intval($item_id); ?>">
                                 <input type="hidden" name="history_id" value="<?php echo intval($history_id); ?>">
+                                <input type="hidden" name="module" value="<?php echo esc_attr($this->current_module); ?>">
                                 <button type="submit"
                                     class="text-slate-400 hover:text-red-500 p-1 rounded transition-colors"
                                     title="Excluir item do historico">

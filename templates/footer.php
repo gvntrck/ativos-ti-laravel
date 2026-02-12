@@ -2,7 +2,7 @@
     <p class="text-sm text-slate-500">
         projetoalfa.org
         <span class="mx-1">|</span>
-        Versão <?php echo ComputerControlSystem::VERSION; ?>
+        Versao <?php echo ComputerControlSystem::VERSION; ?>
     </p>
 </footer>
 </div> <!-- End container -->

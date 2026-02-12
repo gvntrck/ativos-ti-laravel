@@ -1,17 +1,34 @@
 <?php
 $can_edit = isset($can_edit) ? (bool) $can_edit : false;
+$current_module = isset($current_module) ? (string) $current_module : 'computers';
+$module_config = isset($module_config) && is_array($module_config) ? $module_config : [];
+$status_labels = isset($status_labels) && is_array($status_labels) ? $status_labels : [
+    'active' => 'Em Uso',
+    'backup' => 'Backup',
+    'maintenance' => 'Manutencao',
+    'retired' => 'Aposentado',
+];
+$is_cellphone_module = $current_module === 'cellphones';
+$add_action = $is_cellphone_module ? 'add_cellphone' : 'add_computer';
+$update_action = $is_cellphone_module ? 'update_cellphone' : 'update_computer';
+$id_field = $is_cellphone_module ? 'cellphone_id' : 'computer_id';
+$cancel_url = '?module=' . urlencode($current_module) . '&view=list';
+
 if (!$can_edit): ?>
     <div class="max-w-2xl mx-auto mb-6 p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg">
         Permissao insuficiente. Este perfil esta em modo somente visualizacao.
     </div>
     <?php return; ?>
 <?php endif; ?>
+
 <div class="max-w-2xl mx-auto">
     <form method="post" action="?" enctype="multipart/form-data" data-ajax="true"
         class="bg-white p-8 rounded-xl shadow-sm border border-slate-200">
         <?php wp_nonce_field('ccs_action_nonce'); ?>
-        <input type="hidden" name="ccs_action" value="<?php echo $is_edit ? 'update_computer' : 'add_computer'; ?>">
-        <?php if ($is_edit): ?><input type="hidden" name="computer_id" value="<?php echo $pc->id; ?>">
+        <input type="hidden" name="ccs_action" value="<?php echo esc_attr($is_edit ? $update_action : $add_action); ?>">
+        <input type="hidden" name="module" value="<?php echo esc_attr($current_module); ?>">
+        <?php if ($is_edit): ?>
+            <input type="hidden" name="<?php echo esc_attr($id_field); ?>" value="<?php echo intval($pc->id); ?>">
         <?php endif; ?>
 
         <?php if (!empty($error_message)): ?>
@@ -24,204 +41,224 @@ if (!$can_edit): ?>
             </div>
         <?php endif; ?>
 
-        <div class="grid grid-cols-2 gap-6 mb-6">
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Hostname <span
-                        class="text-red-500">*</span></label>
-                <?php $val_hostname = isset($form_data['hostname']) ? $form_data['hostname'] : ($is_edit ? strtoupper($pc->hostname) : ''); ?>
-                <input type="text" name="hostname" value="<?php echo esc_attr($val_hostname); ?>" required
-                    class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm uppercase">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Tipo</label>
-                <?php $val_type = isset($form_data['type']) ? $form_data['type'] : ($is_edit ? $pc->type : 'desktop'); ?>
-                <select name="type"
-                    class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
-                    <option value="desktop" <?php selected($val_type, 'desktop'); ?>>Desktop</option>
-                    <option value="notebook" <?php selected($val_type, 'notebook'); ?>>Notebook</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-6 mb-6">
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Status</label>
-                <?php $val_status = isset($form_data['status']) ? $form_data['status'] : ($is_edit ? $pc->status : 'active'); ?>
-                <select name="status"
-                    class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
-                    <option value="active" <?php selected($val_status, 'active'); ?>>Em Uso</option>
-                    <option value="backup" <?php selected($val_status, 'backup'); ?>>Backup</option>
-                    <option value="maintenance" <?php selected($val_status, 'maintenance'); ?>>Em
-                        Manutenção</option>
-                    <option value="retired" <?php selected($val_status, 'retired'); ?>>Aposentado
-                    </option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Nome do Usuário</label>
-                <?php $val_user_name = isset($form_data['user_name']) ? $form_data['user_name'] : ($is_edit ? $pc->user_name : ''); ?>
-                <input type="text" name="user_name" value="<?php echo esc_attr($val_user_name); ?>"
-                    class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
-            </div>
-        </div>
-
-        <div class="mb-6">
-            <label class="block text-sm font-medium text-slate-700 mb-2">Propriedade</label>
+        <?php if (!$is_cellphone_module): ?>
+            <?php $val_hostname = isset($form_data['hostname']) ? $form_data['hostname'] : ($is_edit ? strtoupper($pc->hostname) : ''); ?>
+            <?php $val_type = isset($form_data['type']) ? $form_data['type'] : ($is_edit ? $pc->type : 'desktop'); ?>
+            <?php $val_status = isset($form_data['status']) ? $form_data['status'] : ($is_edit ? $pc->status : 'active'); ?>
+            <?php $val_user_name = isset($form_data['user_name']) ? $form_data['user_name'] : ($is_edit ? $pc->user_name : ''); ?>
             <?php $val_property = isset($form_data['property']) ? $form_data['property'] : (($is_edit && isset($pc->property)) ? $pc->property : ''); ?>
-            <select name="property"
-                class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
-                <option value="" <?php selected($val_property, ''); ?>>Selecione...</option>
-                <option value="Metalife" <?php selected($val_property, 'Metalife'); ?>>Metalife</option>
-                <option value="Selbetti" <?php selected($val_property, 'Selbetti'); ?>>Selbetti</option>
-            </select>
-        </div>
-        <div class="mb-6">
-            <label class="block text-sm font-medium text-slate-700 mb-2">Localização</label>
+            <?php $val_specs = isset($form_data['specs']) ? $form_data['specs'] : ($is_edit ? $pc->specs : ''); ?>
+            <?php $val_notes = isset($form_data['notes']) ? $form_data['notes'] : ($is_edit ? $pc->notes : ''); ?>
+
+            <div class="grid grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Hostname <span class="text-red-500">*</span></label>
+                    <input type="text" name="hostname" value="<?php echo esc_attr($val_hostname); ?>" required
+                        class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm uppercase">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Tipo</label>
+                    <select name="type"
+                        class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                        <option value="desktop" <?php selected($val_type, 'desktop'); ?>>Desktop</option>
+                        <option value="notebook" <?php selected($val_type, 'notebook'); ?>>Notebook</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Status</label>
+                    <select name="status"
+                        class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                        <?php foreach ($status_labels as $status_key => $status_label): ?>
+                            <option value="<?php echo esc_attr($status_key); ?>" <?php selected($val_status, $status_key); ?>>
+                                <?php echo esc_html($status_label); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Nome do Usuario</label>
+                    <input type="text" name="user_name" value="<?php echo esc_attr($val_user_name); ?>"
+                        class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-slate-700 mb-2">Propriedade</label>
+                <select name="property"
+                    class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                    <option value="" <?php selected($val_property, ''); ?>>Selecione...</option>
+                    <option value="Metalife" <?php selected($val_property, 'Metalife'); ?>>Metalife</option>
+                    <option value="Selbetti" <?php selected($val_property, 'Selbetti'); ?>>Selbetti</option>
+                </select>
+            </div>
+
             <?php
             $val_location = isset($form_data['location']) ? $form_data['location'] : ($is_edit ? $pc->location : '');
-            $predefined_locations = ['Fabrica', 'Centro', 'Perdido', 'Manutenção'];
-            $is_other = !empty($val_location) && !in_array($val_location, $predefined_locations);
-            $selected_option = $is_other ? 'other' : $val_location;
+            $predefined_locations = ['Fabrica', 'Centro', 'Perdido', 'Manutencao'];
+            $is_other_location = !empty($val_location) && !in_array($val_location, $predefined_locations, true);
+            $selected_location = $is_other_location ? 'other' : $val_location;
             ?>
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-slate-700 mb-2">Localizacao</label>
+                <div class="flex flex-col gap-3">
+                    <select id="locationSelect" name="location_select"
+                        class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                        <option value="" <?php selected($selected_location, ''); ?>>Selecione um local...</option>
+                        <?php foreach ($predefined_locations as $loc): ?>
+                            <option value="<?php echo esc_attr($loc); ?>" <?php selected($selected_location, $loc); ?>>
+                                <?php echo esc_html($loc); ?>
+                            </option>
+                        <?php endforeach; ?>
+                        <option value="other" <?php selected($selected_location, 'other'); ?>>Outro</option>
+                    </select>
 
-            <div class="flex flex-col gap-3">
-                <select id="locationSelect" name="location_select" onchange="toggleLocationInput(this)"
-                    class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
-                    <option value="" <?php selected($selected_option, ''); ?>>Selecione um local...</option>
-                    <?php foreach ($predefined_locations as $loc): ?>
-                        <option value="<?php echo esc_attr($loc); ?>" <?php selected($selected_option, $loc); ?>>
-                            <?php echo esc_html($loc); ?>
-                        </option>
-                    <?php endforeach; ?>
-                    <option value="other" <?php selected($selected_option, 'other'); ?>>Outro (Livre escolha)</option>
-                </select>
+                    <input type="text" id="locationOtherInput"
+                        value="<?php echo esc_attr($is_other_location ? $val_location : ''); ?>"
+                        class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm <?php echo $is_other_location ? '' : 'hidden'; ?>"
+                        placeholder="Digite o local especifico" <?php echo $is_other_location ? '' : 'disabled'; ?>>
+                </div>
+                <input type="hidden" name="location" id="finalLocation" value="<?php echo esc_attr($val_location); ?>">
+            </div>
 
-                <input type="text" id="locationOtherInput" name="location"
-                    value="<?php echo esc_attr($val_location); ?>"
-                    class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm <?php echo $is_other ? '' : 'hidden'; ?>"
-                    placeholder="Digite o local específico" <?php echo $is_other ? '' : 'disabled'; ?>>
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-slate-700 mb-2">Especificacoes</label>
+                <textarea name="specs" rows="3"
+                    class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm"><?php echo esc_textarea($val_specs); ?></textarea>
+            </div>
+
+            <div class="mb-8">
+                <label class="block text-sm font-medium text-slate-700 mb-2">Anotacoes</label>
+                <textarea name="notes" rows="2"
+                    class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm"><?php echo esc_textarea($val_notes); ?></textarea>
             </div>
 
             <script>
-                function toggleLocationInput(select) {
-                    const input = document.getElementById('locationOtherInput');
-                    if (select.value === 'other') {
-                        input.classList.remove('hidden');
-                        input.disabled = false;
-                        input.value = ''; // Clear for new input or keep? Better clear or let user decide. Let's keep empty for now as it's a switch.
-                        input.focus();
-                    } else {
-                        input.classList.add('hidden');
-                        input.disabled = true; // Disable so it's not sent if not visible, but we need to ensure the select value is sent?
-                        // actually if disabled it won't be sent. 
-                        // We need 'location' to be the name of the parameter sent to backend.
-                        // If select is NOT other, we want select value to be 'location'.
-                        // If select IS other, we want input value to be 'location'.
-
-                        // Allow me to refine this:
-                        // Easy way: name="location" on input is good. 
-                        // But if select is not other, we simply copy select value to input (hidden)?
-                        // OR we handle this in backend. Backend expects 'location'.
-                        // Let's modify the JS to update the input value when select changes given it's a predefined one.
-
-                        if (select.value) {
-                            input.value = select.value;
-                        }
-                    }
-                }
-
-                // Initial sync script for better UX
-                document.addEventListener('DOMContentLoaded', function () {
-                    const select = document.getElementById('locationSelect');
-                    const input = document.getElementById('locationOtherInput');
-
-                    select.addEventListener('change', function () {
-                        if (this.value === 'other') {
-                            input.classList.remove('hidden');
-                            input.disabled = false;
-                            // Don't clear if it was already 'other' logic, but here it is fresh switch
-                            if (input.value && <?php echo json_encode($predefined_locations); ?>.includes(input.value)) {
-                                input.value = '';
-                            }
-                        } else {
-                            input.classList.add('hidden');
-                            // We keep it enabled but hidden? No, if we have two fields with same name?
-                            // Actually, let's change name logic.
-                            // Let's make select have no name that conflicts, or handle in backend?
-                            // Let's fix this properly below.
-                            input.value = this.value;
-                        }
-                    });
-                });
-            </script>
-
-            <!-- Refined Logic Implementation -->
-            <!-- We will use a hidden input for the real 'location' submitted value if we want to be pure, OR simpler: -->
-            <!-- Use 'location_select' for the dropdown and 'location_custom' for the text. -->
-            <!-- And in backend check: if location_select == 'other' use location_custom, else use location_select. -->
-            <!-- However, to avoid modifying backend too much, let's use JS to populate a single field or use the 'location' name smartly. -->
-
-            <!-- Let's go with: Select has name 'location_select', Input has name 'location_custom'. -->
-            <!-- We need to modify backend to read these? OR we simply use JS to fill a hidden 'location' field. -->
-            <!-- JS filling hidden field is safest for existing backend compatibility. -->
-
-            <input type="hidden" name="location" id="finalLocation" value="<?php echo esc_attr($val_location); ?>">
-
-            <script>
-                // Redefining the script to work with the hidden field approach
                 (function () {
                     const select = document.getElementById('locationSelect');
                     const customInput = document.getElementById('locationOtherInput');
                     const finalInput = document.getElementById('finalLocation');
+                    if (!select || !customInput || !finalInput) return;
 
-                    // Helper to update final value
                     function updateFinalValue() {
-                        if (select.value === 'other') {
-                            finalInput.value = customInput.value;
-                        } else {
-                            finalInput.value = select.value;
-                        }
+                        finalInput.value = select.value === 'other' ? customInput.value : select.value;
                     }
 
                     select.addEventListener('change', function () {
                         if (this.value === 'other') {
                             customInput.classList.remove('hidden');
                             customInput.disabled = false;
-                            if (!customInput.value || <?php echo json_encode($predefined_locations); ?>.includes(customInput.value)) {
-                                customInput.value = '';
-                            }
+                            customInput.focus();
                         } else {
                             customInput.classList.add('hidden');
-                            customInput.disabled = true; // Visual only
+                            customInput.disabled = true;
                         }
                         updateFinalValue();
                     });
 
                     customInput.addEventListener('input', updateFinalValue);
-
-                    // Ensure state on load (already handled by PHP logic above but need to ensure input visibility matches)
-                    // The PHP logic sets class='hidden' correctly.
                 })();
             </script>
-        </div>
 
-        <div class="mb-6">
-            <label class="block text-sm font-medium text-slate-700 mb-2">Especificações</label>
-            <?php $val_specs = isset($form_data['specs']) ? $form_data['specs'] : ($is_edit ? $pc->specs : ''); ?>
-            <textarea name="specs" rows="3"
-                class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm"><?php echo esc_textarea($val_specs); ?></textarea>
-        </div>
-
-        <div class="mb-8">
-            <label class="block text-sm font-medium text-slate-700 mb-2">Anotações</label>
+        <?php else: ?>
+            <?php $val_phone = isset($form_data['phone_number']) ? $form_data['phone_number'] : ($is_edit ? $pc->phone_number : ''); ?>
+            <?php $val_status = isset($form_data['status']) ? $form_data['status'] : ($is_edit ? $pc->status : 'active'); ?>
+            <?php $val_user_name = isset($form_data['user_name']) ? $form_data['user_name'] : ($is_edit ? $pc->user_name : ''); ?>
             <?php $val_notes = isset($form_data['notes']) ? $form_data['notes'] : ($is_edit ? $pc->notes : ''); ?>
-            <textarea name="notes" rows="2"
-                class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm"><?php echo esc_textarea($val_notes); ?></textarea>
-        </div>
+            <?php
+            $val_department = isset($form_data['department']) ? $form_data['department'] : ($is_edit ? $pc->department : '');
+            $predefined_departments = ['COMERCIAL-RN', 'FABRICA-RN'];
+            $is_other_department = !empty($val_department) && !in_array($val_department, $predefined_departments, true);
+            $selected_department = $is_other_department ? 'other' : $val_department;
+            ?>
+
+            <div class="grid grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Numero do Celular</label>
+                    <input type="text" name="phone_number" value="<?php echo esc_attr($val_phone); ?>"
+                        placeholder="(00) 00000-0000"
+                        class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Status</label>
+                    <select name="status"
+                        class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                        <?php foreach ($status_labels as $status_key => $status_label): ?>
+                            <option value="<?php echo esc_attr($status_key); ?>" <?php selected($val_status, $status_key); ?>>
+                                <?php echo esc_html($status_label); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-slate-700 mb-2">Usuario</label>
+                <input type="text" name="user_name" value="<?php echo esc_attr($val_user_name); ?>"
+                    class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-slate-700 mb-2">Departamento</label>
+                <div class="flex flex-col gap-3">
+                    <select id="departmentSelect" name="department_select"
+                        class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                        <option value="" <?php selected($selected_department, ''); ?>>Selecione um departamento...</option>
+                        <?php foreach ($predefined_departments as $department): ?>
+                            <option value="<?php echo esc_attr($department); ?>" <?php selected($selected_department, $department); ?>>
+                                <?php echo esc_html($department); ?>
+                            </option>
+                        <?php endforeach; ?>
+                        <option value="other" <?php selected($selected_department, 'other'); ?>>Outro</option>
+                    </select>
+
+                    <input type="text" id="departmentOtherInput"
+                        value="<?php echo esc_attr($is_other_department ? $val_department : ''); ?>"
+                        class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm <?php echo $is_other_department ? '' : 'hidden'; ?>"
+                        placeholder="Digite o departamento" <?php echo $is_other_department ? '' : 'disabled'; ?>>
+                </div>
+                <input type="hidden" name="department" id="finalDepartment" value="<?php echo esc_attr($val_department); ?>">
+            </div>
+
+            <div class="mb-8">
+                <label class="block text-sm font-medium text-slate-700 mb-2">Observacao</label>
+                <textarea name="notes" rows="3"
+                    class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm"><?php echo esc_textarea($val_notes); ?></textarea>
+            </div>
+
+            <script>
+                (function () {
+                    const select = document.getElementById('departmentSelect');
+                    const customInput = document.getElementById('departmentOtherInput');
+                    const finalInput = document.getElementById('finalDepartment');
+                    if (!select || !customInput || !finalInput) return;
+
+                    function updateFinalValue() {
+                        finalInput.value = select.value === 'other' ? customInput.value : select.value;
+                    }
+
+                    select.addEventListener('change', function () {
+                        if (this.value === 'other') {
+                            customInput.classList.remove('hidden');
+                            customInput.disabled = false;
+                            customInput.focus();
+                        } else {
+                            customInput.classList.add('hidden');
+                            customInput.disabled = true;
+                        }
+                        updateFinalValue();
+                    });
+
+                    customInput.addEventListener('input', updateFinalValue);
+                })();
+            </script>
+        <?php endif; ?>
 
         <?php if (!$is_edit): ?>
             <div class="mb-8 p-4 bg-slate-50 rounded-lg border border-slate-200">
-                <label class="block text-sm font-medium text-slate-700 mb-2">Foto Inicial (Câmera)</label>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Foto Inicial (Camera)</label>
 
                 <div class="mb-2">
                     <label for="formCameraInput"
@@ -243,14 +280,14 @@ if (!$can_edit): ?>
                         onchange="if(this.files.length > 0) { document.getElementById('fileNameDisplay').textContent = this.files[0].name; document.getElementById('fileNameDisplay').classList.add('text-emerald-600', 'font-medium'); document.getElementById('fileNameDisplay').classList.remove('text-slate-400'); }">
                 </div>
 
-                <p class="mt-1 text-xs text-slate-500">Tire uma foto do computador para o cadastro.</p>
+                <p class="mt-1 text-xs text-slate-500">Tire uma foto do equipamento para o cadastro.</p>
             </div>
         <?php endif; ?>
 
         <div class="flex justify-end gap-3 pt-6 border-t border-slate-100">
-            <a href="?" class="btn btn-secondary">Cancelar</a>
+            <a href="<?php echo esc_url($cancel_url); ?>" class="btn btn-secondary">Cancelar</a>
             <button type="submit" class="btn btn-primary">
-                <?php echo $is_edit ? 'Salvar Alterações' : 'Cadastrar'; ?>
+                <?php echo $is_edit ? 'Salvar Alteracoes' : 'Cadastrar'; ?>
             </button>
         </div>
     </form>

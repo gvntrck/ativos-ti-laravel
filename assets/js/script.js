@@ -28,8 +28,28 @@ function filterTable() {
     // If list is NOT empty but filtered to 0, we might want to show a message, but for now just updating count is enough.
 }
 
+function getCurrentModule() {
+    if (typeof window.ccsCurrentModule === 'string' && window.ccsCurrentModule.trim() !== '') {
+        return window.ccsCurrentModule.trim().toLowerCase();
+    }
+
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const module = (params.get('module') || '').trim().toLowerCase();
+        if (module) return module;
+    } catch (error) {
+        // Ignore parsing issues and fallback below.
+    }
+
+    return 'computers';
+}
+
 // Run on load to handle browser persistence
 document.addEventListener('DOMContentLoaded', filterTable);
+
+function getFilterPanelStateKey() {
+    return 'filterPanelOpen_' + getCurrentModule();
+}
 
 // Toggle filter panel visibility
 function toggleFilters() {
@@ -41,10 +61,10 @@ function toggleFilters() {
     if (isHidden) {
         panel.classList.remove('hidden');
         // Store state in localStorage
-        localStorage.setItem('filterPanelOpen', 'true');
+        localStorage.setItem(getFilterPanelStateKey(), 'true');
     } else {
         panel.classList.add('hidden');
-        localStorage.setItem('filterPanelOpen', 'false');
+        localStorage.setItem(getFilterPanelStateKey(), 'false');
     }
 }
 
@@ -53,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const panel = document.getElementById('filterPanel');
     if (!panel) return;
 
-    const isOpen = localStorage.getItem('filterPanelOpen') === 'true';
+    const isOpen = localStorage.getItem(getFilterPanelStateKey()) === 'true';
 
     if (isOpen) {
         panel.classList.remove('hidden');
@@ -66,7 +86,10 @@ function normalizeReportValue(value) {
 
 function getReportsFiltersStateKey() {
     const context = ((window.ccsReportContext || 'list') + '').toLowerCase();
-    return context === 'reports' ? 'ccs_reports_filters_reports' : 'ccs_reports_filters_list';
+    const module = getCurrentModule();
+    return context === 'reports'
+        ? 'ccs_reports_filters_' + module + '_reports'
+        : 'ccs_reports_filters_' + module + '_list';
 }
 
 function saveReportsFiltersState() {
@@ -474,8 +497,8 @@ function buildReportTableColumnsList(config, prefs, listElement) {
                 <span class="truncate">${label}</span>
             </label>
             <div class="flex items-center gap-1">
-                <button type="button" class="px-2 py-1 text-xs border border-slate-300 rounded text-slate-600 hover:bg-slate-50" data-report-pref-move="up" data-report-pref-column="${column}">↑</button>
-                <button type="button" class="px-2 py-1 text-xs border border-slate-300 rounded text-slate-600 hover:bg-slate-50" data-report-pref-move="down" data-report-pref-column="${column}">↓</button>
+                <button type="button" class="px-2 py-1 text-xs border border-slate-300 rounded text-slate-600 hover:bg-slate-50" data-report-pref-move="up" data-report-pref-column="${column}">Subir</button>
+                <button type="button" class="px-2 py-1 text-xs border border-slate-300 rounded text-slate-600 hover:bg-slate-50" data-report-pref-move="down" data-report-pref-column="${column}">Descer</button>
             </div>
         `;
 
@@ -501,6 +524,7 @@ async function persistReportTablePrefs(config, prefs) {
     formData.append('ccs_action', 'save_table_preferences');
     formData.append('_wpnonce', config.nonce || '');
     formData.append('preferences_json', JSON.stringify(prefs));
+    formData.append('module', config.module || getCurrentModule());
     formData.append('ajax', '1');
 
     const response = await fetch(config.save_url || '?', {

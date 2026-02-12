@@ -1,14 +1,23 @@
 <?php
+$current_module = isset($current_module) ? (string) $current_module : 'computers';
+$module_config = isset($module_config) && is_array($module_config) ? $module_config : [];
+$can_save_table_preferences = isset($can_save_table_preferences) ? (bool) $can_save_table_preferences : false;
+$report_primary_column = !empty($module_config['report_primary_column']) ? (string) $module_config['report_primary_column'] : 'hostname';
+$report_title = !empty($module_config['report_title']) ? (string) $module_config['report_title'] : 'Relatorios';
+$report_search_placeholder = !empty($module_config['report_search_placeholder'])
+    ? (string) $module_config['report_search_placeholder']
+    : 'Busca global';
+$module_param = 'module=' . urlencode($current_module);
+
 $column_labels = [];
 $column_filter_meta = [];
 $column_widths = [];
-$can_save_table_preferences = isset($can_save_table_preferences) ? (bool) $can_save_table_preferences : false;
 $report_origin_view = isset($_GET['view']) ? sanitize_text_field((string) $_GET['view']) : 'list';
 if (!in_array($report_origin_view, ['list', 'reports'], true)) {
     $report_origin_view = 'list';
 }
 
-if (in_array('property', $report_columns, true)) {
+if ($current_module === 'computers' && in_array('property', $report_columns, true)) {
     $report_columns = array_values(array_filter($report_columns, static function ($column) {
         return $column !== 'property';
     }));
@@ -20,6 +29,24 @@ if (in_array('property', $report_columns, true)) {
         array_splice($report_columns, $hostname_index + 1, 0, ['property']);
     }
 }
+
+$label_overrides = [
+    'id' => 'ID',
+    'hostname' => 'Hostname',
+    'phone_number' => 'Numero Celular',
+    'status' => 'Status',
+    'deleted' => 'Excluido',
+    'user_name' => 'Usuario',
+    'location' => 'Localizacao',
+    'property' => 'Propriedade',
+    'department' => 'Departamento',
+    'type' => 'Tipo',
+    'specs' => 'Especificacoes',
+    'notes' => 'Anotacoes',
+    'photo_url' => 'Foto',
+    'created_at' => 'Criado Em',
+    'updated_at' => 'Atualizado Em',
+];
 
 $format_report_value = static function ($column, $value) {
     $value = (string) $value;
@@ -42,7 +69,7 @@ $format_report_value = static function ($column, $value) {
             'backup' => 'Backup',
             'maintenance' => 'Manutencao',
             'retired' => 'Aposentado',
-            default => $value
+            default => $value,
         };
     }
 
@@ -57,7 +84,7 @@ $format_report_value = static function ($column, $value) {
 };
 
 foreach ($report_columns as $column) {
-    $column_labels[$column] = ucwords(str_replace('_', ' ', $column));
+    $column_labels[$column] = $label_overrides[$column] ?? ucwords(str_replace('_', ' ', $column));
 
     $unique_values_map = [];
     $has_empty_values = false;
@@ -96,7 +123,7 @@ foreach ($report_columns as $column) {
 
     $column_widths[$column] = match ($column) {
         'id' => 90,
-        'hostname' => 180,
+        'hostname', 'phone_number' => 190,
         'specs', 'notes' => 320,
         'photo_url' => 220,
         'created_at', 'updated_at' => 170,
@@ -110,7 +137,8 @@ $table_preferences_config = [
     'labels' => $column_labels,
     'preferences' => $table_preferences,
     'nonce' => wp_create_nonce('ccs_action_nonce'),
-    'save_url' => '?',
+    'save_url' => '?' . $module_param,
+    'module' => $current_module,
 ];
 ?>
 
@@ -118,12 +146,12 @@ $table_preferences_config = [
     <div class="p-4 border-b border-slate-100 bg-slate-50/60">
         <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
-                <h2 class="text-lg font-semibold text-slate-900">Relatorios de PCs</h2>
+                <h2 class="text-lg font-semibold text-slate-900"><?php echo esc_html($report_title); ?></h2>
             </div>
             <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
                 <input id="reportGlobalSearch" type="text"
                     class="block w-full sm:w-80 px-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                    placeholder="Busca global (hostname, usuario, local...)">
+                    placeholder="<?php echo esc_attr($report_search_placeholder); ?>">
                 <button type="button" id="reportEditTableBtn"
                     class="btn btn-secondary whitespace-nowrap <?php echo $can_save_table_preferences ? '' : 'opacity-60 cursor-not-allowed'; ?>"
                     <?php echo $can_save_table_preferences ? '' : 'disabled title="Sem permissao para personalizar a tabela"'; ?>>Editar tabela</button>
@@ -231,10 +259,10 @@ $table_preferences_config = [
                             $display_value = $is_long_text ? trim($formatted_value) : $formatted_value;
                             ?>
                             <td data-report-cell="<?php echo esc_attr($column); ?>" class="px-3 py-2 align-top">
-                                <?php if ($column === 'hostname' && $row_id > 0): ?>
-                                    <a href="?view=details&id=<?php echo $row_id; ?>&return_to=<?php echo esc_attr($report_origin_view); ?>"
+                                <?php if ($column === $report_primary_column && $row_id > 0): ?>
+                                    <a href="?<?php echo esc_attr($module_param); ?>&view=details&id=<?php echo $row_id; ?>&return_to=<?php echo esc_attr($report_origin_view); ?>"
                                         class="text-indigo-600 hover:text-indigo-900 font-medium">
-                                        <?php echo esc_html(strtoupper($raw_value)); ?>
+                                        <?php echo esc_html($current_module === 'computers' ? strtoupper($raw_value) : ($raw_value !== '' ? $raw_value : '-')); ?>
                                     </a>
                                 <?php elseif ($column === 'photo_url' && !empty($row_photos)): ?>
                                     <?php
@@ -327,6 +355,7 @@ $table_preferences_config = [
 </div>
 
 <script>
+    window.ccsCurrentModule = <?php echo wp_json_encode($current_module); ?>;
     window.ccsReportContext = <?php echo wp_json_encode($report_origin_view); ?>;
     window.ccsTablePreferencesConfig = <?php echo wp_json_encode($table_preferences_config); ?>;
 </script>
