@@ -24,19 +24,6 @@ $status_value = (string) ($pc->status ?? '');
 $status_label = $status_labels[$status_value] ?? $status_value;
 ?>
 
-<style>
-    @media (max-width: 1023px) {
-        .detail-mobile-action-icon {
-            width: 1.45rem;
-            height: 1.45rem;
-        }
-
-        .detail-mobile-action-icon path {
-            stroke-width: 2.35;
-        }
-    }
-</style>
-
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
     <div class="lg:col-span-2 bg-white p-8 rounded-xl shadow-sm border border-slate-200">
         <div class="relative mb-6 lg:flex lg:justify-between lg:items-start">
@@ -52,12 +39,12 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                         class="lg:hidden inline-flex items-center justify-center w-11 h-11 text-indigo-600 hover:text-indigo-800 rounded-lg border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-colors"
                         title="Tirar Foto"
                         onclick="triggerCameraCapture()">
-                        <svg class="detail-mobile-action-icon w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                        <svg class="w-5 h-5 lg:w-4 lg:h-4" fill="none" stroke="currentColor" stroke-width="2.2"
+                            viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M4 7h3l2-2h6l2 2h3v11H4V7z">
                             </path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <circle cx="12" cy="12.5" r="3.25"></circle>
                         </svg>
                     </button>
                     <a href="<?php echo esc_url($edit_url); ?>"
@@ -79,10 +66,10 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                         <button type="submit"
                             class="inline-flex items-center justify-center w-11 h-11 lg:w-9 lg:h-9 text-red-500 hover:text-red-700 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 transition-colors"
                             title="Mover para Lixeira">
-                            <svg class="detail-mobile-action-icon w-6 h-6 lg:w-4 lg:h-4" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                            <svg class="w-5 h-5 lg:w-4 lg:h-4" fill="none" stroke="currentColor" stroke-width="2.2"
+                                viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M5 7h14M9 7V5h6v2m-8 0 1 12h8l1-12M10 11v5m4-5v5">
                                 </path>
                             </svg>
                         </button>
