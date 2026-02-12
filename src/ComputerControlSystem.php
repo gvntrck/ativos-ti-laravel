@@ -182,6 +182,9 @@ class ComputerControlSystem
             case 'delete_permanent_computer':
                 $result = $this->process_delete_permanent_computer($current_user_id);
                 break;
+            case 'save_table_preferences':
+                $result = $this->process_save_table_preferences($current_user_id);
+                break;
         }
 
         if ($is_ajax) {
@@ -477,6 +480,73 @@ class ComputerControlSystem
     }
 
 
+    private function process_save_table_preferences($current_user_id)
+    {
+        if ($current_user_id <= 0) {
+            return [
+                'success' => false,
+                'message' => 'Usuario nao autenticado.'
+            ];
+        }
+
+        $raw_json = isset($_POST['preferences_json']) ? wp_unslash($_POST['preferences_json']) : '';
+        $decoded = json_decode($raw_json, true);
+
+        if (!is_array($decoded)) {
+            return [
+                'success' => false,
+                'message' => 'Dados de personalizacao invalidos.'
+            ];
+        }
+
+        $allowed_columns = $this->get_inventory_columns();
+
+        $incoming_order = isset($decoded['columns_order']) && is_array($decoded['columns_order']) ? $decoded['columns_order'] : [];
+        $columns_order = [];
+        foreach ($incoming_order as $column) {
+            $column = sanitize_key($column);
+            if (in_array($column, $allowed_columns, true) && !in_array($column, $columns_order, true)) {
+                $columns_order[] = $column;
+            }
+        }
+        foreach ($allowed_columns as $column) {
+            if (!in_array($column, $columns_order, true)) {
+                $columns_order[] = $column;
+            }
+        }
+
+        $incoming_visibility = isset($decoded['columns_visibility']) && is_array($decoded['columns_visibility']) ? $decoded['columns_visibility'] : [];
+        $columns_visibility = [];
+        foreach ($allowed_columns as $column) {
+            if (array_key_exists($column, $incoming_visibility)) {
+                $columns_visibility[$column] = (bool) $incoming_visibility[$column];
+            } else {
+                $columns_visibility[$column] = true;
+            }
+        }
+
+        $density = isset($decoded['density']) ? sanitize_text_field((string) $decoded['density']) : 'normal';
+        if (!in_array($density, ['normal', 'compact'], true)) {
+            $density = 'normal';
+        }
+
+        $zebra = !empty($decoded['zebra']);
+
+        $sanitized_preferences = [
+            'columns_order' => $columns_order,
+            'columns_visibility' => $columns_visibility,
+            'density' => $density,
+            'zebra' => $zebra,
+        ];
+
+        update_user_meta($current_user_id, 'ccs_report_table_preferences', $sanitized_preferences);
+
+        return [
+            'success' => true,
+            'message' => 'Personalizacao da tabela salva.'
+        ];
+    }
+
     private function handle_file_uploads($files)
     {
         if (empty($files) || empty($files['name'][0])) {
@@ -662,20 +732,7 @@ class ComputerControlSystem
     {
         global $wpdb;
 
-        $columns_info = $wpdb->get_results("SHOW COLUMNS FROM {$this->table_inventory}", ARRAY_A);
-        $report_columns = [];
-
-        if (!empty($columns_info)) {
-            foreach ($columns_info as $column_info) {
-                if (!empty($column_info['Field'])) {
-                    $report_columns[] = $column_info['Field'];
-                }
-            }
-        }
-
-        if (empty($report_columns)) {
-            $report_columns = ['id', 'type', 'hostname', 'status', 'deleted', 'user_name', 'location', 'property', 'specs', 'notes', 'photo_url', 'created_at', 'updated_at'];
-        }
+        $report_columns = $this->get_inventory_columns();
 
         if ($deleted_filter === null) {
             $report_rows = $wpdb->get_results("SELECT * FROM {$this->table_inventory} ORDER BY updated_at DESC");
@@ -759,7 +816,35 @@ class ComputerControlSystem
             }
         }
 
+        $current_user_id = get_current_user_id();
+        $table_preferences = get_user_meta($current_user_id, 'ccs_report_table_preferences', true);
+        if (!is_array($table_preferences)) {
+            $table_preferences = [];
+        }
+
         require __DIR__ . '/../templates/view-reports.php';
+    }
+
+    private function get_inventory_columns()
+    {
+        global $wpdb;
+
+        $columns_info = $wpdb->get_results("SHOW COLUMNS FROM {$this->table_inventory}", ARRAY_A);
+        $columns = [];
+
+        if (!empty($columns_info)) {
+            foreach ($columns_info as $column_info) {
+                if (!empty($column_info['Field'])) {
+                    $columns[] = $column_info['Field'];
+                }
+            }
+        }
+
+        if (empty($columns)) {
+            $columns = ['id', 'type', 'hostname', 'status', 'deleted', 'user_name', 'location', 'property', 'specs', 'notes', 'photo_url', 'created_at', 'updated_at'];
+        }
+
+        return $columns;
     }
 
     private function render_form($id = null)

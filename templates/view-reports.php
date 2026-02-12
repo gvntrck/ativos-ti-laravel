@@ -98,6 +98,15 @@ foreach ($report_columns as $column) {
         default => 160,
     };
 }
+
+$table_preferences = is_array($table_preferences ?? null) ? $table_preferences : [];
+$table_preferences_config = [
+    'columns' => array_values($report_columns),
+    'labels' => $column_labels,
+    'preferences' => $table_preferences,
+    'nonce' => wp_create_nonce('ccs_action_nonce'),
+    'save_url' => '?',
+];
 ?>
 
 <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -110,6 +119,7 @@ foreach ($report_columns as $column) {
                 <input id="reportGlobalSearch" type="text"
                     class="block w-full sm:w-80 px-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     placeholder="Busca global (hostname, usuario, local...)">
+                <button type="button" id="reportEditTableBtn" class="btn btn-secondary whitespace-nowrap">Editar tabela</button>
                 <button type="button" id="clearReportFilters" class="btn btn-secondary whitespace-nowrap">Limpar filtros</button>
             </div>
         </div>
@@ -120,10 +130,11 @@ foreach ($report_columns as $column) {
     </div>
 
     <div class="overflow-x-auto">
-        <table class="w-max min-w-full table-fixed text-left border-collapse text-sm">
+        <table id="reportsTable" class="w-max min-w-full table-fixed text-left border-collapse text-sm">
             <colgroup>
                 <?php foreach ($report_columns as $column): ?>
-                    <col style="width: <?php echo intval($column_widths[$column] ?? 160); ?>px;">
+                    <col data-report-col="<?php echo esc_attr($column); ?>"
+                        style="width: <?php echo intval($column_widths[$column] ?? 160); ?>px;">
                 <?php endforeach; ?>
             </colgroup>
             <thead class="bg-slate-50">
@@ -212,7 +223,7 @@ foreach ($report_columns as $column) {
                             $is_long_text = in_array($column, ['specs', 'notes'], true);
                             $display_value = $is_long_text ? trim($formatted_value) : $formatted_value;
                             ?>
-                            <td class="px-3 py-2 align-top">
+                            <td data-report-cell="<?php echo esc_attr($column); ?>" class="px-3 py-2 align-top">
                                 <?php if ($column === 'hostname' && $row_id > 0): ?>
                                     <a href="?view=details&id=<?php echo $row_id; ?>"
                                         class="text-indigo-600 hover:text-indigo-900 font-medium">
@@ -264,3 +275,62 @@ foreach ($report_columns as $column) {
         </table>
     </div>
 </div>
+
+<div id="reportTableSettingsModal" class="hidden fixed inset-0 z-[10040]">
+    <div class="absolute inset-0 bg-slate-900/50" data-report-modal-close></div>
+    <div class="relative mx-auto mt-10 w-[95%] max-w-2xl bg-white rounded-xl shadow-xl border border-slate-200">
+        <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+            <div>
+                <h3 class="text-base font-semibold text-slate-900">Personalizar tabela</h3>
+                <p class="text-xs text-slate-500 mt-1">Escolha colunas, ordem e visualizacao.</p>
+            </div>
+            <button type="button" class="text-slate-400 hover:text-slate-600" data-report-modal-close>&times;</button>
+        </div>
+        <div class="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Densidade</label>
+                    <select id="reportDensitySetting"
+                        class="w-full px-2.5 py-2 border border-slate-300 rounded text-sm focus:outline-none focus:border-indigo-500 focus:ring-indigo-500 bg-white">
+                        <option value="normal">Normal</option>
+                        <option value="compact">Compacta</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <label class="inline-flex items-center gap-2 text-sm text-slate-700">
+                        <input type="checkbox" id="reportZebraSetting" class="h-4 w-4 text-indigo-600 border-slate-300 rounded">
+                        Listras alternadas (zebra)
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Colunas e ordem</label>
+                <div id="reportTableColumnsList" class="border border-slate-200 rounded-lg divide-y divide-slate-200"></div>
+            </div>
+        </div>
+        <div class="px-5 py-4 border-t border-slate-200 bg-slate-50 flex flex-col sm:flex-row gap-2 sm:justify-between">
+            <button type="button" id="reportTableResetBtn" class="btn btn-secondary">Restaurar padrao</button>
+            <div class="flex gap-2">
+                <button type="button" class="btn btn-secondary" data-report-modal-close>Cancelar</button>
+                <button type="button" id="reportTableSaveBtn" class="btn btn-primary">Salvar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.ccsTablePreferencesConfig = <?php echo wp_json_encode($table_preferences_config); ?>;
+</script>
+
+<style>
+    #reportsTable.report-density-compact th,
+    #reportsTable.report-density-compact td {
+        padding-top: 0.35rem;
+        padding-bottom: 0.35rem;
+    }
+
+    #reportsTable.report-zebra-enabled tbody tr:nth-child(even) {
+        background-color: #f8fafc;
+    }
+</style>

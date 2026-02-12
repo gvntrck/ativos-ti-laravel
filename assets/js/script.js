@@ -247,3 +247,299 @@ function initReportsPhotoLightbox() {
 }
 
 document.addEventListener('DOMContentLoaded', initReportsPhotoLightbox);
+
+function cloneReportTablePrefs(obj) {
+    return JSON.parse(JSON.stringify(obj || {}));
+}
+
+function getDefaultReportTablePrefs(config) {
+    const visibility = {};
+    (config.columns || []).forEach((column) => {
+        visibility[column] = true;
+    });
+
+    return {
+        columns_order: [...(config.columns || [])],
+        columns_visibility: visibility,
+        density: 'normal',
+        zebra: false,
+    };
+}
+
+function sanitizeReportTablePrefs(config, incomingPrefs) {
+    const defaults = getDefaultReportTablePrefs(config);
+    const prefs = incomingPrefs && typeof incomingPrefs === 'object' ? incomingPrefs : {};
+    const columns = config.columns || [];
+
+    const incomingOrder = Array.isArray(prefs.columns_order) ? prefs.columns_order : [];
+    const ordered = [];
+    incomingOrder.forEach((column) => {
+        if (columns.includes(column) && !ordered.includes(column)) {
+            ordered.push(column);
+        }
+    });
+    columns.forEach((column) => {
+        if (!ordered.includes(column)) {
+            ordered.push(column);
+        }
+    });
+    defaults.columns_order = ordered;
+
+    const incomingVisibility = prefs.columns_visibility && typeof prefs.columns_visibility === 'object'
+        ? prefs.columns_visibility
+        : {};
+    columns.forEach((column) => {
+        if (Object.prototype.hasOwnProperty.call(incomingVisibility, column)) {
+            defaults.columns_visibility[column] = !!incomingVisibility[column];
+        }
+    });
+
+    if (prefs.density === 'compact' || prefs.density === 'normal') {
+        defaults.density = prefs.density;
+    }
+
+    defaults.zebra = !!prefs.zebra;
+    return defaults;
+}
+
+function reorderReportRowByAttr(row, attrName, orderedColumns) {
+    if (!row) return;
+    const map = {};
+    row.querySelectorAll('[' + attrName + ']').forEach((cell) => {
+        map[cell.getAttribute(attrName)] = cell;
+    });
+
+    orderedColumns.forEach((column) => {
+        if (map[column]) {
+            row.appendChild(map[column]);
+        }
+    });
+}
+
+function applyReportTablePrefs(config, prefs) {
+    const table = document.getElementById('reportsTable');
+    if (!table) return;
+
+    const colgroup = table.querySelector('colgroup');
+    const headerRow = table.querySelector('thead tr:first-child');
+    const filterRow = table.querySelector('thead tr:nth-child(2)');
+    const bodyRows = document.querySelectorAll('#reportsTableBody tr.report-row');
+
+    if (colgroup) {
+        reorderReportRowByAttr(colgroup, 'data-report-col', prefs.columns_order);
+    }
+    reorderReportRowByAttr(headerRow, 'data-report-header-cell', prefs.columns_order);
+    reorderReportRowByAttr(filterRow, 'data-report-filter-cell', prefs.columns_order);
+    bodyRows.forEach((row) => reorderReportRowByAttr(row, 'data-report-cell', prefs.columns_order));
+
+    let visibleColumnsCount = 0;
+    let filtersChanged = false;
+
+    (config.columns || []).forEach((column) => {
+        const isVisible = prefs.columns_visibility[column] !== false;
+        if (isVisible) visibleColumnsCount++;
+
+        const headerCell = table.querySelector('[data-report-header-cell="' + column + '"]');
+        const filterCell = table.querySelector('[data-report-filter-cell="' + column + '"]');
+        const col = table.querySelector('col[data-report-col="' + column + '"]');
+        const bodyCells = table.querySelectorAll('[data-report-cell="' + column + '"]');
+        const control = table.querySelector('[data-report-filter="' + column + '"]');
+
+        const displayValue = isVisible ? '' : 'none';
+
+        if (headerCell) headerCell.style.display = displayValue;
+        if (filterCell) filterCell.style.display = displayValue;
+        if (col) col.style.display = displayValue;
+        bodyCells.forEach((cell) => {
+            cell.style.display = displayValue;
+        });
+
+        if (!isVisible && control && control.value !== '') {
+            control.value = '';
+            filtersChanged = true;
+        }
+    });
+
+    const noResults = document.querySelector('#reportsNoResults td');
+    if (noResults) {
+        noResults.setAttribute('colspan', String(Math.max(visibleColumnsCount, 1)));
+    }
+
+    table.classList.toggle('report-density-compact', prefs.density === 'compact');
+    table.classList.toggle('report-zebra-enabled', !!prefs.zebra);
+
+    if (filtersChanged) {
+        applyReportsFilters();
+    } else {
+        updateReportsFilterHighlights();
+    }
+}
+
+function buildReportTableColumnsList(config, prefs, listElement) {
+    if (!listElement) return;
+    listElement.innerHTML = '';
+
+    prefs.columns_order.forEach((column) => {
+        const label = (config.labels && config.labels[column]) ? config.labels[column] : column;
+        const isChecked = prefs.columns_visibility[column] !== false;
+
+        const row = document.createElement('div');
+        row.className = 'px-3 py-2 flex items-center justify-between gap-3 bg-white';
+        row.setAttribute('data-report-pref-column', column);
+
+        row.innerHTML = `
+            <label class="inline-flex items-center gap-2 text-sm text-slate-700 min-w-0">
+                <input type="checkbox" class="h-4 w-4 text-indigo-600 border-slate-300 rounded" data-report-pref-visible="${column}" ${isChecked ? 'checked' : ''}>
+                <span class="truncate">${label}</span>
+            </label>
+            <div class="flex items-center gap-1">
+                <button type="button" class="px-2 py-1 text-xs border border-slate-300 rounded text-slate-600 hover:bg-slate-50" data-report-pref-move="up" data-report-pref-column="${column}">↑</button>
+                <button type="button" class="px-2 py-1 text-xs border border-slate-300 rounded text-slate-600 hover:bg-slate-50" data-report-pref-move="down" data-report-pref-column="${column}">↓</button>
+            </div>
+        `;
+
+        listElement.appendChild(row);
+    });
+}
+
+function moveReportPrefColumn(prefs, column, direction) {
+    const order = prefs.columns_order;
+    const index = order.indexOf(column);
+    if (index < 0) return;
+
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= order.length) return;
+
+    const swapped = order[targetIndex];
+    order[targetIndex] = order[index];
+    order[index] = swapped;
+}
+
+async function persistReportTablePrefs(config, prefs) {
+    const formData = new FormData();
+    formData.append('ccs_action', 'save_table_preferences');
+    formData.append('_wpnonce', config.nonce || '');
+    formData.append('preferences_json', JSON.stringify(prefs));
+    formData.append('ajax', '1');
+
+    const response = await fetch(config.save_url || '?', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    });
+
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+        throw new Error('Resposta invalida ao salvar preferencias.');
+    }
+
+    const data = await response.json();
+    if (!data.success) {
+        const msg = (data && data.data && data.data.message) ? data.data.message : 'Erro ao salvar preferencias.';
+        throw new Error(msg);
+    }
+}
+
+function initReportTablePreferences() {
+    const config = window.ccsTablePreferencesConfig;
+    const table = document.getElementById('reportsTable');
+    if (!config || !table || !Array.isArray(config.columns)) return;
+
+    const modal = document.getElementById('reportTableSettingsModal');
+    const openBtn = document.getElementById('reportEditTableBtn');
+    const saveBtn = document.getElementById('reportTableSaveBtn');
+    const resetBtn = document.getElementById('reportTableResetBtn');
+    const closeEls = modal ? modal.querySelectorAll('[data-report-modal-close]') : [];
+    const listEl = document.getElementById('reportTableColumnsList');
+    const densitySelect = document.getElementById('reportDensitySetting');
+    const zebraCheckbox = document.getElementById('reportZebraSetting');
+
+    if (!modal || !openBtn || !saveBtn || !resetBtn || !listEl || !densitySelect || !zebraCheckbox) {
+        return;
+    }
+
+    let activePrefs = sanitizeReportTablePrefs(config, config.preferences || {});
+    let draftPrefs = cloneReportTablePrefs(activePrefs);
+
+    const renderModal = () => {
+        densitySelect.value = draftPrefs.density || 'normal';
+        zebraCheckbox.checked = !!draftPrefs.zebra;
+        buildReportTableColumnsList(config, draftPrefs, listEl);
+    };
+
+    const openModal = () => {
+        draftPrefs = cloneReportTablePrefs(activePrefs);
+        renderModal();
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    };
+
+    const closeModal = () => {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+    };
+
+    openBtn.addEventListener('click', openModal);
+    closeEls.forEach((el) => el.addEventListener('click', closeModal));
+
+    listEl.addEventListener('click', (event) => {
+        const moveButton = event.target.closest('[data-report-pref-move]');
+        if (!moveButton) return;
+
+        const column = moveButton.getAttribute('data-report-pref-column');
+        const direction = moveButton.getAttribute('data-report-pref-move');
+        moveReportPrefColumn(draftPrefs, column, direction);
+        renderModal();
+    });
+
+    listEl.addEventListener('change', (event) => {
+        const checkbox = event.target.closest('[data-report-pref-visible]');
+        if (!checkbox) return;
+
+        const column = checkbox.getAttribute('data-report-pref-visible');
+        draftPrefs.columns_visibility[column] = !!checkbox.checked;
+    });
+
+    densitySelect.addEventListener('change', () => {
+        draftPrefs.density = densitySelect.value === 'compact' ? 'compact' : 'normal';
+    });
+
+    zebraCheckbox.addEventListener('change', () => {
+        draftPrefs.zebra = !!zebraCheckbox.checked;
+    });
+
+    resetBtn.addEventListener('click', () => {
+        draftPrefs = getDefaultReportTablePrefs(config);
+        renderModal();
+    });
+
+    saveBtn.addEventListener('click', async () => {
+        const visibleCount = Object.values(draftPrefs.columns_visibility || {}).filter(Boolean).length;
+        if (visibleCount === 0 && draftPrefs.columns_order.length > 0) {
+            draftPrefs.columns_visibility[draftPrefs.columns_order[0]] = true;
+        }
+
+        activePrefs = sanitizeReportTablePrefs(config, draftPrefs);
+        applyReportTablePrefs(config, activePrefs);
+        closeModal();
+
+        try {
+            await persistReportTablePrefs(config, activePrefs);
+            if (typeof showToast === 'function') {
+                showToast('Preferencias da tabela salvas.', 'success');
+            }
+        } catch (error) {
+            if (typeof showToast === 'function') {
+                showToast(error.message || 'Erro ao salvar preferencias.', 'error');
+            } else {
+                alert(error.message || 'Erro ao salvar preferencias.');
+            }
+        }
+    });
+
+    applyReportTablePrefs(config, activePrefs);
+}
+
+document.addEventListener('DOMContentLoaded', initReportTablePreferences);
