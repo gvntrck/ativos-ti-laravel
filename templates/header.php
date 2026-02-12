@@ -227,13 +227,6 @@
                         })();
                     </script>
                 <?php endif; ?>
-                <?php
-                $reports_btn_classes = 'btn btn-secondary';
-                if ($view === 'reports') {
-                    $reports_btn_classes .= ' ring-2 ring-indigo-200';
-                }
-                ?>
-                <a href="?view=reports" class="<?php echo esc_attr($reports_btn_classes); ?>">Relatorios</a>
                 <?php if ($view === 'list'): ?>
                     <a href="?view=trash" class="btn btn-secondary">Lixeira</a>
                 <?php endif; ?>
