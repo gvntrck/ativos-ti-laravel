@@ -94,6 +94,29 @@ function rowMatchesReportFilter(row, control) {
     return rowValue.includes(filterValue);
 }
 
+function updateReportsFilterHighlights(filterControls) {
+    const controls = filterControls || document.querySelectorAll('[data-report-filter]');
+
+    controls.forEach((control) => {
+        const column = control.getAttribute('data-report-filter');
+        if (!column) return;
+
+        const isActive = normalizeReportValue(control.value) !== '';
+        const headerCell = document.querySelector('[data-report-header-cell="' + column + '"]');
+        const filterCell = document.querySelector('[data-report-filter-cell="' + column + '"]');
+
+        if (headerCell) {
+            headerCell.classList.toggle('bg-indigo-100', isActive);
+            headerCell.classList.toggle('text-indigo-700', isActive);
+            headerCell.classList.toggle('text-slate-600', !isActive);
+        }
+
+        if (filterCell) {
+            filterCell.classList.toggle('bg-indigo-50', isActive);
+        }
+    });
+}
+
 function applyReportsFilters() {
     const tableBody = document.getElementById('reportsTableBody');
     if (!tableBody) return;
@@ -138,6 +161,8 @@ function applyReportsFilters() {
             noResultsRow.classList.add('hidden');
         }
     }
+
+    updateReportsFilterHighlights(filterControls);
 }
 
 function initReportsFilters() {

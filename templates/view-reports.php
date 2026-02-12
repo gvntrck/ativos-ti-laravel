@@ -129,14 +129,15 @@ foreach ($report_columns as $column) {
             <thead class="bg-slate-50">
                 <tr class="border-b border-slate-200">
                     <?php foreach ($report_columns as $column): ?>
-                        <th class="px-3 py-2 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        <th data-report-header-cell="<?php echo esc_attr($column); ?>"
+                            class="px-3 py-2 text-xs font-semibold text-slate-600 uppercase tracking-wider transition-colors">
                             <?php echo esc_html($column_labels[$column]); ?>
                         </th>
                     <?php endforeach; ?>
                 </tr>
                 <tr class="border-b border-slate-200 bg-white">
                     <?php foreach ($report_columns as $column): ?>
-                        <th class="px-2 py-2">
+                        <th data-report-filter-cell="<?php echo esc_attr($column); ?>" class="px-2 py-2 transition-colors">
                             <?php $meta = $column_filter_meta[$column]; ?>
                             <?php if ($column === 'photo_url'): ?>
                                 <select data-report-filter="<?php echo esc_attr($column); ?>"
