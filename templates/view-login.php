@@ -7,7 +7,10 @@
     <title>Login - Controle de Computadores</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <?php $manifest_version = file_exists(__DIR__ . '/../manifest.json') ? filemtime(__DIR__ . '/../manifest.json') : time(); ?>
+    <?php
+    $manifest_version = file_exists(__DIR__ . '/../manifest.json') ? filemtime(__DIR__ . '/../manifest.json') : time();
+    $service_worker_version = file_exists(__DIR__ . '/../service-worker.js') ? filemtime(__DIR__ . '/../service-worker.js') : time();
+    ?>
     <style type="text/tailwindcss">
         <?php
         $css_path = __DIR__ . '/../assets/css/tailwind-custom.css';
@@ -30,7 +33,7 @@
             });
 
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('service-worker.js', { updateViaCache: 'none' })
+                navigator.serviceWorker.register('service-worker.js?v=<?php echo $service_worker_version; ?>', { updateViaCache: 'none' })
                     .then(registration => {
                         registration.update();
 

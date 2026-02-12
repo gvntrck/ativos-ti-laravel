@@ -1,14 +1,12 @@
 const CACHE_PREFIX = 'controlepcs';
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const CACHE_NAME = `${CACHE_PREFIX}-${CACHE_VERSION}`;
 const PRECACHE_URLS = [
-    './',
-    './index.php',
     './manifest.json',
     './assets/icons/icon-192x192.png',
     './assets/icons/icon-512x512.png'
 ];
-const STATIC_ASSET_PATTERN = /\.(?:css|js|png|jpg|jpeg|svg|webp|gif|ico|woff2?)$/i;
+const PWA_ASSET_PATTERN = /(?:\/manifest\.json$|\/assets\/icons\/.+\.(?:png|svg|ico)$)/i;
 
 self.addEventListener('install', event => {
     event.waitUntil(
@@ -43,21 +41,23 @@ self.addEventListener('fetch', event => {
 
     const requestUrl = new URL(event.request.url);
     const isSameOrigin = requestUrl.origin === self.location.origin;
-    const isNavigation = event.request.mode === 'navigate';
-    const isStaticAsset = STATIC_ASSET_PATTERN.test(requestUrl.pathname);
-    const canCache = isSameOrigin && (isNavigation || isStaticAsset);
+    if (!isSameOrigin) {
+        return;
+    }
 
-    if (!canCache) {
+    // Dynamic application pages must always come from network to avoid stale UI.
+    if (event.request.mode === 'navigate') {
+        return;
+    }
+
+    const isPwaAsset = PWA_ASSET_PATTERN.test(requestUrl.pathname);
+    if (!isPwaAsset) {
         return;
     }
 
     event.respondWith((async () => {
-        const shouldBypassBrowserCache = isNavigation || /\.(?:css|js)$/i.test(requestUrl.pathname);
-
         try {
-            const networkResponse = shouldBypassBrowserCache
-                ? await fetch(event.request, { cache: 'no-store' })
-                : await fetch(event.request);
+            const networkResponse = await fetch(event.request, { cache: 'no-store' });
 
             if (networkResponse && networkResponse.ok && networkResponse.type === 'basic') {
                 const cache = await caches.open(CACHE_NAME);
@@ -69,13 +69,6 @@ self.addEventListener('fetch', event => {
             const cachedResponse = await caches.match(event.request);
             if (cachedResponse) {
                 return cachedResponse;
-            }
-
-            if (isNavigation) {
-                const fallback = await caches.match('./index.php');
-                if (fallback) {
-                    return fallback;
-                }
             }
 
             throw error;

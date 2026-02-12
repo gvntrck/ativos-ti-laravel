@@ -112,6 +112,7 @@
     $ajax_handler_version = file_exists(__DIR__ . '/../assets/js/ajax-handler.js') ? filemtime(__DIR__ . '/../assets/js/ajax-handler.js') : time();
     $lightbox_version = file_exists(__DIR__ . '/../assets/js/lightbox.js') ? filemtime(__DIR__ . '/../assets/js/lightbox.js') : time();
     $manifest_version = file_exists(__DIR__ . '/../manifest.json') ? filemtime(__DIR__ . '/../manifest.json') : time();
+    $service_worker_version = file_exists(__DIR__ . '/../service-worker.js') ? filemtime(__DIR__ . '/../service-worker.js') : time();
     ?>
     <script src="assets/js/script.js?v=<?php echo $script_version; ?>"></script>
     <script src="assets/js/ajax-handler.js?v=<?php echo $ajax_handler_version; ?>"></script>
@@ -130,7 +131,7 @@
             });
 
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('service-worker.js', { updateViaCache: 'none' })
+                navigator.serviceWorker.register('service-worker.js?v=<?php echo $service_worker_version; ?>', { updateViaCache: 'none' })
                     .then(registration => {
                         registration.update();
 
