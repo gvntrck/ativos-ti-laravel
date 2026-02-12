@@ -105,7 +105,6 @@ foreach ($report_columns as $column) {
         <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
                 <h2 class="text-lg font-semibold text-slate-900">Relatorios de PCs</h2>
-                <p class="text-sm text-slate-500">Tabela tipo planilha com filtros por coluna.</p>
             </div>
             <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
                 <input id="reportGlobalSearch" type="text"
