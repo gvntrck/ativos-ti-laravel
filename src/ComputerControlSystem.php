@@ -9,6 +9,19 @@ class ComputerControlSystem
     private $table_history;
     private $form_error = '';
     private $form_data = [];
+    private $permissions = [];
+    private $user_access_level = 'none';
+    private $edit_actions = [
+        'add_computer',
+        'update_computer',
+        'add_checkup',
+        'upload_photo',
+        'trash_computer',
+        'restore_computer',
+        'quick_windows_update',
+        'delete_history',
+        'delete_permanent_computer',
+    ];
 
     public function __construct()
     {
@@ -34,9 +47,15 @@ class ComputerControlSystem
             exit;
         }
 
-        // Enforce Permissions (Admin only)
-        if (!current_user_can('manage_options')) {
-            wp_die("Acesso negado. Apenas administradores podem acessar este sistema.");
+        $this->initialize_permissions();
+
+        if (!$this->user_can_view()) {
+            $this->deny_request('Acesso negado. Sua role nao possui permissao para acessar este sistema.', false, 403);
+        }
+
+        $view = $this->get_requested_view();
+        if (!$this->can_access_view($view)) {
+            $this->deny_request('Acesso negado. Seu perfil possui somente permissao de visualizacao.', false, 403);
         }
 
         // Install/Update DB if needed
@@ -46,7 +65,205 @@ class ComputerControlSystem
         $this->handle_form_submissions();
 
         // Render Page
-        $this->render_page();
+        $render_view = $this->get_requested_view();
+        if (!$this->can_access_view($render_view)) {
+            $this->deny_request('Acesso negado. Seu perfil possui somente permissao de visualizacao.', false, 403);
+        }
+        $this->render_page($render_view);
+    }
+
+    private function initialize_permissions()
+    {
+        $this->permissions = $this->load_permissions_config();
+        $this->user_access_level = $this->determine_user_access_level();
+    }
+
+    private function load_permissions_config()
+    {
+        $default = [
+            'edit_roles' => ['administrator'],
+            'view_roles' => [],
+            'allow_viewers_table_preferences' => true,
+        ];
+
+        $config = [];
+        $config_path = dirname(__DIR__) . '/config/permissions.php';
+
+        if (file_exists($config_path)) {
+            $loaded = require $config_path;
+            if (is_array($loaded)) {
+                $config = $loaded;
+            }
+        }
+
+        $edit_roles = $this->sanitize_role_list($config['edit_roles'] ?? $default['edit_roles']);
+        $view_roles = $this->sanitize_role_list($config['view_roles'] ?? $default['view_roles']);
+
+        if (!in_array('administrator', $edit_roles, true)) {
+            $edit_roles[] = 'administrator';
+        }
+
+        $allow_viewers_table_preferences = array_key_exists('allow_viewers_table_preferences', $config)
+            ? (bool) $config['allow_viewers_table_preferences']
+            : $default['allow_viewers_table_preferences'];
+
+        return [
+            'edit_roles' => array_values(array_unique($edit_roles)),
+            'view_roles' => array_values(array_unique($view_roles)),
+            'allow_viewers_table_preferences' => $allow_viewers_table_preferences,
+        ];
+    }
+
+    private function sanitize_role_list($roles)
+    {
+        if (!is_array($roles)) {
+            return [];
+        }
+
+        $sanitized = [];
+        foreach ($roles as $role) {
+            $role = sanitize_key((string) $role);
+            if ($role !== '' && !in_array($role, $sanitized, true)) {
+                $sanitized[] = $role;
+            }
+        }
+
+        return $sanitized;
+    }
+
+    private function determine_user_access_level()
+    {
+        if (!is_user_logged_in()) {
+            return 'none';
+        }
+
+        if (is_multisite() && is_super_admin(get_current_user_id())) {
+            return 'edit';
+        }
+
+        $user_roles = $this->get_current_user_roles();
+
+        if ($this->roles_match($user_roles, $this->permissions['edit_roles'] ?? [])) {
+            return 'edit';
+        }
+
+        if ($this->roles_match($user_roles, $this->permissions['view_roles'] ?? [])) {
+            return 'view';
+        }
+
+        return 'none';
+    }
+
+    private function get_current_user_roles()
+    {
+        $user = wp_get_current_user();
+        if (!$user || !is_array($user->roles)) {
+            return [];
+        }
+
+        return $this->sanitize_role_list($user->roles);
+    }
+
+    private function roles_match($user_roles, $allowed_roles)
+    {
+        if (empty($user_roles) || empty($allowed_roles)) {
+            return false;
+        }
+
+        foreach ($user_roles as $role) {
+            if (in_array($role, $allowed_roles, true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function user_can_view()
+    {
+        return $this->user_access_level === 'edit' || $this->user_access_level === 'view';
+    }
+
+    private function user_can_edit()
+    {
+        return $this->user_access_level === 'edit';
+    }
+
+    private function is_read_only_user()
+    {
+        return $this->user_access_level === 'view';
+    }
+
+    private function user_can_save_table_preferences()
+    {
+        if ($this->user_can_edit()) {
+            return true;
+        }
+
+        return $this->is_read_only_user() && !empty($this->permissions['allow_viewers_table_preferences']);
+    }
+
+    private function get_requested_view()
+    {
+        $view = isset($_GET['view']) ? sanitize_key((string) $_GET['view']) : 'list';
+        if ($view === '') {
+            $view = 'list';
+        }
+
+        $allowed_views = ['list', 'add', 'details', 'edit', 'trash', 'reports'];
+        if (!in_array($view, $allowed_views, true)) {
+            $view = 'list';
+        }
+
+        return $view;
+    }
+
+    private function can_access_view($view)
+    {
+        $edit_only_views = ['add', 'edit'];
+        if (in_array($view, $edit_only_views, true)) {
+            return $this->user_can_edit();
+        }
+
+        return $this->user_can_view();
+    }
+
+    private function deny_request($message, $is_ajax = false, $status_code = 403)
+    {
+        if ($is_ajax) {
+            wp_send_json_error(['message' => $message], $status_code);
+        }
+
+        wp_die($message, 'Acesso negado', ['response' => $status_code]);
+    }
+
+    private function ensure_action_is_allowed($action, $is_ajax)
+    {
+        if (in_array($action, $this->edit_actions, true)) {
+            if (!$this->user_can_edit()) {
+                $this->deny_request(
+                    'Permissao insuficiente. Seu perfil esta em modo somente visualizacao.',
+                    $is_ajax,
+                    403
+                );
+            }
+
+            return;
+        }
+
+        if ($action === 'save_table_preferences') {
+            if (!$this->user_can_save_table_preferences()) {
+                $this->deny_request(
+                    'Permissao insuficiente para salvar personalizacao da tabela.',
+                    $is_ajax,
+                    403
+                );
+            }
+
+            return;
+        }
+
+        $this->deny_request('Acao desconhecida ou nao permitida.', $is_ajax, 403);
     }
 
     private function check_installation()
@@ -150,7 +367,9 @@ class ComputerControlSystem
         global $wpdb;
         $current_user_id = get_current_user_id();
         $is_ajax = $this->is_ajax();
-        $action = $_POST['ccs_action'];
+        $action = sanitize_key((string) $_POST['ccs_action']);
+
+        $this->ensure_action_is_allowed($action, $is_ajax);
 
         $result = ['success' => false, 'message' => 'Ação desconhecida.'];
 
@@ -607,13 +826,18 @@ class ComputerControlSystem
         return intval($wpdb->insert_id);
     }
 
-    private function render_page()
+    private function render_page($view = null)
     {
         if (!headers_sent()) {
             header('Content-Type: text/html; charset=' . get_bloginfo('charset'));
         }
 
-        $view = $_GET['view'] ?? 'list';
+        if ($view === null) {
+            $view = $this->get_requested_view();
+        }
+
+        $can_edit = $this->user_can_edit();
+        $is_read_only = $this->is_read_only_user();
 
         require_once __DIR__ . '/../templates/header.php';
         $this->render_content($view);
@@ -627,13 +851,15 @@ class ComputerControlSystem
         } elseif ($view === 'add') {
             $this->render_form();
         } elseif ($view === 'details') {
-            $this->render_details($_GET['id']);
+            $this->render_details(isset($_GET['id']) ? intval($_GET['id']) : 0);
         } elseif ($view === 'edit') {
-            $this->render_form($_GET['id']);
+            $this->render_form(isset($_GET['id']) ? intval($_GET['id']) : 0);
         } elseif ($view === 'trash') {
             $this->render_list_view(true);
         } elseif ($view === 'reports') {
             $this->render_reports_view(null);
+        } else {
+            $this->render_reports_view(false);
         }
     }
 
@@ -724,6 +950,8 @@ class ComputerControlSystem
             // Removemos tags HTML se houver e normalizamos
             $pc->search_meta = isset($history_data[$pc->id]) ? strip_tags($history_data[$pc->id]->full_history) : '';
         }
+
+        $can_edit = $this->user_can_edit();
 
         require __DIR__ . '/../templates/view-list.php';
     }
@@ -822,6 +1050,9 @@ class ComputerControlSystem
             $table_preferences = [];
         }
 
+        $can_edit = $this->user_can_edit();
+        $can_save_table_preferences = $this->user_can_save_table_preferences();
+
         require __DIR__ . '/../templates/view-reports.php';
     }
 
@@ -850,6 +1081,12 @@ class ComputerControlSystem
     private function render_form($id = null)
     {
         global $wpdb;
+        $can_edit = $this->user_can_edit();
+        if (!$can_edit) {
+            echo "<div class='mb-6 p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg'>Permissao insuficiente. Este perfil esta em modo somente visualizacao.</div>";
+            return;
+        }
+
         $pc = null;
         if ($id) {
             $pc = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$this->table_inventory} WHERE id = %d", $id));
@@ -866,6 +1103,7 @@ class ComputerControlSystem
     private function render_details($id)
     {
         global $wpdb;
+        $can_edit = $this->user_can_edit();
         $pc = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$this->table_inventory} WHERE id = %d", $id));
         if (!$pc) {
             echo "<div class='text-red-500'>Computador não encontrado.</div>";
@@ -926,7 +1164,7 @@ class ComputerControlSystem
                             -
                             <?php echo esc_html($display_name); ?>
                         </span>
-                        <?php if (!empty($history_id)): ?>
+                        <?php if (!empty($history_id) && $this->user_can_edit()): ?>
                             <form method="post" action="?" data-ajax="true" class="inline"
                                 data-confirm="Tem certeza que deseja excluir este item do historico?">
                                 <?php wp_nonce_field('ccs_action_nonce'); ?>

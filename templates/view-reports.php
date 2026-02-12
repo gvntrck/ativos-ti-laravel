@@ -2,6 +2,7 @@
 $column_labels = [];
 $column_filter_meta = [];
 $column_widths = [];
+$can_save_table_preferences = isset($can_save_table_preferences) ? (bool) $can_save_table_preferences : false;
 $report_origin_view = isset($_GET['view']) ? sanitize_text_field((string) $_GET['view']) : 'list';
 if (!in_array($report_origin_view, ['list', 'reports'], true)) {
     $report_origin_view = 'list';
@@ -123,7 +124,9 @@ $table_preferences_config = [
                 <input id="reportGlobalSearch" type="text"
                     class="block w-full sm:w-80 px-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     placeholder="Busca global (hostname, usuario, local...)">
-                <button type="button" id="reportEditTableBtn" class="btn btn-secondary whitespace-nowrap">Editar tabela</button>
+                <button type="button" id="reportEditTableBtn"
+                    class="btn btn-secondary whitespace-nowrap <?php echo $can_save_table_preferences ? '' : 'opacity-60 cursor-not-allowed'; ?>"
+                    <?php echo $can_save_table_preferences ? '' : 'disabled title="Sem permissao para personalizar a tabela"'; ?>>Editar tabela</button>
                 <button type="button" id="clearReportFilters" class="btn btn-secondary whitespace-nowrap">Limpar filtros</button>
             </div>
         </div>

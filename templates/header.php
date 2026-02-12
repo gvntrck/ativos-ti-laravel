@@ -164,6 +164,8 @@
         $user_first_name = $current_user->display_name ?: $current_user->user_login;
     }
     $logout_url = wp_logout_url(home_url('/'));
+    $can_edit = isset($can_edit) ? (bool) $can_edit : false;
+    $is_read_only = isset($is_read_only) ? (bool) $is_read_only : false;
     ?>
 
     <div class="ccs-topbar">
@@ -246,7 +248,7 @@
                 <?php if ($view === 'list'): ?>
                     <a href="?view=trash" class="btn btn-secondary">Lixeira</a>
                 <?php endif; ?>
-                <?php if ($view !== 'add'): ?>
+                <?php if ($can_edit && $view !== 'add'): ?>
                     <a href="?view=add" class="btn btn-primary"><svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -257,6 +259,10 @@
 
         <!-- Messages -->
         <?php
+        if ($is_read_only) {
+            echo "<div class='mb-6 p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg shadow-sm'>Modo somente visualizacao: voce pode consultar os dados, mas nao pode alterar inventario ou historico.</div>";
+        }
+
         if (isset($_GET['message'])) {
             $msg = '';
             $type = 'success';

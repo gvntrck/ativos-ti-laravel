@@ -1,3 +1,4 @@
+<?php $can_edit = isset($can_edit) ? (bool) $can_edit : false; ?>
 <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
     <?php $details_return_to = $show_trash ? 'trash' : 'list'; ?>
     <div
@@ -271,6 +272,7 @@
                         </td>
                         <td class="px-4 py-2">
                             <?php if ($show_trash): ?>
+                                <?php if ($can_edit): ?>
                                 <form method="post" action="?" class="inline" data-ajax="true"
                                     data-confirm="Tem certeza que deseja restaurar este computador?">
                                     <?php wp_nonce_field('ccs_action_nonce'); ?>
@@ -301,6 +303,9 @@
                                         Excluir Permanentemente
                                     </button>
                                 </form>
+                                <?php else: ?>
+                                    <span class="text-xs text-slate-400">Somente visualizacao</span>
+                                <?php endif; ?>
                             <?php else: ?>
                                 <a href="?view=details&id=<?php echo $pc->id; ?>&return_to=<?php echo esc_attr($details_return_to); ?>"
                                     class="text-indigo-600 hover:text-indigo-900 font-medium text-xs">Gerenciar</a>

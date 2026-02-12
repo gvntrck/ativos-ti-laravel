@@ -1,3 +1,11 @@
+<?php
+$can_edit = isset($can_edit) ? (bool) $can_edit : false;
+if (!$can_edit): ?>
+    <div class="max-w-2xl mx-auto mb-6 p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg">
+        Permissao insuficiente. Este perfil esta em modo somente visualizacao.
+    </div>
+    <?php return; ?>
+<?php endif; ?>
 <div class="max-w-2xl mx-auto">
     <form method="post" action="?" enctype="multipart/form-data" data-ajax="true"
         class="bg-white p-8 rounded-xl shadow-sm border border-slate-200">
