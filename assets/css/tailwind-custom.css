@@ -17,12 +17,8 @@ body {
 }
 
 .ccs-topbar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
+    position: static;
     height: 34px;
-    z-index: 1000;
     background: rgba(255, 255, 255, 0.92);
     border-bottom: 1px solid var(--ccs-border);
     backdrop-filter: blur(6px);
@@ -33,17 +29,9 @@ html {
     margin-top: 32px !important;
 }
 
-body.admin-bar .ccs-topbar {
-    top: 32px;
-}
-
 @media screen and (max-width: 782px) {
     html {
         margin-top: 46px !important;
-    }
-
-    body.admin-bar .ccs-topbar {
-        top: 46px;
     }
 }
 
