@@ -1252,7 +1252,11 @@ class ComputerControlSystem
     private function sanitize_property($value)
     {
         $value = sanitize_text_field((string) $value);
-        $allowed = ['Metalife', 'Meralife', 'Selbetti'];
+        if ($value === 'Meralife') {
+            $value = 'Metalife';
+        }
+
+        $allowed = ['Metalife', 'Selbetti'];
         return in_array($value, $allowed, true) ? $value : '';
     }
 

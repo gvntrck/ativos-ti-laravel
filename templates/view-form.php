@@ -168,6 +168,9 @@ if (!$can_edit): ?>
             <?php $val_user_name = isset($form_data['user_name']) ? $form_data['user_name'] : ($is_edit ? $pc->user_name : ''); ?>
             <?php $val_brand_model = isset($form_data['brand_model']) ? $form_data['brand_model'] : ($is_edit ? ($pc->brand_model ?? '') : ''); ?>
             <?php $val_property = isset($form_data['property']) ? $form_data['property'] : ($is_edit ? ($pc->property ?? '') : ''); ?>
+            <?php if ($val_property === 'Meralife') {
+                $val_property = 'Metalife';
+            } ?>
             <?php $val_notes = isset($form_data['notes']) ? $form_data['notes'] : ($is_edit ? $pc->notes : ''); ?>
             <?php
             $val_department = isset($form_data['department']) ? $form_data['department'] : ($is_edit ? $pc->department : '');
@@ -219,7 +222,7 @@ if (!$can_edit): ?>
                 <select name="property"
                     class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
                     <option value="" <?php selected($val_property, ''); ?>>Selecione...</option>
-                    <option value="Meralife" <?php selected($val_property, 'Meralife'); ?>>Meralife</option>
+                    <option value="Metalife" <?php selected($val_property, 'Metalife'); ?>>Metalife</option>
                     <option value="Selbetti" <?php selected($val_property, 'Selbetti'); ?>>Selbetti</option>
                 </select>
             </div>
