@@ -166,6 +166,8 @@ if (!$can_edit): ?>
             <?php $val_phone = isset($form_data['phone_number']) ? $form_data['phone_number'] : ($is_edit ? $pc->phone_number : ''); ?>
             <?php $val_status = isset($form_data['status']) ? $form_data['status'] : ($is_edit ? $pc->status : 'active'); ?>
             <?php $val_user_name = isset($form_data['user_name']) ? $form_data['user_name'] : ($is_edit ? $pc->user_name : ''); ?>
+            <?php $val_brand_model = isset($form_data['brand_model']) ? $form_data['brand_model'] : ($is_edit ? ($pc->brand_model ?? '') : ''); ?>
+            <?php $val_property = isset($form_data['property']) ? $form_data['property'] : ($is_edit ? ($pc->property ?? '') : ''); ?>
             <?php $val_notes = isset($form_data['notes']) ? $form_data['notes'] : ($is_edit ? $pc->notes : ''); ?>
             <?php
             $val_department = isset($form_data['department']) ? $form_data['department'] : ($is_edit ? $pc->department : '');
@@ -198,10 +200,28 @@ if (!$can_edit): ?>
                 </div>
             </div>
 
+            <div class="grid grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Marca / Modelo</label>
+                    <input type="text" name="brand_model" value="<?php echo esc_attr($val_brand_model); ?>"
+                        placeholder="Ex.: Samsung A54"
+                        class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Usuario</label>
+                    <input type="text" name="user_name" value="<?php echo esc_attr($val_user_name); ?>"
+                        class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                </div>
+            </div>
+
             <div class="mb-6">
-                <label class="block text-sm font-medium text-slate-700 mb-2">Usuario</label>
-                <input type="text" name="user_name" value="<?php echo esc_attr($val_user_name); ?>"
+                <label class="block text-sm font-medium text-slate-700 mb-2">Propriedade</label>
+                <select name="property"
                     class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                    <option value="" <?php selected($val_property, ''); ?>>Selecione...</option>
+                    <option value="Meralife" <?php selected($val_property, 'Meralife'); ?>>Meralife</option>
+                    <option value="Selbetti" <?php selected($val_property, 'Selbetti'); ?>>Selbetti</option>
+                </select>
             </div>
 
             <div class="mb-6">

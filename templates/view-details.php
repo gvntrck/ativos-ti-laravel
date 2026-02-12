@@ -85,8 +85,16 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                     <span class="font-medium"><?php echo esc_html($pc->phone_number ?: '-'); ?></span>
                 </div>
                 <div>
+                    <span class="block text-slate-400 text-xs uppercase tracking-wider font-semibold">Marca / Modelo</span>
+                    <span class="font-medium"><?php echo esc_html(($pc->brand_model ?? '') !== '' ? $pc->brand_model : '-'); ?></span>
+                </div>
+                <div>
                     <span class="block text-slate-400 text-xs uppercase tracking-wider font-semibold">Departamento</span>
                     <span class="font-medium"><?php echo esc_html($pc->department ?: '-'); ?></span>
+                </div>
+                <div>
+                    <span class="block text-slate-400 text-xs uppercase tracking-wider font-semibold">Propriedade</span>
+                    <span class="font-medium"><?php echo esc_html(($pc->property ?? '') !== '' ? $pc->property : '-'); ?></span>
                 </div>
             <?php else: ?>
                 <div>
@@ -298,6 +306,7 @@ $status_label = $status_labels[$status_value] ?? $status_value;
         property: <?php echo json_encode($pc->property ?? ''); ?>,
         type: <?php echo json_encode($pc->type ?? ''); ?>,
         phoneNumber: <?php echo json_encode($pc->phone_number ?? ''); ?>,
+        brandModel: <?php echo json_encode($pc->brand_model ?? ''); ?>,
         department: <?php echo json_encode($pc->department ?? ''); ?>,
         specs: <?php echo json_encode($pc->specs ?? ''); ?>,
         notes: <?php echo json_encode($pc->notes ?: '-'); ?>,
@@ -325,8 +334,10 @@ $status_label = $status_labels[$status_value] ?? $status_value;
         if (assetData.module === 'cellphones') {
             text += '*FICHA DO CELULAR*\n\n';
             text += `*Numero:* ${assetData.phoneNumber || '-'}\n`;
+            text += `*Marca / Modelo:* ${assetData.brandModel || '-'}\n`;
             text += `*Status:* ${assetData.status}\n`;
             text += `*Usuario:* ${assetData.userName}\n`;
+            text += `*Propriedade:* ${assetData.property || '-'}\n`;
             text += `*Departamento:* ${assetData.department || '-'}\n`;
             text += `*Atualizado em:* ${assetData.updatedAt}\n`;
             if (assetData.notes && assetData.notes !== '-') {

@@ -34,6 +34,7 @@ $label_overrides = [
     'id' => 'ID',
     'hostname' => 'Hostname',
     'phone_number' => 'Numero Celular',
+    'brand_model' => 'Marca Modelo',
     'status' => 'Status',
     'deleted' => 'Excluido',
     'user_name' => 'Usuario',

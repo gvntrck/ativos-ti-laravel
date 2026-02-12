@@ -229,7 +229,7 @@ $module_param = 'module=' . urlencode($current_module);
                     }
                     ?>
                     <tr class="computer-row hover:bg-slate-50"
-                        data-search-terms="<?php echo esc_attr(strtolower(($identifier_search_value ?? '') . ' ' . ($pc->user_name ?? '') . ' ' . ($pc->department ?? '') . ' ' . ($pc->location ?? '') . ' ' . ($pc->notes ?? '') . ' ' . ($pc->search_meta ?? ''))); ?>">
+                        data-search-terms="<?php echo esc_attr(strtolower(($identifier_search_value ?? '') . ' ' . ($pc->user_name ?? '') . ' ' . ($pc->brand_model ?? '') . ' ' . ($pc->property ?? '') . ' ' . ($pc->department ?? '') . ' ' . ($pc->location ?? '') . ' ' . ($pc->notes ?? '') . ' ' . ($pc->search_meta ?? ''))); ?>">
                         <td class="px-4 py-2">
                             <span class="px-2 py-0.5 rounded-full text-xs font-medium <?php echo esc_attr($status_color); ?>">
                                 <?php echo esc_html($status_label); ?>
@@ -245,7 +245,23 @@ $module_param = 'module=' . urlencode($current_module);
 
                         <?php if ($is_cellphone_module): ?>
                             <td class="px-4 py-2 text-slate-600"><?php echo esc_html($pc->department ?: '-'); ?></td>
-                            <td class="px-4 py-2 text-slate-600"><?php echo esc_html($pc->user_name ?: '-'); ?></td>
+                            <td class="px-4 py-2 text-slate-600">
+                                <div class="font-medium text-slate-900"><?php echo esc_html($pc->user_name ?: '-'); ?></div>
+                                <div class="text-xs text-slate-400">
+                                    <?php
+                                    $brand_model = trim((string) ($pc->brand_model ?? ''));
+                                    $property = trim((string) ($pc->property ?? ''));
+                                    $meta_parts = [];
+                                    if ($brand_model !== '') {
+                                        $meta_parts[] = $brand_model;
+                                    }
+                                    if ($property !== '') {
+                                        $meta_parts[] = $property;
+                                    }
+                                    echo esc_html(!empty($meta_parts) ? implode(' | ', $meta_parts) : '-');
+                                    ?>
+                                </div>
+                            </td>
                         <?php else: ?>
                             <td class="px-4 py-2 text-slate-600 capitalize"><?php echo esc_html($pc->type ?? '-'); ?></td>
                             <td class="px-4 py-2 text-slate-600">

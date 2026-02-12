@@ -2,12 +2,12 @@
 
 class ComputerControlSystem
 {
-    public const VERSION = '1.9.0';
+    public const VERSION = '1.9.1';
 
     private const MODULE_COMPUTERS = 'computers';
     private const MODULE_CELLPHONES = 'cellphones';
 
-    private $db_version = '1.4.0';
+    private $db_version = '1.4.1';
     private $table_inventory;
     private $table_history;
     private $table_computer_inventory;
@@ -155,7 +155,7 @@ class ComputerControlSystem
                 'singular_label' => 'Celular',
                 'new_label' => 'Novo Celular',
                 'report_title' => 'Relatorios de Celulares',
-                'report_search_placeholder' => 'Busca global (numero, usuario, departamento...)',
+                'report_search_placeholder' => 'Busca global (numero, usuario, marca/modelo, propriedade...)',
                 'list_search_placeholder' => 'Filtrar celulares...',
                 'copy_title' => 'FICHA DO CELULAR',
             ],
@@ -524,6 +524,18 @@ class ComputerControlSystem
                 $wpdb->query("ALTER TABLE {$this->table_computer_history} ADD photos text AFTER description");
             }
         }
+
+        if ($this->table_exists($this->table_cellphone_inventory)) {
+            $row_cell = $wpdb->get_row("SELECT * FROM {$this->table_cellphone_inventory} LIMIT 1", ARRAY_A);
+            if ($row_cell && !isset($row_cell['brand_model'])) {
+                $wpdb->query("ALTER TABLE {$this->table_cellphone_inventory} ADD brand_model varchar(150) DEFAULT '' AFTER user_name");
+            }
+
+            $row_cell = $wpdb->get_row("SELECT * FROM {$this->table_cellphone_inventory} LIMIT 1", ARRAY_A);
+            if ($row_cell && !isset($row_cell['property'])) {
+                $wpdb->query("ALTER TABLE {$this->table_cellphone_inventory} ADD property varchar(20) DEFAULT '' AFTER department");
+            }
+        }
     }
 
     private function install_db()
@@ -567,7 +579,9 @@ class ComputerControlSystem
             status varchar(20) NOT NULL DEFAULT 'active',
             deleted tinyint(1) NOT NULL DEFAULT 0,
             user_name varchar(100) DEFAULT '',
+            brand_model varchar(150) DEFAULT '',
             department varchar(100) DEFAULT '',
+            property varchar(20) DEFAULT '',
             notes text,
             photo_url varchar(255) DEFAULT '',
             created_at datetime DEFAULT CURRENT_TIMESTAMP,
@@ -755,7 +769,9 @@ class ComputerControlSystem
             'phone_number' => $this->format_phone_number($_POST['phone_number'] ?? ''),
             'status' => sanitize_text_field($_POST['status'] ?? 'active'),
             'user_name' => sanitize_text_field($_POST['user_name'] ?? ''),
+            'brand_model' => sanitize_text_field($_POST['brand_model'] ?? ''),
             'department' => $this->sanitize_department($_POST['department'] ?? ''),
+            'property' => $this->sanitize_property($_POST['property'] ?? ''),
             'notes' => sanitize_textarea_field($_POST['notes'] ?? ''),
         ];
     }
@@ -1236,7 +1252,7 @@ class ComputerControlSystem
     private function sanitize_property($value)
     {
         $value = sanitize_text_field((string) $value);
-        $allowed = ['Metalife', 'Selbetti'];
+        $allowed = ['Metalife', 'Meralife', 'Selbetti'];
         return in_array($value, $allowed, true) ? $value : '';
     }
 
@@ -1656,7 +1672,7 @@ class ComputerControlSystem
             if ($this->is_computer_module()) {
                 $columns = ['id', 'type', 'hostname', 'status', 'deleted', 'user_name', 'location', 'property', 'specs', 'notes', 'photo_url', 'created_at', 'updated_at'];
             } else {
-                $columns = ['id', 'phone_number', 'status', 'deleted', 'user_name', 'department', 'notes', 'photo_url', 'created_at', 'updated_at'];
+                $columns = ['id', 'phone_number', 'status', 'deleted', 'user_name', 'brand_model', 'department', 'property', 'notes', 'photo_url', 'created_at', 'updated_at'];
             }
         }
 
