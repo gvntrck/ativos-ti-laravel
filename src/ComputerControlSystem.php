@@ -2,9 +2,9 @@
 
 class ComputerControlSystem
 {
-    public const VERSION = '1.8.8';
+    public const VERSION = '1.8.9';
 
-    private $db_version = '1.2.0';
+    private $db_version = '1.3.0';
     private $table_inventory;
     private $table_history;
     private $form_error = '';
@@ -84,6 +84,11 @@ class ComputerControlSystem
         if ($row && isset($row['last_windows_update'])) {
             $wpdb->query("ALTER TABLE {$this->table_inventory} DROP COLUMN last_windows_update");
         }
+
+        $row = $wpdb->get_row("SELECT * FROM {$this->table_inventory} LIMIT 1", ARRAY_A);
+        if ($row && !isset($row['property'])) {
+            $wpdb->query("ALTER TABLE {$this->table_inventory} ADD property varchar(20) DEFAULT '' AFTER location");
+        }
     }
 
     private function install_db()
@@ -99,6 +104,7 @@ class ComputerControlSystem
             deleted tinyint(1) NOT NULL DEFAULT 0,
             user_name varchar(100) DEFAULT '',
             location varchar(255) DEFAULT '',
+            property varchar(20) DEFAULT '',
             specs text,
             notes text,
             photo_url varchar(255) DEFAULT '',
@@ -247,6 +253,7 @@ class ComputerControlSystem
             'status' => sanitize_text_field($_POST['status']),
             'user_name' => sanitize_text_field($_POST['user_name']),
             'location' => sanitize_text_field($_POST['location']),
+            'property' => $this->sanitize_property($_POST['property'] ?? ''),
             'specs' => sanitize_textarea_field($_POST['specs']),
             'notes' => sanitize_textarea_field($_POST['notes']),
             'photo_url' => $photo_url
@@ -282,6 +289,7 @@ class ComputerControlSystem
             'status' => sanitize_text_field($_POST['status']),
             'user_name' => sanitize_text_field($_POST['user_name']),
             'location' => sanitize_text_field($_POST['location']),
+            'property' => $this->sanitize_property($_POST['property'] ?? ''),
             'specs' => sanitize_textarea_field($_POST['specs']),
             'notes' => sanitize_textarea_field($_POST['notes']),
         ];
@@ -502,6 +510,13 @@ class ComputerControlSystem
         return $uploaded_urls;
     }
 
+    private function sanitize_property($value)
+    {
+        $value = sanitize_text_field((string) $value);
+        $allowed = ['Metalife', 'Selbetti'];
+        return in_array($value, $allowed, true) ? $value : '';
+    }
+
     private function redirect($url)
     {
         header("Location: $url");
@@ -659,7 +674,7 @@ class ComputerControlSystem
         }
 
         if (empty($report_columns)) {
-            $report_columns = ['id', 'type', 'hostname', 'status', 'deleted', 'user_name', 'location', 'specs', 'notes', 'photo_url', 'created_at', 'updated_at'];
+            $report_columns = ['id', 'type', 'hostname', 'status', 'deleted', 'user_name', 'location', 'property', 'specs', 'notes', 'photo_url', 'created_at', 'updated_at'];
         }
 
         $report_rows = $wpdb->get_results("SELECT * FROM {$this->table_inventory} ORDER BY updated_at DESC");

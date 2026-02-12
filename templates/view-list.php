@@ -242,7 +242,7 @@
 
                     ?>
                     <tr class="computer-row hover:bg-slate-50"
-                        data-search-terms="<?php echo esc_attr(strtolower(($pc->hostname ?? '') . ' ' . ($pc->user_name ?? '') . ' ' . ($pc->location ?? '') . ' ' . ($pc->type ?? '') . ' ' . ($pc->search_meta ?? ''))); ?>">
+                        data-search-terms="<?php echo esc_attr(strtolower(($pc->hostname ?? '') . ' ' . ($pc->user_name ?? '') . ' ' . ($pc->location ?? '') . ' ' . ($pc->property ?? '') . ' ' . ($pc->type ?? '') . ' ' . ($pc->search_meta ?? ''))); ?>">
                         <td class="px-4 py-2">
                             <span class="px-2 py-0.5 rounded-full text-xs font-medium <?php echo $status_color; ?>">
                                 <?php echo $status_label; ?>

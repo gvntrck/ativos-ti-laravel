@@ -60,6 +60,11 @@
                     <?php echo $pc->location ?: '-'; ?>
                 </span>
             </div>
+            <div><span class="block text-slate-400 text-xs uppercase tracking-wider font-semibold">Propriedade</span>
+                <span class="font-medium">
+                    <?php echo !empty($pc->property) ? esc_html($pc->property) : '-'; ?>
+                </span>
+            </div>
             <div><span class="block text-slate-400 text-xs uppercase tracking-wider font-semibold">Atualizado
                     em</span> <span class="font-medium">
                     <?php echo date('d/m/Y H:i', strtotime($pc->updated_at)); ?>
@@ -258,6 +263,7 @@
         status: <?php echo json_encode($pc->status); ?>,
         userName: <?php echo json_encode($pc->user_name ?: '-'); ?>,
         location: <?php echo json_encode($pc->location ?: '-'); ?>,
+        property: <?php echo json_encode($pc->property ?: '-'); ?>,
         updatedAt: <?php echo json_encode(date('d/m/Y H:i', strtotime($pc->updated_at))); ?>,
         specs: <?php echo json_encode($pc->specs ?: '-'); ?>,
         notes: <?php echo json_encode($pc->notes ?: '-'); ?>,
@@ -292,6 +298,7 @@
         text += `*Status:* ${computerData.status}\n`;
         text += `*Usuário:* ${computerData.userName}\n`;
         text += `*Local:* ${computerData.location}\n`;
+        text += `*Propriedade:* ${computerData.property}\n`;
         text += `*Atualizado em:* ${computerData.updatedAt}\n`;
 
         // Especificações

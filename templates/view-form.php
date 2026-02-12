@@ -58,6 +58,16 @@
         </div>
 
         <div class="mb-6">
+            <label class="block text-sm font-medium text-slate-700 mb-2">Propriedade</label>
+            <?php $val_property = isset($form_data['property']) ? $form_data['property'] : (($is_edit && isset($pc->property)) ? $pc->property : ''); ?>
+            <select name="property"
+                class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                <option value="" <?php selected($val_property, ''); ?>>Selecione...</option>
+                <option value="Metalife" <?php selected($val_property, 'Metalife'); ?>>Metalife</option>
+                <option value="Selbetti" <?php selected($val_property, 'Selbetti'); ?>>Selbetti</option>
+            </select>
+        </div>
+        <div class="mb-6">
             <label class="block text-sm font-medium text-slate-700 mb-2">Localização</label>
             <?php
             $val_location = isset($form_data['location']) ? $form_data['location'] : ($is_edit ? $pc->location : '');

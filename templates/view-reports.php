@@ -3,6 +3,19 @@ $column_labels = [];
 $column_filter_meta = [];
 $column_widths = [];
 
+if (in_array('property', $report_columns, true)) {
+    $report_columns = array_values(array_filter($report_columns, static function ($column) {
+        return $column !== 'property';
+    }));
+
+    $hostname_index = array_search('hostname', $report_columns, true);
+    if ($hostname_index === false) {
+        $report_columns[] = 'property';
+    } else {
+        array_splice($report_columns, $hostname_index + 1, 0, ['property']);
+    }
+}
+
 $format_report_value = static function ($column, $value) {
     $value = (string) $value;
 
