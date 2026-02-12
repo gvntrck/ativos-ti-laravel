@@ -107,7 +107,7 @@ foreach ($report_columns as $column) {
         </div>
     </div>
 
-    <div class="overflow-auto max-h-[70vh]">
+    <div class="overflow-x-auto">
         <table class="w-max min-w-full table-fixed text-left border-collapse text-sm">
             <colgroup>
                 <?php foreach ($report_columns as $column): ?>
