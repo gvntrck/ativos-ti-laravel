@@ -109,7 +109,8 @@ foreach ($report_columns as $column) {
     $is_date_column = in_array($column, ['created_at', 'updated_at'], true);
     $is_long_text_column = in_array($column, ['specs', 'notes'], true);
     $is_url_column = $column === 'photo_url';
-    $force_text_filter = $column === 'phone_number';
+    $force_text_columns = ['id', 'user_name', 'brand_model', 'phone_number'];
+    $force_text_filter = in_array($column, $force_text_columns, true);
 
     $use_select_filter = !$is_date_column
         && !$is_long_text_column
