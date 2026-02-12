@@ -752,7 +752,7 @@ class ComputerControlSystem
         }
 
         return [
-            'phone_number' => sanitize_text_field($_POST['phone_number'] ?? ''),
+            'phone_number' => $this->format_phone_number($_POST['phone_number'] ?? ''),
             'status' => sanitize_text_field($_POST['status'] ?? 'active'),
             'user_name' => sanitize_text_field($_POST['user_name'] ?? ''),
             'department' => $this->sanitize_department($_POST['department'] ?? ''),
@@ -784,6 +784,15 @@ class ComputerControlSystem
         }
 
         $phone_number = trim((string) $payload['phone_number']);
+        if (!$this->is_valid_phone_number($phone_number)) {
+            return $this->build_form_error(
+                'Numero do celular invalido. Use o padrao (99) 99999-9999.',
+                'add',
+                0,
+                array_merge($_POST, ['phone_number' => $phone_number])
+            );
+        }
+
         $normalized_phone = $this->normalize_phone_number($phone_number);
 
         if ($normalized_phone !== '' && !$this->is_phone_number_unique($normalized_phone, 0)) {
@@ -827,6 +836,15 @@ class ComputerControlSystem
         }
 
         $phone_number = trim((string) $payload['phone_number']);
+        if (!$this->is_valid_phone_number($phone_number)) {
+            return $this->build_form_error(
+                'Numero do celular invalido. Use o padrao (99) 99999-9999.',
+                'edit',
+                $id,
+                array_merge($_POST, ['phone_number' => $phone_number])
+            );
+        }
+
         $normalized_phone = $this->normalize_phone_number($phone_number);
 
         if ($normalized_phone !== '' && !$this->is_phone_number_unique($normalized_phone, $id)) {
@@ -1236,7 +1254,57 @@ class ComputerControlSystem
 
     private function normalize_phone_number($value)
     {
-        return preg_replace('/\D+/', '', (string) $value);
+        $digits = preg_replace('/\D+/', '', (string) $value);
+        if ($digits === '') {
+            return '';
+        }
+
+        if (strlen($digits) > 11 && substr($digits, 0, 2) === '55') {
+            $without_country_code = substr($digits, 2);
+            if (in_array(strlen($without_country_code), [10, 11], true)) {
+                $digits = $without_country_code;
+            }
+        }
+
+        return $digits;
+    }
+
+    private function is_valid_phone_number($value)
+    {
+        $normalized = $this->normalize_phone_number($value);
+        if ($normalized === '') {
+            return true;
+        }
+
+        return in_array(strlen($normalized), [10, 11], true);
+    }
+
+    private function format_phone_number($value)
+    {
+        $normalized = $this->normalize_phone_number($value);
+        if ($normalized === '') {
+            return '';
+        }
+
+        if (strlen($normalized) === 11) {
+            return sprintf(
+                '(%s) %s-%s',
+                substr($normalized, 0, 2),
+                substr($normalized, 2, 5),
+                substr($normalized, 7, 4)
+            );
+        }
+
+        if (strlen($normalized) === 10) {
+            return sprintf(
+                '(%s) %s-%s',
+                substr($normalized, 0, 2),
+                substr($normalized, 2, 4),
+                substr($normalized, 6, 4)
+            );
+        }
+
+        return sanitize_text_field((string) $value);
     }
 
     private function is_phone_number_unique($normalized_phone, $exclude_id = 0)
@@ -1445,6 +1513,9 @@ class ComputerControlSystem
         ", OBJECT_K);
 
         foreach ($rows as $row) {
+            if (!$this->is_computer_module()) {
+                $row->phone_number = $this->format_phone_number($row->phone_number ?? '');
+            }
             $row->search_meta = isset($history_data[$row->id]) ? strip_tags($history_data[$row->id]->full_history) : '';
         }
 
@@ -1472,6 +1543,12 @@ class ComputerControlSystem
                     $deleted_filter ? 1 : 0
                 )
             );
+        }
+
+        if (!$this->is_computer_module()) {
+            foreach ($report_rows as $report_row) {
+                $report_row->phone_number = $this->format_phone_number($report_row->phone_number ?? '');
+            }
         }
 
         $report_photos_map = [];
@@ -1598,6 +1675,9 @@ class ComputerControlSystem
         $pc = null;
         if ($id) {
             $pc = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$this->table_inventory} WHERE id = %d", $id));
+            if ($pc && !$this->is_computer_module()) {
+                $pc->phone_number = $this->format_phone_number($pc->phone_number ?? '');
+            }
         }
         $is_edit = !empty($pc);
 
@@ -1618,6 +1698,9 @@ class ComputerControlSystem
         if (!$pc) {
             echo "<div class='text-red-500'>{$this->module_config['singular_label']} nao encontrado.</div>";
             return;
+        }
+        if (!$this->is_computer_module()) {
+            $pc->phone_number = $this->format_phone_number($pc->phone_number ?? '');
         }
         $history_fk = $this->module_config['history_foreign_key'];
         $history = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$this->table_history} WHERE {$history_fk} = %d ORDER BY created_at DESC", $id));

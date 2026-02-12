@@ -177,8 +177,12 @@ if (!$can_edit): ?>
             <div class="grid grid-cols-2 gap-6 mb-6">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Numero do Celular</label>
-                    <input type="text" name="phone_number" value="<?php echo esc_attr($val_phone); ?>"
+                    <input type="text" id="phoneNumberInput" name="phone_number" value="<?php echo esc_attr($val_phone); ?>"
                         placeholder="(00) 00000-0000"
+                        inputmode="numeric"
+                        maxlength="15"
+                        pattern="^\(\d{2}\)\s\d{4,5}-\d{4}$"
+                        title="Use o formato (99) 99999-9999"
                         class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
                 </div>
                 <div>
@@ -230,9 +234,40 @@ if (!$can_edit): ?>
 
             <script>
                 (function () {
+                    const phoneInput = document.getElementById('phoneNumberInput');
                     const select = document.getElementById('departmentSelect');
                     const customInput = document.getElementById('departmentOtherInput');
                     const finalInput = document.getElementById('finalDepartment');
+
+                    function maskBrazilPhone(value) {
+                        const digits = (value || '').replace(/\D+/g, '').slice(0, 11);
+                        if (digits.length === 0) return '';
+                        if (digits.length <= 2) return digits;
+
+                        const ddd = digits.slice(0, 2);
+                        const rest = digits.slice(2);
+
+                        if (rest.length <= 4) {
+                            return `(${ddd}) ${rest}`;
+                        }
+
+                        if (digits.length <= 10) {
+                            return `(${ddd}) ${rest.slice(0, 4)}-${rest.slice(4)}`;
+                        }
+
+                        return `(${ddd}) ${rest.slice(0, 5)}-${rest.slice(5)}`;
+                    }
+
+                    if (phoneInput) {
+                        phoneInput.value = maskBrazilPhone(phoneInput.value);
+                        phoneInput.addEventListener('input', function () {
+                            this.value = maskBrazilPhone(this.value);
+                        });
+                        phoneInput.addEventListener('blur', function () {
+                            this.value = maskBrazilPhone(this.value);
+                        });
+                    }
+
                     if (!select || !customInput || !finalInput) return;
 
                     function updateFinalValue() {

@@ -242,6 +242,9 @@ $table_preferences_config = [
                         $raw_value = isset($row->$column) ? (string) $row->$column : '';
                         if ($column === 'photo_url') {
                             $normalized_value = !empty($row_photos) ? 'with_photo' : '';
+                        } elseif ($column === 'phone_number') {
+                            $digits_only = preg_replace('/\D+/', '', $raw_value);
+                            $normalized_value = strtolower(trim($raw_value . ' ' . $digits_only));
                         } else {
                             $normalized_value = strtolower(trim($raw_value));
                         }

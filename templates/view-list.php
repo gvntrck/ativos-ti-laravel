@@ -223,9 +223,13 @@ $module_param = 'module=' . urlencode($current_module);
                     if (!$is_cellphone_module) {
                         $identifier_value = strtoupper($identifier_value);
                     }
+                    $identifier_search_value = $identifier_value;
+                    if ($is_cellphone_module) {
+                        $identifier_search_value .= ' ' . preg_replace('/\D+/', '', $identifier_value);
+                    }
                     ?>
                     <tr class="computer-row hover:bg-slate-50"
-                        data-search-terms="<?php echo esc_attr(strtolower(($identifier_value ?? '') . ' ' . ($pc->user_name ?? '') . ' ' . ($pc->department ?? '') . ' ' . ($pc->location ?? '') . ' ' . ($pc->notes ?? '') . ' ' . ($pc->search_meta ?? ''))); ?>">
+                        data-search-terms="<?php echo esc_attr(strtolower(($identifier_search_value ?? '') . ' ' . ($pc->user_name ?? '') . ' ' . ($pc->department ?? '') . ' ' . ($pc->location ?? '') . ' ' . ($pc->notes ?? '') . ' ' . ($pc->search_meta ?? ''))); ?>">
                         <td class="px-4 py-2">
                             <span class="px-2 py-0.5 rounded-full text-xs font-medium <?php echo esc_attr($status_color); ?>">
                                 <?php echo esc_html($status_label); ?>
