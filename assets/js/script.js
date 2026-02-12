@@ -117,6 +117,17 @@ function updateReportsFilterHighlights(filterControls) {
     });
 }
 
+function clearReportsFilterHighlights() {
+    document.querySelectorAll('[data-report-header-cell]').forEach((headerCell) => {
+        headerCell.classList.remove('bg-indigo-100', 'text-indigo-700');
+        headerCell.classList.add('text-slate-600');
+    });
+
+    document.querySelectorAll('[data-report-filter-cell]').forEach((filterCell) => {
+        filterCell.classList.remove('bg-indigo-50');
+    });
+}
+
 function applyReportsFilters() {
     const tableBody = document.getElementById('reportsTableBody');
     if (!tableBody) return;
@@ -192,6 +203,7 @@ function initReportsFilters() {
                 control.value = '';
             });
 
+            clearReportsFilterHighlights();
             applyReportsFilters();
         });
     }

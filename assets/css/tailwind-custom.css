@@ -1,6 +1,18 @@
+:root {
+    --ccs-primary: #40513b;
+    --ccs-secondary: #628141;
+    --ccs-surface: #f3ecd7;
+    --ccs-bg: #e5d9b6;
+    --ccs-accent: #e67e22;
+    --ccs-text-strong: #40513b;
+    --ccs-text: #55684e;
+    --ccs-text-soft: #6b7b62;
+    --ccs-border: #cdbf9b;
+}
+
 body {
-    background-color: #f8fafc;
-    color: #1e293b;
+    background-color: var(--ccs-bg);
+    color: var(--ccs-text-strong);
     font-family: 'Inter', sans-serif;
 }
 
@@ -26,11 +38,158 @@ html {
 }
 
 .btn-primary {
-    @apply text-white bg-indigo-600 hover:text-white focus:ring-indigo-500;
+    color: #fff;
+    background-color: var(--ccs-secondary);
+    border-color: var(--ccs-secondary);
+}
+
+.btn-primary:hover {
+    color: #fff;
+    background-color: var(--ccs-primary);
+    border-color: var(--ccs-primary);
 }
 
 .btn-secondary {
-    @apply text-slate-700 bg-white border-slate-300 hover:bg-slate-50 focus:ring-indigo-500;
+    color: var(--ccs-primary);
+    background-color: #fff;
+    border-color: var(--ccs-border);
+}
+
+.btn-secondary:hover {
+    background-color: var(--ccs-surface);
+}
+
+/* ===== Palette Overrides (Tailwind utility classes used in templates) ===== */
+.text-slate-900,
+.text-slate-800,
+.text-slate-700 {
+    color: var(--ccs-text-strong) !important;
+}
+
+.text-slate-600,
+.text-slate-500 {
+    color: var(--ccs-text) !important;
+}
+
+.text-slate-400 {
+    color: var(--ccs-text-soft) !important;
+}
+
+.bg-slate-50,
+.bg-slate-100,
+.bg-slate-50\/50,
+.bg-slate-50\/60 {
+    background-color: var(--ccs-surface) !important;
+}
+
+.bg-white {
+    background-color: #fdfbf5 !important;
+}
+
+.border-slate-100,
+.border-slate-200,
+.border-slate-300 {
+    border-color: var(--ccs-border) !important;
+}
+
+.divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+.divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+    border-color: var(--ccs-border) !important;
+}
+
+.text-indigo-600,
+.text-indigo-700,
+.text-indigo-800 {
+    color: var(--ccs-secondary) !important;
+}
+
+.text-indigo-400,
+.text-indigo-500 {
+    color: rgba(98, 129, 65, 0.85) !important;
+}
+
+.hover\:text-indigo-900:hover {
+    color: var(--ccs-primary) !important;
+}
+
+.bg-indigo-50,
+.bg-indigo-100 {
+    background-color: rgba(98, 129, 65, 0.14) !important;
+}
+
+.bg-indigo-600,
+.bg-indigo-700 {
+    background-color: var(--ccs-secondary) !important;
+}
+
+.bg-indigo-500 {
+    background-color: var(--ccs-secondary) !important;
+}
+
+.border-indigo-200,
+.border-indigo-300 {
+    border-color: rgba(98, 129, 65, 0.35) !important;
+}
+
+.ring-indigo-200 {
+    --tw-ring-color: rgba(98, 129, 65, 0.25) !important;
+}
+
+.focus\:border-indigo-500:focus {
+    border-color: var(--ccs-secondary) !important;
+}
+
+.focus\:ring-indigo-500:focus {
+    --tw-ring-color: rgba(98, 129, 65, 0.35) !important;
+}
+
+.hover\:bg-indigo-700:hover {
+    background-color: var(--ccs-primary) !important;
+}
+
+.text-emerald-600,
+.text-emerald-700,
+.text-emerald-800 {
+    color: var(--ccs-secondary) !important;
+}
+
+.bg-emerald-50,
+.bg-emerald-100 {
+    background-color: rgba(98, 129, 65, 0.13) !important;
+}
+
+.border-emerald-200 {
+    border-color: rgba(98, 129, 65, 0.28) !important;
+}
+
+.bg-amber-50,
+.bg-amber-100,
+.bg-rose-50,
+.bg-rose-100 {
+    background-color: rgba(230, 126, 34, 0.14) !important;
+}
+
+.text-amber-600,
+.text-amber-700,
+.text-amber-800,
+.text-rose-600,
+.text-rose-700,
+.text-rose-800 {
+    color: #b56219 !important;
+}
+
+.border-amber-100,
+.border-amber-200 {
+    border-color: rgba(230, 126, 34, 0.3) !important;
+}
+
+.hover\:bg-slate-50:hover {
+    background-color: #efe5c8 !important;
+}
+
+.hover\:bg-indigo-50:hover,
+.hover\:bg-indigo-100:hover {
+    background-color: rgba(98, 129, 65, 0.2) !important;
 }
 
 /* ========== Lightbox Styles ========== */
@@ -275,4 +434,3 @@ html {
     cursor: default; /* Padrão */
 }
 /* These are handled via inline styles in JS, but good to have defaults */
-
