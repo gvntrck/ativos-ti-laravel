@@ -12,7 +12,7 @@ $is_cellphone_module = $current_module === 'cellphones';
 $restore_action = $is_cellphone_module ? 'restore_cellphone' : 'restore_computer';
 $delete_permanent_action = $is_cellphone_module ? 'delete_permanent_cellphone' : 'delete_permanent_computer';
 $id_field = $is_cellphone_module ? 'cellphone_id' : 'computer_id';
-$identifier_field = $is_cellphone_module ? 'phone_number' : 'hostname';
+$identifier_field = $is_cellphone_module ? 'asset_code' : 'hostname';
 $search_placeholder = !empty($module_config['list_search_placeholder']) ? $module_config['list_search_placeholder'] : 'Filtrar...';
 $trash_storage_key = !empty($module_config['trash_filters_storage_key']) ? $module_config['trash_filters_storage_key'] : 'ccs_trash_filters';
 $details_return_to = $show_trash ? 'trash' : 'list';
@@ -198,7 +198,7 @@ $module_param = 'module=' . urlencode($current_module);
             <thead class="bg-slate-50">
                 <tr>
                     <th class="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                    <th class="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider"><?php echo $is_cellphone_module ? 'Numero' : 'Hostname'; ?></th>
+                    <th class="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider"><?php echo $is_cellphone_module ? 'ID Celular' : 'Hostname'; ?></th>
                     <th class="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider"><?php echo $is_cellphone_module ? 'Observacao' : 'Anotacoes'; ?></th>
                     <?php if ($is_cellphone_module): ?>
                         <th class="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Departamento</th>
@@ -225,7 +225,8 @@ $module_param = 'module=' . urlencode($current_module);
                     }
                     $identifier_search_value = $identifier_value;
                     if ($is_cellphone_module) {
-                        $identifier_search_value .= ' ' . preg_replace('/\D+/', '', $identifier_value);
+                        $phone_value = (string) ($pc->phone_number ?? '');
+                        $identifier_search_value .= ' ' . $phone_value . ' ' . preg_replace('/\D+/', '', $phone_value);
                     }
                     ?>
                     <tr class="computer-row hover:bg-slate-50"
@@ -238,7 +239,14 @@ $module_param = 'module=' . urlencode($current_module);
                         <td class="px-4 py-2 font-medium text-slate-900">
                             <a href="?<?php echo esc_attr($module_param); ?>&view=details&id=<?php echo intval($pc->id); ?>&return_to=<?php echo esc_attr($details_return_to); ?>"
                                 class="text-indigo-600 hover:text-indigo-900">
-                                <?php echo esc_html($identifier_value !== '' ? $identifier_value : '-'); ?>
+                                <?php if ($is_cellphone_module): ?>
+                                    <div><?php echo esc_html($identifier_value !== '' ? $identifier_value : '-'); ?></div>
+                                    <div class="text-xs text-slate-400">
+                                        <?php echo esc_html(!empty($pc->phone_number) ? $pc->phone_number : '-'); ?>
+                                    </div>
+                                <?php else: ?>
+                                    <?php echo esc_html($identifier_value !== '' ? $identifier_value : '-'); ?>
+                                <?php endif; ?>
                             </a>
                         </td>
                         <td class="px-4 py-2 text-slate-600 text-xs"><?php echo esc_html($pc->notes ?? ''); ?></td>

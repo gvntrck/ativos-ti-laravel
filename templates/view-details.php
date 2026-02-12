@@ -15,8 +15,9 @@ $checkup_action = $is_cellphone_module ? 'add_cellphone_checkup' : 'add_checkup'
 $upload_action = $is_cellphone_module ? 'upload_cellphone_photo' : 'upload_photo';
 $delete_history_action = $is_cellphone_module ? 'delete_cellphone_history' : 'delete_history';
 $edit_url = '?module=' . urlencode($current_module) . '&view=edit&id=' . intval($pc->id);
+$cellphone_code = trim((string) ($pc->asset_code ?? ''));
 $identifier_value = $is_cellphone_module
-    ? trim((string) ($pc->phone_number ?? ''))
+    ? ($cellphone_code !== '' ? $cellphone_code : trim((string) ($pc->phone_number ?? '')))
     : strtoupper((string) ($pc->hostname ?? ''));
 $identifier_value = $identifier_value !== '' ? $identifier_value : '-';
 $status_value = (string) ($pc->status ?? '');
@@ -80,6 +81,10 @@ $status_label = $status_labels[$status_value] ?? $status_value;
             </div>
 
             <?php if ($is_cellphone_module): ?>
+                <div>
+                    <span class="block text-slate-400 text-xs uppercase tracking-wider font-semibold">ID Celular</span>
+                    <span class="font-medium"><?php echo esc_html($cellphone_code !== '' ? $cellphone_code : '-'); ?></span>
+                </div>
                 <div>
                     <span class="block text-slate-400 text-xs uppercase tracking-wider font-semibold">Numero</span>
                     <span class="font-medium"><?php echo esc_html($pc->phone_number ?: '-'); ?></span>
@@ -321,6 +326,7 @@ $status_label = $status_labels[$status_value] ?? $status_value;
         location: <?php echo json_encode($pc->location ?? ''); ?>,
         property: <?php echo json_encode($pc->property ?? ''); ?>,
         type: <?php echo json_encode($pc->type ?? ''); ?>,
+        assetCode: <?php echo json_encode($pc->asset_code ?? ''); ?>,
         phoneNumber: <?php echo json_encode($pc->phone_number ?? ''); ?>,
         brandModel: <?php echo json_encode($pc->brand_model ?? ''); ?>,
         department: <?php echo json_encode($pc->department ?? ''); ?>,
@@ -349,6 +355,7 @@ $status_label = $status_labels[$status_value] ?? $status_value;
 
         if (assetData.module === 'cellphones') {
             text += '*FICHA DO CELULAR*\n\n';
+            text += `*ID Celular:* ${assetData.assetCode || '-'}\n`;
             text += `*Numero:* ${assetData.phoneNumber || '-'}\n`;
             text += `*Marca / Modelo:* ${assetData.brandModel || '-'}\n`;
             text += `*Status:* ${assetData.status}\n`;

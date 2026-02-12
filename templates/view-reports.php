@@ -32,6 +32,7 @@ if ($current_module === 'computers' && in_array('property', $report_columns, tru
 
 $label_overrides = [
     'id' => 'ID',
+    'asset_code' => 'ID Celular',
     'hostname' => 'Hostname',
     'phone_number' => 'Numero Celular',
     'brand_model' => 'Marca Modelo',
@@ -109,7 +110,7 @@ foreach ($report_columns as $column) {
     $is_date_column = in_array($column, ['created_at', 'updated_at'], true);
     $is_long_text_column = in_array($column, ['specs', 'notes'], true);
     $is_url_column = $column === 'photo_url';
-    $force_text_columns = ['id', 'user_name', 'brand_model', 'phone_number'];
+    $force_text_columns = ['id', 'asset_code', 'user_name', 'brand_model', 'phone_number'];
     $force_text_filter = in_array($column, $force_text_columns, true);
 
     $use_select_filter = !$is_date_column
@@ -127,6 +128,7 @@ foreach ($report_columns as $column) {
 
     $column_widths[$column] = match ($column) {
         'id' => 90,
+        'asset_code' => 140,
         'hostname', 'phone_number' => 190,
         'specs', 'notes' => 320,
         'photo_url' => 220,

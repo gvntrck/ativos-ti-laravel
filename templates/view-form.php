@@ -164,6 +164,7 @@ if (!$can_edit): ?>
 
         <?php else: ?>
             <?php $val_phone = isset($form_data['phone_number']) ? $form_data['phone_number'] : ($is_edit ? $pc->phone_number : ''); ?>
+            <?php $val_asset_code = $is_edit ? (string) ($pc->asset_code ?? '') : ''; ?>
             <?php $val_status = isset($form_data['status']) ? $form_data['status'] : ($is_edit ? $pc->status : 'active'); ?>
             <?php $val_user_name = isset($form_data['user_name']) ? $form_data['user_name'] : ($is_edit ? $pc->user_name : ''); ?>
             <?php $val_brand_model = isset($form_data['brand_model']) ? $form_data['brand_model'] : ($is_edit ? ($pc->brand_model ?? '') : ''); ?>
@@ -178,6 +179,15 @@ if (!$can_edit): ?>
             $is_other_department = !empty($val_department) && !in_array($val_department, $predefined_departments, true);
             $selected_department = $is_other_department ? 'other' : $val_department;
             ?>
+
+            <?php if ($is_edit): ?>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">ID Celular</label>
+                    <input type="text" value="<?php echo esc_attr($val_asset_code !== '' ? $val_asset_code : '-'); ?>"
+                        class="w-full rounded-lg border-slate-300 bg-slate-100 text-slate-700 shadow-sm"
+                        readonly>
+                </div>
+            <?php endif; ?>
 
             <div class="grid grid-cols-2 gap-6 mb-6">
                 <div>

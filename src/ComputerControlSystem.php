@@ -2,12 +2,12 @@
 
 class ComputerControlSystem
 {
-    public const VERSION = '1.9.1';
+    public const VERSION = '1.9.2';
 
     private const MODULE_COMPUTERS = 'computers';
     private const MODULE_CELLPHONES = 'cellphones';
 
-    private $db_version = '1.4.1';
+    private $db_version = '1.4.2';
     private $table_inventory;
     private $table_history;
     private $table_computer_inventory;
@@ -134,10 +134,10 @@ class ComputerControlSystem
                 'history_table' => $this->table_cellphone_history,
                 'history_foreign_key' => 'cellphone_id',
                 'id_field' => 'cellphone_id',
-                'identifier_field' => 'phone_number',
+                'identifier_field' => 'asset_code',
                 'identifier_required' => false,
                 'table_preferences_meta_key' => 'ccs_report_table_preferences_cellphones',
-                'report_primary_column' => 'phone_number',
+                'report_primary_column' => 'asset_code',
                 'add_action' => 'add_cellphone',
                 'update_action' => 'update_cellphone',
                 'checkup_action' => 'add_cellphone_checkup',
@@ -155,7 +155,7 @@ class ComputerControlSystem
                 'singular_label' => 'Celular',
                 'new_label' => 'Novo Celular',
                 'report_title' => 'Relatorios de Celulares',
-                'report_search_placeholder' => 'Busca global (numero, usuario, marca/modelo, propriedade...)',
+                'report_search_placeholder' => 'Busca global (ID CEL, numero, usuario, marca/modelo...)',
                 'list_search_placeholder' => 'Filtrar celulares...',
                 'copy_title' => 'FICHA DO CELULAR',
             ],
@@ -488,6 +488,58 @@ class ComputerControlSystem
         return $result === $table_name;
     }
 
+    private function index_exists($table_name, $index_name)
+    {
+        global $wpdb;
+        $table_sql = esc_sql((string) $table_name);
+        $index_name = sanitize_text_field((string) $index_name);
+        $result = $wpdb->get_var(
+            $wpdb->prepare(
+                "SHOW INDEX FROM {$table_sql} WHERE Key_name = %s LIMIT 1",
+                $index_name
+            )
+        );
+
+        return !empty($result);
+    }
+
+    private function generate_cellphone_asset_code($id)
+    {
+        $numeric_id = max(0, intval($id));
+        return 'CEL-' . str_pad((string) $numeric_id, 3, '0', STR_PAD_LEFT);
+    }
+
+    private function sync_cellphone_asset_code_for_id($id)
+    {
+        global $wpdb;
+        $id = intval($id);
+        if ($id <= 0) {
+            return '';
+        }
+
+        $asset_code = $this->generate_cellphone_asset_code($id);
+        $wpdb->update(
+            $this->table_cellphone_inventory,
+            ['asset_code' => $asset_code],
+            ['id' => $id]
+        );
+
+        return $asset_code;
+    }
+
+    private function backfill_cellphone_asset_codes()
+    {
+        global $wpdb;
+        $ids = $wpdb->get_col("SELECT id FROM {$this->table_cellphone_inventory} ORDER BY id ASC");
+        if (empty($ids)) {
+            return;
+        }
+
+        foreach ($ids as $id) {
+            $this->sync_cellphone_asset_code_for_id($id);
+        }
+    }
+
     private function maybe_migrate()
     {
         global $wpdb;
@@ -527,6 +579,11 @@ class ComputerControlSystem
 
         if ($this->table_exists($this->table_cellphone_inventory)) {
             $row_cell = $wpdb->get_row("SELECT * FROM {$this->table_cellphone_inventory} LIMIT 1", ARRAY_A);
+            if ($row_cell && !isset($row_cell['asset_code'])) {
+                $wpdb->query("ALTER TABLE {$this->table_cellphone_inventory} ADD asset_code varchar(20) DEFAULT '' AFTER id");
+            }
+
+            $row_cell = $wpdb->get_row("SELECT * FROM {$this->table_cellphone_inventory} LIMIT 1", ARRAY_A);
             if ($row_cell && !isset($row_cell['brand_model'])) {
                 $wpdb->query("ALTER TABLE {$this->table_cellphone_inventory} ADD brand_model varchar(150) DEFAULT '' AFTER user_name");
             }
@@ -534,6 +591,15 @@ class ComputerControlSystem
             $row_cell = $wpdb->get_row("SELECT * FROM {$this->table_cellphone_inventory} LIMIT 1", ARRAY_A);
             if ($row_cell && !isset($row_cell['property'])) {
                 $wpdb->query("ALTER TABLE {$this->table_cellphone_inventory} ADD property varchar(20) DEFAULT '' AFTER department");
+            }
+
+            $row_cell = $wpdb->get_row("SELECT * FROM {$this->table_cellphone_inventory} LIMIT 1", ARRAY_A);
+            if ($row_cell && isset($row_cell['asset_code'])) {
+                $this->backfill_cellphone_asset_codes();
+
+                if (!$this->index_exists($this->table_cellphone_inventory, 'asset_code')) {
+                    $wpdb->query("ALTER TABLE {$this->table_cellphone_inventory} ADD UNIQUE KEY asset_code (asset_code)");
+                }
             }
         }
     }
@@ -575,6 +641,7 @@ class ComputerControlSystem
 
         $sql_cellphone_inventory = "CREATE TABLE {$this->table_cellphone_inventory} (
             id mediumint(9) NOT NULL AUTO_INCREMENT,
+            asset_code varchar(20) DEFAULT '',
             phone_number varchar(30) DEFAULT '',
             status varchar(20) NOT NULL DEFAULT 'active',
             deleted tinyint(1) NOT NULL DEFAULT 0,
@@ -587,6 +654,7 @@ class ComputerControlSystem
             created_at datetime DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY  (id),
+            UNIQUE KEY asset_code (asset_code),
             KEY phone_number (phone_number)
         ) $charset_collate;";
 
@@ -912,6 +980,10 @@ class ComputerControlSystem
                 'success' => false,
                 'message' => 'Erro ao cadastrar registro.',
             ];
+        }
+
+        if (!$this->is_computer_module()) {
+            $this->sync_cellphone_asset_code_for_id($item_id);
         }
 
         $this->log_history($item_id, 'create', $this->module_config['singular_label'] . ' cadastrado', $current_user_id, $photos_json);
@@ -1676,7 +1748,7 @@ class ComputerControlSystem
             if ($this->is_computer_module()) {
                 $columns = ['id', 'type', 'hostname', 'status', 'deleted', 'user_name', 'location', 'property', 'specs', 'notes', 'photo_url', 'created_at', 'updated_at'];
             } else {
-                $columns = ['id', 'phone_number', 'status', 'deleted', 'user_name', 'brand_model', 'department', 'property', 'notes', 'photo_url', 'created_at', 'updated_at'];
+                $columns = ['id', 'asset_code', 'phone_number', 'status', 'deleted', 'user_name', 'brand_model', 'department', 'property', 'notes', 'photo_url', 'created_at', 'updated_at'];
             }
         }
 
