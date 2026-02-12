@@ -84,6 +84,10 @@ function rowMatchesReportFilter(row, control) {
             return rowValue === '';
         }
 
+        if (filterValue === '__not_empty__') {
+            return rowValue !== '';
+        }
+
         return rowValue === filterValue;
     }
 

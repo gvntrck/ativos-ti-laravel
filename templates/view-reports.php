@@ -138,7 +138,15 @@ foreach ($report_columns as $column) {
                     <?php foreach ($report_columns as $column): ?>
                         <th class="px-2 py-2">
                             <?php $meta = $column_filter_meta[$column]; ?>
-                            <?php if ($meta['is_date']): ?>
+                            <?php if ($column === 'photo_url'): ?>
+                                <select data-report-filter="<?php echo esc_attr($column); ?>"
+                                    data-report-filter-type="select"
+                                    class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:border-indigo-500 focus:ring-indigo-500 bg-white">
+                                    <option value="">Todos</option>
+                                    <option value="__NOT_EMPTY__">Com foto</option>
+                                    <option value="__EMPTY__">Sem foto</option>
+                                </select>
+                            <?php elseif ($meta['is_date']): ?>
                                 <input type="date"
                                     data-report-filter="<?php echo esc_attr($column); ?>"
                                     data-report-filter-type="date"
@@ -171,23 +179,28 @@ foreach ($report_columns as $column) {
             <tbody id="reportsTableBody" class="divide-y divide-slate-100">
                 <?php foreach ($report_rows as $row): ?>
                     <?php
-                    $search_terms = [];
-                    $row_attributes = [];
-
-                    foreach ($report_columns as $column) {
-                        $raw_value = isset($row->$column) ? (string) $row->$column : '';
-                        $normalized_value = strtolower(trim($raw_value));
-                        $row_attributes[] = 'data-col-' . esc_attr($column) . '="' . esc_attr($normalized_value) . '"';
-                        $search_terms[] = $normalized_value;
-                    }
-
-                    $row_search = trim(implode(' ', $search_terms));
                     $row_id = isset($row->id) ? intval($row->id) : 0;
                     $row_photos = [];
 
                     if ($row_id > 0 && isset($report_photos_map[$row_id]) && is_array($report_photos_map[$row_id])) {
                         $row_photos = array_values($report_photos_map[$row_id]);
                     }
+
+                    $search_terms = [];
+                    $row_attributes = [];
+
+                    foreach ($report_columns as $column) {
+                        $raw_value = isset($row->$column) ? (string) $row->$column : '';
+                        if ($column === 'photo_url') {
+                            $normalized_value = !empty($row_photos) ? 'with_photo' : '';
+                        } else {
+                            $normalized_value = strtolower(trim($raw_value));
+                        }
+                        $row_attributes[] = 'data-col-' . esc_attr($column) . '="' . esc_attr($normalized_value) . '"';
+                        $search_terms[] = $normalized_value;
+                    }
+
+                    $row_search = trim(implode(' ', $search_terms));
                     ?>
                     <tr class="report-row hover:bg-slate-50"
                         data-report-search="<?php echo esc_attr($row_search); ?>" <?php echo implode(' ', $row_attributes); ?>>
