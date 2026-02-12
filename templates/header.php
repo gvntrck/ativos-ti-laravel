@@ -175,7 +175,41 @@
                             if (backBtn) {
                                 const savedFilters = sessionStorage.getItem('ccs_list_filters');
                                 if (savedFilters) {
-                                    backBtn.href = window.location.pathname + savedFilters;
+                                    try {
+                                        const params = new URLSearchParams(savedFilters.replace(/^\?/, ''));
+                                        const allowedKeys = new Set([
+                                            'view',
+                                            'filter',
+                                            'type_desktop',
+                                            'type_notebook',
+                                            'status_active',
+                                            'status_backup',
+                                            'status_maintenance',
+                                            'status_retired',
+                                            'loc_fabrica',
+                                            'loc_centro',
+                                            'loc_perdido',
+                                            'loc_manutencao',
+                                            'loc_sem_local'
+                                        ]);
+
+                                        const sanitized = new URLSearchParams();
+                                        params.forEach((value, key) => {
+                                            if (allowedKeys.has(key)) {
+                                                sanitized.set(key, value);
+                                            }
+                                        });
+
+                                        if (sanitized.get('view') !== 'list') {
+                                            sanitized.set('view', 'list');
+                                        }
+
+                                        backBtn.href = '?' + sanitized.toString();
+                                    } catch (error) {
+                                        backBtn.href = '?view=list';
+                                    }
+                                } else {
+                                    backBtn.href = '?view=list';
                                 }
                             }
                         })();
