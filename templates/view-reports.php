@@ -1,6 +1,7 @@
 <?php
 $column_labels = [];
 $column_filter_meta = [];
+$column_widths = [];
 
 $format_report_value = static function ($column, $value) {
     $value = (string) $value;
@@ -74,6 +75,15 @@ foreach ($report_columns as $column) {
         'is_date' => $is_date_column,
         'use_select' => $use_select_filter,
     ];
+
+    $column_widths[$column] = match ($column) {
+        'id' => 90,
+        'hostname' => 180,
+        'specs', 'notes' => 320,
+        'photo_url' => 220,
+        'created_at', 'updated_at' => 170,
+        default => 160,
+    };
 }
 ?>
 
@@ -98,18 +108,23 @@ foreach ($report_columns as $column) {
     </div>
 
     <div class="overflow-auto max-h-[70vh]">
-        <table class="min-w-full text-left border-collapse text-sm">
-            <thead class="bg-slate-50 sticky top-0 z-10">
+        <table class="w-max min-w-full table-fixed text-left border-collapse text-sm">
+            <colgroup>
+                <?php foreach ($report_columns as $column): ?>
+                    <col style="width: <?php echo intval($column_widths[$column] ?? 160); ?>px;">
+                <?php endforeach; ?>
+            </colgroup>
+            <thead class="bg-slate-50">
                 <tr class="border-b border-slate-200">
                     <?php foreach ($report_columns as $column): ?>
-                        <th class="px-3 py-2 text-xs font-semibold text-slate-600 uppercase tracking-wider min-w-[140px]">
+                        <th class="px-3 py-2 text-xs font-semibold text-slate-600 uppercase tracking-wider">
                             <?php echo esc_html($column_labels[$column]); ?>
                         </th>
                     <?php endforeach; ?>
                 </tr>
                 <tr class="border-b border-slate-200 bg-white">
                     <?php foreach ($report_columns as $column): ?>
-                        <th class="px-2 py-2 min-w-[140px]">
+                        <th class="px-2 py-2">
                             <?php $meta = $column_filter_meta[$column]; ?>
                             <?php if ($meta['is_date']): ?>
                                 <input type="date"
@@ -165,7 +180,7 @@ foreach ($report_columns as $column) {
                             $formatted_value = $format_report_value($column, $raw_value);
                             $is_long_text = in_array($column, ['specs', 'notes'], true);
                             ?>
-                            <td class="px-3 py-2 align-top <?php echo $is_long_text ? 'min-w-[260px]' : 'min-w-[140px]'; ?>">
+                            <td class="px-3 py-2 align-top">
                                 <?php if ($column === 'hostname' && $row_id > 0): ?>
                                     <a href="?view=details&id=<?php echo $row_id; ?>"
                                         class="text-indigo-600 hover:text-indigo-900 font-medium">
@@ -173,11 +188,13 @@ foreach ($report_columns as $column) {
                                     </a>
                                 <?php elseif ($column === 'photo_url' && $raw_value !== ''): ?>
                                     <a href="<?php echo esc_url($raw_value); ?>" target="_blank" rel="noopener noreferrer"
-                                        class="text-indigo-600 hover:text-indigo-900 underline break-all">
+                                        class="text-indigo-600 hover:text-indigo-900 underline break-all block">
                                         Abrir foto
                                     </a>
                                 <?php else: ?>
-                                    <span class="<?php echo $is_long_text ? 'whitespace-pre-wrap break-words text-xs text-slate-700' : 'text-slate-700'; ?>">
+                                    <span
+                                        class="<?php echo $is_long_text ? 'whitespace-pre-wrap break-words text-xs text-slate-700 block' : 'text-slate-700 block whitespace-nowrap overflow-hidden text-ellipsis'; ?>"
+                                        title="<?php echo esc_attr($formatted_value); ?>">
                                         <?php echo esc_html($formatted_value); ?>
                                     </span>
                                 <?php endif; ?>
