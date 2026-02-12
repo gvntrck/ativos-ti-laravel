@@ -180,6 +180,13 @@
                         })();
                     </script>
                 <?php endif; ?>
+                <?php
+                $reports_btn_classes = 'btn btn-secondary';
+                if ($view === 'reports') {
+                    $reports_btn_classes .= ' ring-2 ring-indigo-200';
+                }
+                ?>
+                <a href="?view=reports" class="<?php echo esc_attr($reports_btn_classes); ?>">Relatorios</a>
                 <?php if ($view !== 'add'): ?>
                     <a href="?view=add" class="btn btn-primary"><svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">

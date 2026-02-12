@@ -547,6 +547,8 @@ class ComputerControlSystem
             $this->render_form($_GET['id']);
         } elseif ($view === 'trash') {
             $this->render_list_view(true);
+        } elseif ($view === 'reports') {
+            $this->render_reports_view();
         }
     }
 
@@ -639,6 +641,30 @@ class ComputerControlSystem
         }
 
         require __DIR__ . '/../templates/view-list.php';
+    }
+
+    private function render_reports_view()
+    {
+        global $wpdb;
+
+        $columns_info = $wpdb->get_results("SHOW COLUMNS FROM {$this->table_inventory}", ARRAY_A);
+        $report_columns = [];
+
+        if (!empty($columns_info)) {
+            foreach ($columns_info as $column_info) {
+                if (!empty($column_info['Field'])) {
+                    $report_columns[] = $column_info['Field'];
+                }
+            }
+        }
+
+        if (empty($report_columns)) {
+            $report_columns = ['id', 'type', 'hostname', 'status', 'deleted', 'user_name', 'location', 'specs', 'notes', 'photo_url', 'created_at', 'updated_at'];
+        }
+
+        $report_rows = $wpdb->get_results("SELECT * FROM {$this->table_inventory} ORDER BY updated_at DESC");
+
+        require __DIR__ . '/../templates/view-reports.php';
     }
 
     private function render_form($id = null)

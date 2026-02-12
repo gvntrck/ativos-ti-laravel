@@ -8,4 +8,5 @@ Alterações em lote na tabela
 
 Menu fixo no footer no mobile
 
+pagina de relatorio 
 

@@ -59,3 +59,115 @@ document.addEventListener('DOMContentLoaded', function () {
         panel.classList.remove('hidden');
     }
 });
+
+function normalizeReportValue(value) {
+    return (value || '').toString().trim().toLowerCase();
+}
+
+function rowMatchesReportFilter(row, control) {
+    const column = control.getAttribute('data-report-filter');
+    if (!column) return true;
+
+    const filterType = control.getAttribute('data-report-filter-type') || 'text';
+    const filterValue = normalizeReportValue(control.value);
+
+    if (!filterValue) return true;
+
+    const rowValue = normalizeReportValue(row.getAttribute('data-col-' + column));
+
+    if (filterType === 'date') {
+        return rowValue.startsWith(filterValue);
+    }
+
+    if (filterType === 'select') {
+        if (filterValue === '__empty__') {
+            return rowValue === '';
+        }
+
+        return rowValue === filterValue;
+    }
+
+    return rowValue.includes(filterValue);
+}
+
+function applyReportsFilters() {
+    const tableBody = document.getElementById('reportsTableBody');
+    if (!tableBody) return;
+
+    const rows = tableBody.querySelectorAll('.report-row');
+    const globalInput = document.getElementById('reportGlobalSearch');
+    const globalQuery = normalizeReportValue(globalInput ? globalInput.value : '');
+    const filterControls = document.querySelectorAll('[data-report-filter]');
+    const noResultsRow = document.getElementById('reportsNoResults');
+    const visibleCountElement = document.getElementById('reportVisibleCount');
+
+    let visibleCount = 0;
+
+    rows.forEach((row) => {
+        const rowSearchValue = normalizeReportValue(row.getAttribute('data-report-search'));
+        const matchesGlobal = !globalQuery || rowSearchValue.includes(globalQuery);
+
+        if (!matchesGlobal) {
+            row.style.display = 'none';
+            return;
+        }
+
+        for (const control of filterControls) {
+            if (!rowMatchesReportFilter(row, control)) {
+                row.style.display = 'none';
+                return;
+            }
+        }
+
+        row.style.display = '';
+        visibleCount++;
+    });
+
+    if (visibleCountElement) {
+        visibleCountElement.textContent = visibleCount;
+    }
+
+    if (noResultsRow) {
+        if (visibleCount === 0) {
+            noResultsRow.classList.remove('hidden');
+        } else {
+            noResultsRow.classList.add('hidden');
+        }
+    }
+}
+
+function initReportsFilters() {
+    const tableBody = document.getElementById('reportsTableBody');
+    if (!tableBody) return;
+
+    const filterControls = document.querySelectorAll('[data-report-filter]');
+    const globalInput = document.getElementById('reportGlobalSearch');
+    const clearButton = document.getElementById('clearReportFilters');
+
+    filterControls.forEach((control) => {
+        const eventName = control.tagName === 'SELECT' ? 'change' : 'input';
+        control.addEventListener(eventName, applyReportsFilters);
+    });
+
+    if (globalInput) {
+        globalInput.addEventListener('input', applyReportsFilters);
+    }
+
+    if (clearButton) {
+        clearButton.addEventListener('click', () => {
+            if (globalInput) {
+                globalInput.value = '';
+            }
+
+            filterControls.forEach((control) => {
+                control.value = '';
+            });
+
+            applyReportsFilters();
+        });
+    }
+
+    applyReportsFilters();
+}
+
+document.addEventListener('DOMContentLoaded', initReportsFilters);
