@@ -26,8 +26,8 @@ $status_value = (string) ($pc->status ?? '');
 $status_label = $status_labels[$status_value] ?? $status_value;
 ?>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-    <div class="lg:col-span-2 bg-white p-8 rounded-xl shadow-sm border border-slate-200">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-20 lg:pb-0">
+    <div id="sectionInfo" class="lg:col-span-2 bg-white p-8 rounded-xl shadow-sm border border-slate-200">
         <div class="relative mb-6 lg:flex lg:justify-between lg:items-start">
             <div class="<?php echo $can_edit ? 'pr-16 lg:pr-0' : ''; ?>">
                 <h2 class="text-2xl font-bold text-slate-900"><?php echo esc_html($identifier_value); ?></h2>
@@ -179,7 +179,7 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                 <?php endif; ?>
             </div>
 
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+            <div id="sectionCheckup" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                 <h3 class="font-bold text-slate-900 mb-4">Novo Evento / Checkup</h3>
                 <?php if ($can_edit): ?>
                     <form method="post" action="?" data-ajax="true">
@@ -199,7 +199,7 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                 <?php endif; ?>
             </div>
 
-            <div class="bg-white p-6 rounded-xl shadow-sm border <?php echo $last_audit ? 'border-emerald-200' : 'border-amber-200'; ?>">
+            <div id="sectionAudit" class="bg-white p-6 rounded-xl shadow-sm border <?php echo $last_audit ? 'border-emerald-200' : 'border-amber-200'; ?>">
                 <div class="flex items-center justify-between mb-3">
                     <h3 class="font-bold text-slate-900">Auditoria Presencial</h3>
                     <?php if ($last_audit): ?>
@@ -348,7 +348,7 @@ $status_label = $status_labels[$status_value] ?? $status_value;
         </div>
     </div>
 
-    <div class="lg:col-span-2 bg-white p-8 rounded-xl shadow-sm border border-slate-200">
+    <div id="sectionHistory" class="lg:col-span-2 bg-white p-8 rounded-xl shadow-sm border border-slate-200">
         <h3 class="text-lg font-bold text-slate-900 mb-6">Historico</h3>
         <div class="space-y-6 relative before:absolute before:inset-0 before:ml-2.5 before:w-0.5 before:bg-slate-200">
             <?php foreach ($history as $h):
@@ -410,6 +410,27 @@ $status_label = $status_labels[$status_value] ?? $status_value;
         </div>
     </div>
 </div>
+
+<nav id="mobileBottomBar" class="fixed bottom-0 inset-x-0 z-50 lg:hidden bg-white border-t border-slate-200 shadow-[0_-2px_10px_rgba(0,0,0,0.06)]">
+    <div class="flex items-center justify-around h-14 max-w-lg mx-auto px-2">
+        <button type="button" onclick="scrollToSection('sectionInfo')" class="mobile-nav-btn group flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-slate-400 hover:text-indigo-600 transition-colors" data-section="sectionInfo">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span class="text-[10px] font-medium leading-none">Info</span>
+        </button>
+        <button type="button" onclick="scrollToSection('sectionAudit')" class="mobile-nav-btn group flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors <?php echo $last_audit ? 'text-emerald-500 hover:text-emerald-700' : 'text-amber-500 hover:text-amber-700'; ?>" data-section="sectionAudit">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span class="text-[10px] font-medium leading-none">Auditoria</span>
+        </button>
+        <button type="button" onclick="scrollToSection('photosCard')" class="mobile-nav-btn group flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-slate-400 hover:text-indigo-600 transition-colors" data-section="photosCard">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <span class="text-[10px] font-medium leading-none">Fotos</span>
+        </button>
+        <button type="button" onclick="scrollToSection('sectionHistory')" class="mobile-nav-btn group flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-slate-400 hover:text-indigo-600 transition-colors" data-section="sectionHistory">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span class="text-[10px] font-medium leading-none">Historico</span>
+        </button>
+    </div>
+</nav>
 
 <script>
     const assetData = {
@@ -748,4 +769,63 @@ $status_label = $status_labels[$status_value] ?? $status_value;
             auditPreviewUrl = null;
         }
     }
+
+    function scrollToSection(sectionId) {
+        const el = document.getElementById(sectionId);
+        if (!el) return;
+        const barHeight = 56 + 12;
+        const y = el.getBoundingClientRect().top + window.pageYOffset - 12;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+
+    (function () {
+        const sections = ['sectionInfo', 'sectionAudit', 'photosCard', 'sectionHistory'];
+        const btns = document.querySelectorAll('#mobileBottomBar .mobile-nav-btn');
+        if (!btns.length) return;
+
+        const activeClasses = 'text-indigo-600';
+        const inactiveDefault = 'text-slate-400';
+
+        function setActive(sectionId) {
+            btns.forEach(function (btn) {
+                const s = btn.getAttribute('data-section');
+                const isAudit = s === 'sectionAudit';
+                if (s === sectionId) {
+                    if (isAudit) {
+                        btn.classList.add('scale-110');
+                    } else {
+                        btn.classList.remove(inactiveDefault);
+                        btn.classList.add(activeClasses);
+                    }
+                } else {
+                    btn.classList.remove('scale-110');
+                    if (!isAudit) {
+                        btn.classList.remove(activeClasses);
+                        btn.classList.add(inactiveDefault);
+                    }
+                }
+            });
+        }
+
+        if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver(function (entries) {
+                let best = null;
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        if (!best || entry.intersectionRatio > best.intersectionRatio) {
+                            best = entry;
+                        }
+                    }
+                });
+                if (best) setActive(best.target.id);
+            }, { threshold: [0.15, 0.5] });
+
+            sections.forEach(function (id) {
+                const el = document.getElementById(id);
+                if (el) observer.observe(el);
+            });
+        }
+
+        setActive('sectionInfo');
+    })();
 </script>
