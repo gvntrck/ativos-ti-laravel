@@ -363,6 +363,11 @@ function applyReportsFilters() {
         visibleCountElement.textContent = visibleCount;
     }
 
+    const visibleCountMobile = document.getElementById('reportVisibleCountMobile');
+    if (visibleCountMobile) {
+        visibleCountMobile.textContent = visibleCount;
+    }
+
     if (noResultsRow) {
         if (visibleCount === 0) {
             noResultsRow.classList.remove('hidden');
@@ -372,7 +377,32 @@ function applyReportsFilters() {
     }
 
     updateReportsFilterHighlights(filterControls);
+    updateReportActiveFiltersBadge(filterControls);
     saveReportsFiltersState();
+}
+
+function updateReportActiveFiltersBadge(filterControls) {
+    const badge = document.getElementById('reportActiveFiltersBadge');
+    const countEl = document.getElementById('reportActiveFiltersCount');
+    if (!badge || !countEl) return;
+
+    const globalInput = document.getElementById('reportGlobalSearch');
+    const auditFilter = document.getElementById('reportAuditFilter');
+    const controls = filterControls || document.querySelectorAll('[data-report-filter]');
+
+    let activeCount = 0;
+    if (globalInput && normalizeReportValue(globalInput.value) !== '') activeCount++;
+    if (auditFilter && normalizeReportValue(auditFilter.value) !== '') activeCount++;
+    controls.forEach((control) => {
+        if (normalizeReportValue(control.value) !== '') activeCount++;
+    });
+
+    countEl.textContent = activeCount;
+    if (activeCount > 0) {
+        badge.classList.remove('hidden');
+    } else {
+        badge.classList.add('hidden');
+    }
 }
 
 function initReportsFilters() {
@@ -420,8 +450,47 @@ function initReportsFilters() {
     restoreReportsFiltersState(filterControls, globalInput);
     applyReportsFilters();
 
+    initReportToolbarToggle();
+
     var preloadStyle = document.getElementById('ccsPreloadHide');
     if (preloadStyle) preloadStyle.remove();
+}
+
+function getReportToolbarStateKey() {
+    return 'ccs_report_toolbar_' + getCurrentModule();
+}
+
+function initReportToolbarToggle() {
+    const toggleBtn = document.getElementById('reportToolbarToggle');
+    const panel = document.getElementById('reportToolbarPanel');
+    const chevron = document.getElementById('reportToolbarChevron');
+    if (!toggleBtn || !panel) return;
+
+    var isOpen = false;
+    try {
+        isOpen = sessionStorage.getItem(getReportToolbarStateKey()) === 'open';
+    } catch (e) {}
+
+    if (isOpen) {
+        panel.classList.remove('hidden');
+        panel.classList.add('block');
+        if (chevron) chevron.style.transform = 'rotate(180deg)';
+    }
+
+    toggleBtn.addEventListener('click', function () {
+        var showing = !panel.classList.contains('hidden');
+        if (showing) {
+            panel.classList.add('hidden');
+            panel.classList.remove('block');
+            if (chevron) chevron.style.transform = '';
+            try { sessionStorage.setItem(getReportToolbarStateKey(), 'closed'); } catch (e) {}
+        } else {
+            panel.classList.remove('hidden');
+            panel.classList.add('block');
+            if (chevron) chevron.style.transform = 'rotate(180deg)';
+            try { sessionStorage.setItem(getReportToolbarStateKey(), 'open'); } catch (e) {}
+        }
+    });
 }
 
 document.addEventListener('DOMContentLoaded', initReportsFilters);

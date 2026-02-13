@@ -211,30 +211,50 @@ $table_preferences_config = [
 <script>setTimeout(function(){var s=document.getElementById('ccsPreloadHide');if(s)s.remove()},5000)</script>
 
 <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-    <div class="p-4 border-b border-slate-100 bg-slate-50/60">
-        <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-                <h2 class="text-lg font-semibold text-slate-900"><?php echo esc_html($report_title); ?></h2>
+    <div class="px-3 py-2 border-b border-slate-100 bg-slate-50/60 lg:px-4 lg:py-4">
+        <div class="flex items-center justify-between gap-2 lg:hidden">
+            <div class="flex items-center gap-2 min-w-0">
+                <span class="text-sm text-slate-500 whitespace-nowrap">
+                    <strong id="reportVisibleCountMobile" class="text-slate-700"><?php echo count($report_rows); ?></strong> registros
+                </span>
+                <span id="reportActiveFiltersBadge" class="hidden inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-100 text-indigo-700 whitespace-nowrap">
+                    <svg class="w-3 h-3 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+                    <span id="reportActiveFiltersCount">0</span>
+                </span>
             </div>
-            <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
-                <input id="reportGlobalSearch" type="search" autocomplete="one-time-code"
-                    class="block w-full sm:w-80 px-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                    placeholder="<?php echo esc_attr($report_search_placeholder); ?>">
-                <select id="reportAuditFilter"
-                    class="block w-full sm:w-auto px-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                    <option value="">Auditoria: Todos</option>
-                    <option value="audited">Auditados</option>
-                    <option value="pending">Nao auditados</option>
-                </select>
-                <button type="button" id="reportEditTableBtn"
-                    class="btn btn-secondary whitespace-nowrap <?php echo $can_save_table_preferences ? '' : 'opacity-60 cursor-not-allowed'; ?>"
-                    <?php echo $can_save_table_preferences ? '' : 'disabled title="Sem permissao para personalizar a tabela"'; ?>>Editar tabela</button>
-                <button type="button" id="clearReportFilters" class="btn btn-secondary whitespace-nowrap">Limpar filtros</button>
-            </div>
+            <button type="button" id="reportToolbarToggle"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 active:bg-slate-100 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                Filtros
+                <svg id="reportToolbarChevron" class="w-3 h-3 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
         </div>
-        <div class="mt-3 text-sm text-slate-500">
-            Linhas visiveis:
-            <strong id="reportVisibleCount" class="text-slate-700"><?php echo count($report_rows); ?></strong>
+
+        <div id="reportToolbarPanel" class="hidden lg:block mt-2 lg:mt-0">
+            <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div class="hidden lg:block">
+                    <h2 class="text-lg font-semibold text-slate-900"><?php echo esc_html($report_title); ?></h2>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+                    <input id="reportGlobalSearch" type="search" autocomplete="one-time-code"
+                        class="block w-full sm:w-80 px-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                        placeholder="<?php echo esc_attr($report_search_placeholder); ?>">
+                    <select id="reportAuditFilter"
+                        class="block w-full sm:w-auto px-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                        <option value="">Auditoria: Todos</option>
+                        <option value="audited">Auditados</option>
+                        <option value="pending">Nao auditados</option>
+                    </select>
+                    <button type="button" id="reportEditTableBtn"
+                        class="btn btn-secondary whitespace-nowrap <?php echo $can_save_table_preferences ? '' : 'opacity-60 cursor-not-allowed'; ?>"
+                        <?php echo $can_save_table_preferences ? '' : 'disabled title="Sem permissao para personalizar a tabela"'; ?>>Editar tabela</button>
+                    <button type="button" id="clearReportFilters" class="btn btn-secondary whitespace-nowrap">Limpar filtros</button>
+                </div>
+            </div>
+            <div class="mt-3 text-sm text-slate-500 hidden lg:block">
+                Linhas visiveis:
+                <strong id="reportVisibleCount" class="text-slate-700"><?php echo count($report_rows); ?></strong>
+            </div>
         </div>
     </div>
 

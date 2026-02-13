@@ -54,8 +54,11 @@ body {
     border-color: var(--ccs-border);
 }
 
-.btn-secondary:hover {
+.btn-secondary:hover,
+.btn-secondary:focus,
+.btn-secondary:active {
     background-color: #f9fafb;
+    color: var(--ccs-secondary) !important;
 }
 
 /* ===== Palette Overrides (Tailwind utility classes used in templates) ===== */
