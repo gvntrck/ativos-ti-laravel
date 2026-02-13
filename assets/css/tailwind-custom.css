@@ -432,6 +432,50 @@ body {
 }
 /* These are handled via inline styles in JS, but good to have defaults */
 
+/* ===== Mobile Bottom Bar - Override Elementor/Theme styles ===== */
+#mobileBottomBar {
+    background-color: #ffffff !important;
+    border-top: 1px solid var(--ccs-border) !important;
+}
+
+#mobileBottomBar button,
+#mobileBottomBar .mobile-nav-btn {
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+}
+
+#mobileBottomBar button:hover,
+#mobileBottomBar button:focus,
+#mobileBottomBar button:active,
+#mobileBottomBar button:focus-visible,
+#mobileBottomBar .mobile-nav-btn:hover,
+#mobileBottomBar .mobile-nav-btn:focus,
+#mobileBottomBar .mobile-nav-btn:active,
+#mobileBottomBar .mobile-nav-btn:focus-visible {
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: transparent !important;
+}
+
+#mobileBottomBar button svg,
+#mobileBottomBar .mobile-nav-btn svg {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+}
+
+#mobileBottomBar button span,
+#mobileBottomBar .mobile-nav-btn span {
+    font-size: 10px !important;
+    line-height: 1 !important;
+}
+
 /* Protect SVG icon sizes from WP/Elementor CSS overrides */
 .inline-flex > svg.w-6,
 .inline-flex > svg.h-6 {
