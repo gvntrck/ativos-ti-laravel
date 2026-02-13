@@ -319,6 +319,12 @@ $table_preferences_config = [
                                     </button>
                                 <?php elseif ($column === 'photo_url'): ?>
                                     <span class="text-slate-500">-</span>
+                                <?php elseif (in_array($column, ['phone_number', 'user_name'], true) && $row_id > 0 && $raw_value !== ''): ?>
+                                    <a href="?<?php echo esc_attr($module_param); ?>&view=details&id=<?php echo $row_id; ?>&return_to=<?php echo esc_attr($report_origin_view); ?>"
+                                        class="text-indigo-600 hover:text-indigo-900 font-medium block whitespace-nowrap overflow-hidden text-ellipsis"
+                                        title="<?php echo esc_attr($display_value); ?>">
+                                        <?php echo esc_html($display_value); ?>
+                                    </a>
                                 <?php else: ?>
                                     <span
                                         class="<?php echo $is_long_text ? 'whitespace-pre-wrap break-words text-xs text-slate-700 block w-full text-left' : 'text-slate-700 block whitespace-nowrap overflow-hidden text-ellipsis'; ?>"
