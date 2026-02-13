@@ -24,7 +24,7 @@ $module_param = 'module=' . urlencode($current_module);
 
         <div class="flex flex-col gap-3 w-full sm:w-auto">
             <div class="flex gap-2 w-full">
-                <input type="text" id="searchInput" onkeyup="filterTable()"
+                <input type="search" id="searchInput" onkeyup="filterTable()" autocomplete="one-time-code"
                     class="block flex-1 sm:w-64 px-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-400 focus:outline-none focus:placeholder-slate-500 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     placeholder="<?php echo esc_attr($search_placeholder); ?>">
 

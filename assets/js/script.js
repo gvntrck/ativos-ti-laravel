@@ -63,6 +63,31 @@ function ccsCompressImages(fileList) {
     return Promise.all(files.map(function (f) { return ccsCompressImage(f); }));
 }
 
+/**
+ * Bloqueia o autofill do Android em inputs de filtro/busca.
+ * Inputs iniciam como readonly (Android ignora readonly para autofill).
+ * Ao focar, readonly é removido instantaneamente para permitir digitacao.
+ */
+document.addEventListener('DOMContentLoaded', function () {
+    var selectors = [
+        'input[type="search"]',
+        'input[data-report-filter]',
+        '#reportGlobalSearch',
+        '#searchInput',
+    ];
+    var inputs = document.querySelectorAll(selectors.join(','));
+    inputs.forEach(function (input) {
+        if (input.tagName !== 'INPUT') return;
+        input.setAttribute('readonly', '');
+        input.addEventListener('focus', function handler() {
+            input.removeAttribute('readonly');
+        });
+        input.addEventListener('blur', function () {
+            input.setAttribute('readonly', '');
+        });
+    });
+});
+
 function filterTable() {
     const input = document.getElementById("searchInput");
     if (!input) return; // Exit if search input doesn't exist

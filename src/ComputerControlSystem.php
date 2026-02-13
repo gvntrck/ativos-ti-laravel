@@ -2,7 +2,7 @@
 
 class ComputerControlSystem
 {
-    public const VERSION = '1.10.8';
+    public const VERSION = '1.10.9';
 
     private const MODULE_COMPUTERS = 'computers';
     private const MODULE_CELLPHONES = 'cellphones';

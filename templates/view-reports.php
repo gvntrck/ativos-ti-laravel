@@ -212,7 +212,7 @@ $table_preferences_config = [
                 <h2 class="text-lg font-semibold text-slate-900"><?php echo esc_html($report_title); ?></h2>
             </div>
             <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
-                <input id="reportGlobalSearch" type="text"
+                <input id="reportGlobalSearch" type="search" autocomplete="one-time-code"
                     class="block w-full sm:w-80 px-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     placeholder="<?php echo esc_attr($report_search_placeholder); ?>">
                 <button type="button" id="reportEditTableBtn"
@@ -266,7 +266,7 @@ $table_preferences_config = [
                                     <option value="__EMPTY__">Sem foto</option>
                                 </select>
                             <?php elseif ($meta['is_date']): ?>
-                                <input type="date"
+                                <input type="date" autocomplete="one-time-code"
                                     data-report-filter="<?php echo esc_attr($column); ?>"
                                     data-report-filter-type="date"
                                     class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:border-indigo-500 focus:ring-indigo-500">
@@ -290,7 +290,7 @@ $table_preferences_config = [
                                 $filter_input_mode = $is_mobile_numeric_filter ? 'numeric' : 'text';
                                 $filter_placeholder = $is_mobile_numeric_filter ? 'Digite numeros...' : 'Filtrar...';
                                 ?>
-                                <input type="text"
+                                <input type="search" autocomplete="one-time-code"
                                     data-report-filter="<?php echo esc_attr($column); ?>"
                                     data-report-filter-type="text"
                                     inputmode="<?php echo esc_attr($filter_input_mode); ?>"
