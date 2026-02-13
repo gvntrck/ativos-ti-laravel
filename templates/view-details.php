@@ -197,7 +197,7 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                 <?php endif; ?>
             </div>
 
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+            <div id="photosCard" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                 <h3 class="font-bold text-slate-900 mb-4">Fotos do Equipamento</h3>
                 <?php if ($can_edit): ?>
                     <form method="post" action="?" enctype="multipart/form-data" id="photoUploadForm" data-ajax="true"
@@ -462,6 +462,12 @@ $status_label = $status_labels[$status_value] ?? $status_value;
         const cameraInput = document.getElementById('cameraInput');
         if (cameraInput) {
             cameraInput.click();
+        }
+        const photosCard = document.getElementById('photosCard');
+        if (photosCard) {
+            setTimeout(() => {
+                photosCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 300);
         }
     }
 
