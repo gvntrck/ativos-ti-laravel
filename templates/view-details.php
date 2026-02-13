@@ -662,24 +662,33 @@ $status_label = $status_labels[$status_value] ?? $status_value;
             return;
         }
 
-        if (!supportsDataTransfer) {
-            queuedPhotoFiles.length = 0;
-            incoming.forEach((file) => queuedPhotoFiles.push(file));
-            renderPhotoQueue();
-            return;
+        var countLabel = document.getElementById('photoQueueCount');
+        var panel = document.getElementById('photoQueuePanel');
+        if (countLabel) {
+            countLabel.textContent = 'Comprimindo ' + incoming.length + (incoming.length === 1 ? ' foto...' : ' fotos...');
+            if (panel) panel.classList.remove('hidden');
         }
 
-        const known = new Set(queuedPhotoFiles.map(buildPhotoFingerprint));
-        incoming.forEach((file) => {
-            const fingerprint = buildPhotoFingerprint(file);
-            if (!known.has(fingerprint)) {
-                queuedPhotoFiles.push(file);
-                known.add(fingerprint);
+        ccsCompressImages(incoming).then(function (compressed) {
+            if (!supportsDataTransfer) {
+                queuedPhotoFiles.length = 0;
+                compressed.forEach((file) => queuedPhotoFiles.push(file));
+                renderPhotoQueue();
+                return;
             }
-        });
 
-        syncQueuedFilesToInput();
-        renderPhotoQueue();
+            const known = new Set(queuedPhotoFiles.map(buildPhotoFingerprint));
+            compressed.forEach((file) => {
+                const fingerprint = buildPhotoFingerprint(file);
+                if (!known.has(fingerprint)) {
+                    queuedPhotoFiles.push(file);
+                    known.add(fingerprint);
+                }
+            });
+
+            syncQueuedFilesToInput();
+            renderPhotoQueue();
+        });
     }
 
     function clearPhotoQueue() {
@@ -826,24 +835,33 @@ $status_label = $status_labels[$status_value] ?? $status_value;
         var incoming = Array.from(fileList || []).filter(function (file) { return file && /^image\//.test(file.type); });
         if (incoming.length === 0) return;
 
-        if (!supportsDataTransfer) {
-            auditQueuedPhotoFiles.length = 0;
-            incoming.forEach(function (file) { auditQueuedPhotoFiles.push(file); });
-            renderAuditPhotoQueue();
-            return;
+        var countLabel = document.getElementById('auditPhotoQueueCount');
+        var panel = document.getElementById('auditPhotoQueuePanel');
+        if (countLabel) {
+            countLabel.textContent = 'Comprimindo ' + incoming.length + (incoming.length === 1 ? ' foto...' : ' fotos...');
+            if (panel) panel.classList.remove('hidden');
         }
 
-        var known = new Set(auditQueuedPhotoFiles.map(buildPhotoFingerprint));
-        incoming.forEach(function (file) {
-            var fingerprint = buildPhotoFingerprint(file);
-            if (!known.has(fingerprint)) {
-                auditQueuedPhotoFiles.push(file);
-                known.add(fingerprint);
+        ccsCompressImages(incoming).then(function (compressed) {
+            if (!supportsDataTransfer) {
+                auditQueuedPhotoFiles.length = 0;
+                compressed.forEach(function (file) { auditQueuedPhotoFiles.push(file); });
+                renderAuditPhotoQueue();
+                return;
             }
-        });
 
-        syncAuditQueuedFilesToInput();
-        renderAuditPhotoQueue();
+            var known = new Set(auditQueuedPhotoFiles.map(buildPhotoFingerprint));
+            compressed.forEach(function (file) {
+                var fingerprint = buildPhotoFingerprint(file);
+                if (!known.has(fingerprint)) {
+                    auditQueuedPhotoFiles.push(file);
+                    known.add(fingerprint);
+                }
+            });
+
+            syncAuditQueuedFilesToInput();
+            renderAuditPhotoQueue();
+        });
     }
 
     function clearAuditPhotoQueue() {

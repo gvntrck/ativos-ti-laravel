@@ -1,3 +1,68 @@
+/**
+ * Compressao de imagem client-side antes do upload.
+ * Ajuste os valores abaixo conforme necessidade de qualidade vs tamanho.
+ */
+var CCS_IMAGE_COMPRESS = {
+    enabled: true,
+    maxWidth: 1920,
+    maxHeight: 1920,
+    quality: 0.80,
+    mimeType: 'image/jpeg',
+};
+
+function ccsCompressImage(file) {
+    return new Promise(function (resolve) {
+        if (!CCS_IMAGE_COMPRESS.enabled || !file || !/^image\//.test(file.type)) {
+            resolve(file);
+            return;
+        }
+
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            var img = new Image();
+            img.onload = function () {
+                var maxW = CCS_IMAGE_COMPRESS.maxWidth;
+                var maxH = CCS_IMAGE_COMPRESS.maxHeight;
+                var w = img.width;
+                var h = img.height;
+
+                if (w > maxW || h > maxH) {
+                    var ratio = Math.min(maxW / w, maxH / h);
+                    w = Math.round(w * ratio);
+                    h = Math.round(h * ratio);
+                }
+
+                var canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                var ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, w, h);
+
+                canvas.toBlob(function (blob) {
+                    if (!blob || blob.size >= file.size) {
+                        resolve(file);
+                        return;
+                    }
+                    var compressed = new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), {
+                        type: CCS_IMAGE_COMPRESS.mimeType,
+                        lastModified: file.lastModified,
+                    });
+                    resolve(compressed);
+                }, CCS_IMAGE_COMPRESS.mimeType, CCS_IMAGE_COMPRESS.quality);
+            };
+            img.onerror = function () { resolve(file); };
+            img.src = e.target.result;
+        };
+        reader.onerror = function () { resolve(file); };
+        reader.readAsDataURL(file);
+    });
+}
+
+function ccsCompressImages(fileList) {
+    var files = Array.from(fileList || []);
+    return Promise.all(files.map(function (f) { return ccsCompressImage(f); }));
+}
+
 function filterTable() {
     const input = document.getElementById("searchInput");
     if (!input) return; // Exit if search input doesn't exist

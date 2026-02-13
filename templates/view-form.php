@@ -358,11 +358,34 @@ if (!$can_edit): ?>
                     </label>
                     <input id="formCameraInput" type="file" name="photo" accept="image/*" capture="environment"
                         class="hidden"
-                        onchange="if(this.files.length > 0) { document.getElementById('fileNameDisplay').textContent = this.files[0].name; document.getElementById('fileNameDisplay').classList.add('text-emerald-600', 'font-medium'); document.getElementById('fileNameDisplay').classList.remove('text-slate-400'); }">
+                        onchange="handleFormPhotoChange(this)">
                 </div>
 
                 <p class="mt-1 text-xs text-slate-500">Tire uma foto do equipamento para o cadastro.</p>
             </div>
+            <script>
+                function handleFormPhotoChange(input) {
+                    if (!input || !input.files || input.files.length === 0) return;
+                    var label = document.getElementById('fileNameDisplay');
+                    if (label) {
+                        label.textContent = 'Comprimindo...';
+                        label.classList.add('text-amber-600', 'font-medium');
+                        label.classList.remove('text-slate-400', 'text-emerald-600');
+                    }
+                    ccsCompressImage(input.files[0]).then(function (compressed) {
+                        if (typeof DataTransfer !== 'undefined') {
+                            var dt = new DataTransfer();
+                            dt.items.add(compressed);
+                            input.files = dt.files;
+                        }
+                        if (label) {
+                            label.textContent = compressed.name;
+                            label.classList.remove('text-slate-400', 'text-amber-600');
+                            label.classList.add('text-emerald-600', 'font-medium');
+                        }
+                    });
+                }
+            </script>
         <?php endif; ?>
 
         <div class="flex justify-end gap-3 pt-6 border-t border-slate-100">
