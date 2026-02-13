@@ -39,28 +39,20 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                         class="lg:hidden inline-flex items-center justify-center w-11 h-11 text-indigo-600 hover:text-indigo-800 rounded-lg border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-colors"
                         title="Tirar Foto"
                         onclick="triggerCameraCapture()">
-                        <svg viewBox="0 0 16 16" fill="currentColor" width="28" height="28"
-                            style="width:28px !important; height:28px !important; display:block;" aria-hidden="true">
-                            <path style="fill:currentColor !important;" d="M10.5 8.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"></path>
-                            <path
-                                style="fill:currentColor !important;"
-                                d="M2 4a2 2 0 0 1 2-2h1.17a2 2 0 0 0 1.42-.59l.82-.82A2 2 0 0 1 8.83 0h2.34a2 2 0 0 1 1.41.59l.83.82a2 2 0 0 0 1.41.59H16v10a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4z">
-                            </path>
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                     </button>
                     <a href="<?php echo esc_url($edit_url); ?>"
                         class="inline-flex items-center justify-center w-11 h-11 lg:w-10 lg:h-10 text-indigo-600 hover:text-indigo-800 rounded-lg border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-colors"
                         title="Editar item"
                         aria-label="Editar item">
-                        <svg viewBox="0 0 16 16" fill="currentColor" width="24" height="24"
-                            style="width:24px !important; height:24px !important; display:block;" aria-hidden="true">
-                            <path
-                                d="M15.5 1.9a.5.5 0 0 1 0 .7L14.4 3.7l-2.1-2.1L13.4.5a.5.5 0 0 1 .7 0l1.4 1.4z">
-                            </path>
-                            <path d="M11.8 3.2 2.5 12.5V15h2.5l9.3-9.3-2.5-2.5z"></path>
-                            <path
-                                d="M1 0a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V7a.5.5 0 0 0-1 0v8H1V1h8a.5.5 0 0 0 0-1H1z">
-                            </path>
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
                     </a>
                     <form method="post" action="?" data-ajax="true"
@@ -72,16 +64,9 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                         <button type="submit"
                             class="inline-flex items-center justify-center w-11 h-11 lg:w-10 lg:h-10 text-red-500 hover:text-red-700 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 transition-colors"
                             title="Mover para Lixeira">
-                            <svg viewBox="0 0 16 16" fill="currentColor" width="28" height="28"
-                                style="width:28px !important; height:28px !important; display:block;" aria-hidden="true">
-                                <path
-                                    style="fill:currentColor !important;"
-                                    d="M2.5 1a1 1 0 0 0-1 1V3h13V2a1 1 0 0 0-1-1h-11zM3.5 4v9a2 2 0 0 0 2 2h5a2 2 0 0 0 2-2V4h-9z">
-                                </path>
-                                <path style="fill:currentColor !important;"
-                                    d="M6 6a.5.5 0 0 1 .5.5V12a.5.5 0 0 1-1 0V6.5A.5.5 0 0 1 6 6z"></path>
-                                <path style="fill:currentColor !important;"
-                                    d="M9.5 6a.5.5 0 0 1 .5.5V12a.5.5 0 0 1-1 0V6.5a.5.5 0 0 1 .5-.5z"></path>
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                         </button>
                     </form>
