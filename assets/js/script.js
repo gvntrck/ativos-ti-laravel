@@ -452,9 +452,6 @@ function initReportsFilters() {
     applyReportsFilters();
 
     initReportToolbarToggle();
-
-    var preloadStyle = document.getElementById('ccsPreloadHide');
-    if (preloadStyle) preloadStyle.remove();
 }
 
 function getReportToolbarStateKey() {
@@ -741,7 +738,11 @@ async function persistReportTablePrefs(config, prefs) {
 function initReportTablePreferences() {
     const config = window.ccsTablePreferencesConfig;
     const table = document.getElementById('reportsTable');
-    if (!config || !table || !Array.isArray(config.columns)) return;
+    if (!config || !table || !Array.isArray(config.columns)) {
+        var ps = document.getElementById('ccsPreloadHide');
+        if (ps) ps.remove();
+        return;
+    }
 
     const modal = document.getElementById('reportTableSettingsModal');
     const openBtn = document.getElementById('reportEditTableBtn');
@@ -753,6 +754,8 @@ function initReportTablePreferences() {
     const zebraCheckbox = document.getElementById('reportZebraSetting');
 
     if (!modal || !openBtn || !saveBtn || !resetBtn || !listEl || !densitySelect || !zebraCheckbox) {
+        var ps2 = document.getElementById('ccsPreloadHide');
+        if (ps2) ps2.remove();
         return;
     }
 
@@ -836,6 +839,9 @@ function initReportTablePreferences() {
     });
 
     applyReportTablePrefs(config, activePrefs);
+
+    var preloadStyle = document.getElementById('ccsPreloadHide');
+    if (preloadStyle) preloadStyle.remove();
 }
 
 document.addEventListener('DOMContentLoaded', initReportTablePreferences);

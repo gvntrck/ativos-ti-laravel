@@ -207,7 +207,7 @@ $table_preferences_config = [
 ];
 ?>
 
-<style id="ccsPreloadHide">#reportsTableBody{visibility:hidden}</style>
+<style id="ccsPreloadHide">#reportsTable{visibility:hidden}</style>
 <script>setTimeout(function(){var s=document.getElementById('ccsPreloadHide');if(s)s.remove()},5000)</script>
 
 <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
