@@ -187,20 +187,7 @@ if (!$can_edit): ?>
                         class="w-full rounded-lg border-slate-300 bg-slate-100 text-slate-700 shadow-sm"
                         readonly>
                 </div>
-            <?php endif; ?>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Numero do Celular</label>
-                    <input type="text" id="phoneNumberInput" name="phone_number" value="<?php echo esc_attr($val_phone); ?>"
-                        placeholder="(00) 00000-0000"
-                        inputmode="numeric"
-                        maxlength="15"
-                        pattern="^\(\d{2}\)\s\d{4,5}-\d{4}$"
-                        title="Use o formato (99) 99999-9999"
-                        class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
-                </div>
-                <div>
+                <div class="mb-6">
                     <label class="block text-sm font-medium text-slate-700 mb-2">Status</label>
                     <select name="status"
                         class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
@@ -211,7 +198,33 @@ if (!$can_edit): ?>
                         <?php endforeach; ?>
                     </select>
                 </div>
+            <?php endif; ?>
+
+            <div class="mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Numero do Celular</label>
+                    <input type="text" id="phoneNumberInput" name="phone_number" value="<?php echo esc_attr($val_phone); ?>"
+                        placeholder="(00) 00000-0000"
+                        inputmode="numeric"
+                        maxlength="15"
+                        pattern="^\(\d{2}\)\s\d{4,5}-\d{4}$"
+                        title="Use o formato (99) 99999-9999"
+                        class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                </div>
             </div>
+            <?php if (!$is_edit): ?>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Status</label>
+                    <select name="status"
+                        class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                        <?php foreach ($status_labels as $status_key => $status_label): ?>
+                            <option value="<?php echo esc_attr($status_key); ?>" <?php selected($val_status, $status_key); ?>>
+                                <?php echo esc_html($status_label); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            <?php endif; ?>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
