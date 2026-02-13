@@ -1002,7 +1002,7 @@ class ComputerControlSystem
         return [
             'success' => true,
             'message' => $this->module_config['singular_label'] . ' cadastrado com sucesso!',
-            'redirect_url' => $this->build_url(['message' => 'created']),
+            'redirect_url' => $this->build_url(['view' => 'details', 'id' => $item_id, 'message' => 'created']),
             'data' => ['id' => $item_id],
         ];
     }
