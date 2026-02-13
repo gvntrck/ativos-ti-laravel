@@ -22,8 +22,8 @@ if (!$can_edit): ?>
 <?php endif; ?>
 
 <div class="max-w-2xl mx-auto">
-    <form method="post" action="?" enctype="multipart/form-data" data-ajax="true"
-        class="bg-white p-8 rounded-xl shadow-sm border border-slate-200">
+    <form id="mainForm" method="post" action="?" enctype="multipart/form-data" data-ajax="true"
+        class="bg-white p-8 pb-24 lg:pb-8 rounded-xl shadow-sm border border-slate-200">
         <?php wp_nonce_field('ccs_action_nonce'); ?>
         <input type="hidden" name="ccs_action" value="<?php echo esc_attr($is_edit ? $update_action : $add_action); ?>">
         <input type="hidden" name="module" value="<?php echo esc_attr($current_module); ?>">
@@ -360,3 +360,18 @@ if (!$can_edit): ?>
         </div>
     </form>
 </div>
+
+<nav id="mobileBottomBar" class="fixed bottom-0 inset-x-0 z-50 lg:hidden bg-white border-t border-slate-200 shadow-[0_-2px_10px_rgba(0,0,0,0.06)]">
+    <div class="flex items-center gap-3 h-16 max-w-lg mx-auto px-4">
+        <a href="<?php echo esc_url($cancel_url); ?>"
+            class="mobile-nav-btn flex items-center justify-center gap-1.5 px-4 h-10 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 text-sm font-medium transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            Cancelar
+        </a>
+        <button type="button" onclick="document.getElementById('mainForm').requestSubmit()"
+            class="mobile-nav-btn flex-1 flex items-center justify-center gap-2 h-10 rounded-lg bg-slate-700 text-white text-sm font-semibold shadow-sm transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <?php echo $is_edit ? 'Salvar Alteracoes' : 'Cadastrar'; ?>
+        </button>
+    </div>
+</nav>

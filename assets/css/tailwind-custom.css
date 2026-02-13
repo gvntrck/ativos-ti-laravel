@@ -476,6 +476,36 @@ body {
     line-height: 1 !important;
 }
 
+#mobileBottomBar a.mobile-nav-btn {
+    background-color: #f9fafb !important;
+    border: 1px solid var(--ccs-border) !important;
+    color: #475569 !important;
+    text-decoration: none !important;
+}
+
+#mobileBottomBar a.mobile-nav-btn:hover,
+#mobileBottomBar a.mobile-nav-btn:focus,
+#mobileBottomBar a.mobile-nav-btn:active {
+    background-color: #f1f5f9 !important;
+    color: #334155 !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+#mobileBottomBar button.mobile-nav-btn[onclick*="requestSubmit"] {
+    background-color: var(--ccs-secondary) !important;
+    color: #ffffff !important;
+}
+
+#mobileBottomBar button.mobile-nav-btn[onclick*="requestSubmit"]:hover,
+#mobileBottomBar button.mobile-nav-btn[onclick*="requestSubmit"]:focus,
+#mobileBottomBar button.mobile-nav-btn[onclick*="requestSubmit"]:active {
+    background-color: var(--ccs-primary) !important;
+    color: #ffffff !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
 /* Protect SVG icon sizes from WP/Elementor CSS overrides */
 .inline-flex > svg.w-6,
 .inline-flex > svg.h-6 {
