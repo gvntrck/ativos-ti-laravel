@@ -50,7 +50,7 @@ if (!$can_edit): ?>
             <?php $val_specs = isset($form_data['specs']) ? $form_data['specs'] : ($is_edit ? $pc->specs : ''); ?>
             <?php $val_notes = isset($form_data['notes']) ? $form_data['notes'] : ($is_edit ? $pc->notes : ''); ?>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="grid grid-cols-2 gap-6 mb-6">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Hostname <span class="text-red-500">*</span></label>
                     <input type="text" name="hostname" value="<?php echo esc_attr($val_hostname); ?>" required
@@ -66,7 +66,7 @@ if (!$can_edit): ?>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="grid grid-cols-2 gap-6 mb-6">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Status</label>
                     <select name="status"
@@ -189,7 +189,7 @@ if (!$can_edit): ?>
                 </div>
             <?php endif; ?>
 
-            <div class="grid grid-cols-2 gap-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Numero do Celular</label>
                     <input type="text" id="phoneNumberInput" name="phone_number" value="<?php echo esc_attr($val_phone); ?>"
@@ -213,7 +213,7 @@ if (!$can_edit): ?>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Marca / Modelo</label>
                     <input type="text" name="brand_model" value="<?php echo esc_attr($val_brand_model); ?>"
