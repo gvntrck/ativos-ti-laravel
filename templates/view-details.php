@@ -14,6 +14,8 @@ $trash_action = $is_cellphone_module ? 'trash_cellphone' : 'trash_computer';
 $checkup_action = $is_cellphone_module ? 'add_cellphone_checkup' : 'add_checkup';
 $upload_action = $is_cellphone_module ? 'upload_cellphone_photo' : 'upload_photo';
 $delete_history_action = $is_cellphone_module ? 'delete_cellphone_history' : 'delete_history';
+$audit_action = $is_cellphone_module ? 'audit_cellphone' : 'audit_computer';
+$last_audit = isset($last_audit) ? $last_audit : null;
 $edit_url = '?module=' . urlencode($current_module) . '&view=edit&id=' . intval($pc->id);
 $cellphone_code = trim((string) ($pc->asset_code ?? ''));
 $identifier_value = $is_cellphone_module
@@ -191,6 +193,92 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                                 placeholder="Descreva a manutencao, checkup ou movimentacao..." required></textarea>
                         </div>
                         <button type="submit" class="w-full btn btn-primary">Registrar</button>
+                    </form>
+                <?php else: ?>
+                    <p class="text-xs text-slate-500">Somente visualizacao.</p>
+                <?php endif; ?>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm border <?php echo $last_audit ? 'border-emerald-200' : 'border-amber-200'; ?>">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-bold text-slate-900">Auditoria Presencial</h3>
+                    <?php if ($last_audit): ?>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
+                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            Conferido
+                        </span>
+                    <?php else: ?>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
+                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                            Pendente
+                        </span>
+                    <?php endif; ?>
+                </div>
+
+                <?php if ($last_audit): ?>
+                    <?php
+                    $audit_user = get_userdata($last_audit->user_id);
+                    $audit_user_name = $audit_user ? $audit_user->display_name : 'Sistema';
+                    ?>
+                    <div class="text-xs text-slate-500 mb-3 bg-emerald-50 p-2 rounded-lg">
+                        <span class="block">Ultima auditoria: <strong class="text-slate-700"><?php echo date('d/m/Y H:i', strtotime($last_audit->created_at)); ?></strong></span>
+                        <span class="block">Por: <strong class="text-slate-700"><?php echo esc_html($audit_user_name); ?></strong></span>
+                    </div>
+                <?php else: ?>
+                    <p class="text-xs text-amber-600 mb-3">Nenhuma auditoria presencial registrada.</p>
+                <?php endif; ?>
+
+                <?php if ($can_edit): ?>
+                    <form method="post" action="?" enctype="multipart/form-data" id="auditForm" data-ajax="true"
+                        data-loading-overlay-id="auditLoadingOverlay" class="relative">
+                        <?php wp_nonce_field('ccs_action_nonce'); ?>
+                        <input type="hidden" name="ccs_action" value="<?php echo esc_attr($audit_action); ?>">
+                        <input type="hidden" name="<?php echo esc_attr($id_field); ?>" value="<?php echo intval($pc->id); ?>">
+                        <input type="hidden" name="module" value="<?php echo esc_attr($current_module); ?>">
+
+                        <div class="mb-3">
+                            <label for="auditCameraInput"
+                                class="cursor-pointer flex items-center justify-center gap-2 w-full h-20 border-2 border-dashed border-emerald-300 rounded-xl bg-emerald-50 hover:bg-emerald-100 transition-colors group">
+                                <div class="p-2 bg-emerald-100 rounded-full group-hover:bg-emerald-200 transition-colors">
+                                    <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                </div>
+                                <span class="text-emerald-700 font-semibold text-sm">Tirar foto do aparelho</span>
+                            </label>
+                            <input id="auditCameraInput" type="file" name="asset_photos[]" accept="image/*"
+                                capture="environment" class="hidden" onchange="handleAuditPhotoSelected(this)">
+                        </div>
+
+                        <div id="auditPhotoPreview" class="hidden mb-3 flex items-center gap-2 p-2 rounded-lg border border-slate-200 bg-slate-50">
+                            <img id="auditPreviewImg" src="" class="h-14 w-14 object-cover rounded-lg border border-slate-200" alt="Preview">
+                            <span id="auditPreviewName" class="text-xs text-slate-600 truncate flex-1"></span>
+                            <button type="button" onclick="clearAuditPhoto()" class="text-slate-400 hover:text-red-500 p-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                        </div>
+
+                        <button type="submit" id="auditSubmitBtn"
+                            class="w-full flex items-center justify-center gap-2 bg-emerald-600 text-white hover:bg-emerald-700 p-3 rounded-lg transition-colors font-medium shadow-sm">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <?php echo $last_audit ? 'Refazer Auditoria' : 'Registrar Auditoria'; ?>
+                        </button>
+
+                        <p class="text-xs text-slate-400 mt-2 text-center">Foto opcional, mas recomendada</p>
+
+                        <div id="auditLoadingOverlay"
+                            class="hidden absolute inset-0 bg-white/80 flex flex-col items-center justify-center rounded-xl z-10">
+                            <svg class="animate-spin h-8 w-8 text-emerald-600 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span class="text-sm font-medium text-emerald-700">Registrando auditoria...</span>
+                        </div>
                     </form>
                 <?php else: ?>
                     <p class="text-xs text-slate-500">Somente visualizacao.</p>
@@ -619,5 +707,45 @@ $status_label = $status_labels[$status_value] ?? $status_value;
         }
 
         renderPhotoQueue();
+
+        const auditForm = document.getElementById('auditForm');
+        const auditLoadingOverlay = document.getElementById('auditLoadingOverlay');
+        if (auditForm) {
+            auditForm.addEventListener('submit', function () {
+                if (auditLoadingOverlay) {
+                    auditLoadingOverlay.classList.remove('hidden');
+                }
+            }, true);
+        }
     });
+
+    let auditPreviewUrl = null;
+
+    function handleAuditPhotoSelected(input) {
+        if (!input || !input.files || input.files.length === 0) return;
+        const file = input.files[0];
+        if (!file || !/^image\//.test(file.type)) return;
+
+        const preview = document.getElementById('auditPhotoPreview');
+        const img = document.getElementById('auditPreviewImg');
+        const name = document.getElementById('auditPreviewName');
+        if (!preview || !img || !name) return;
+
+        if (auditPreviewUrl) URL.revokeObjectURL(auditPreviewUrl);
+        auditPreviewUrl = URL.createObjectURL(file);
+        img.src = auditPreviewUrl;
+        name.textContent = file.name;
+        preview.classList.remove('hidden');
+    }
+
+    function clearAuditPhoto() {
+        const input = document.getElementById('auditCameraInput');
+        const preview = document.getElementById('auditPhotoPreview');
+        if (input) input.value = '';
+        if (preview) preview.classList.add('hidden');
+        if (auditPreviewUrl) {
+            URL.revokeObjectURL(auditPreviewUrl);
+            auditPreviewUrl = null;
+        }
+    }
 </script>

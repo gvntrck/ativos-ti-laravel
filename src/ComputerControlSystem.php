@@ -2,7 +2,7 @@
 
 class ComputerControlSystem
 {
-    public const VERSION = '1.9.5';
+    public const VERSION = '1.10.0';
 
     private const MODULE_COMPUTERS = 'computers';
     private const MODULE_CELLPHONES = 'cellphones';
@@ -30,6 +30,7 @@ class ComputerControlSystem
         'quick_windows_update',
         'delete_history',
         'delete_permanent_computer',
+        'audit_computer',
         'add_cellphone',
         'update_cellphone',
         'add_cellphone_checkup',
@@ -38,6 +39,7 @@ class ComputerControlSystem
         'restore_cellphone',
         'delete_cellphone_history',
         'delete_permanent_cellphone',
+        'audit_cellphone',
     ];
 
     public function __construct()
@@ -116,6 +118,7 @@ class ComputerControlSystem
                 'delete_history_action' => 'delete_history',
                 'delete_permanent_action' => 'delete_permanent_computer',
                 'quick_action' => 'quick_windows_update',
+                'audit_action' => 'audit_computer',
                 'trash_filters_storage_key' => 'ccs_trash_filters_computers',
                 'report_filters_storage_key' => 'ccs_reports_filters_computers',
                 'title' => 'Controle de Computadores',
@@ -147,6 +150,7 @@ class ComputerControlSystem
                 'delete_history_action' => 'delete_cellphone_history',
                 'delete_permanent_action' => 'delete_permanent_cellphone',
                 'quick_action' => null,
+                'audit_action' => 'audit_cellphone',
                 'trash_filters_storage_key' => 'ccs_trash_filters_cellphones',
                 'report_filters_storage_key' => 'ccs_reports_filters_cellphones',
                 'title' => 'Controle de Celulares',
@@ -200,6 +204,7 @@ class ComputerControlSystem
                 'delete_history_action',
                 'delete_permanent_action',
                 'quick_action',
+                'audit_action',
             ];
 
             foreach ($action_keys as $action_key) {
@@ -244,6 +249,8 @@ class ComputerControlSystem
         if ($this->is_computer_module()) {
             $messages['windows_updated'] = 'Atualizacao do Windows registrada!';
         }
+
+        $messages['audit_registered'] = 'Auditoria presencial registrada com sucesso!';
 
         return $messages;
     }
@@ -748,6 +755,10 @@ class ComputerControlSystem
             case 'delete_permanent_cellphone':
                 $result = $this->process_delete_permanent_item($current_user_id);
                 break;
+            case 'audit_computer':
+            case 'audit_cellphone':
+                $result = $this->process_audit($current_user_id);
+                break;
             case 'save_table_preferences':
                 $result = $this->process_save_table_preferences($current_user_id);
                 break;
@@ -1220,6 +1231,42 @@ class ComputerControlSystem
         ];
     }
 
+    private function process_audit($current_user_id)
+    {
+        global $wpdb;
+        $id = $this->get_post_item_id();
+
+        $item = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$this->table_inventory} WHERE id = %d", $id));
+        if (!$item) {
+            return [
+                'success' => false,
+                'message' => $this->module_config['singular_label'] . ' nao encontrado.',
+            ];
+        }
+
+        $uploaded_photos = $this->get_uploaded_photos_from_request();
+        $photos_json = !empty($uploaded_photos) ? json_encode($uploaded_photos) : null;
+
+        if (!empty($uploaded_photos)) {
+            $wpdb->update($this->table_inventory, ['photo_url' => $uploaded_photos[0]], ['id' => $id]);
+        }
+
+        $user = wp_get_current_user();
+        $auditor_name = $user ? $user->display_name : 'Sistema';
+        $description = 'Auditoria presencial realizada por ' . $auditor_name . ' - informacoes conferidas';
+
+        $history_id = $this->log_history($id, 'audit', $description, $current_user_id, $photos_json);
+
+        return [
+            'success' => true,
+            'message' => 'Auditoria presencial registrada com sucesso!',
+            'redirect_url' => $this->build_url(['view' => 'details', 'id' => $id, 'message' => 'audit_registered']),
+            'data' => [
+                'history_html' => $this->get_history_item_html($id, $description, 'audit', $current_user_id, $history_id),
+                'photo_url' => !empty($uploaded_photos) ? $uploaded_photos[0] : null,
+            ],
+        ];
+    }
 
     private function process_save_table_preferences($current_user_id)
     {
@@ -1604,11 +1651,19 @@ class ComputerControlSystem
             GROUP BY {$history_fk}
         ", OBJECT_K);
 
+        $audit_data = $wpdb->get_results("
+            SELECT {$history_fk} AS item_id, MAX(created_at) AS last_audit_at
+            FROM {$this->table_history}
+            WHERE event_type = 'audit'
+            GROUP BY {$history_fk}
+        ", OBJECT_K);
+
         foreach ($rows as $row) {
             if (!$this->is_computer_module()) {
                 $row->phone_number = $this->format_phone_number($row->phone_number ?? '');
             }
             $row->search_meta = isset($history_data[$row->id]) ? strip_tags($history_data[$row->id]->full_history) : '';
+            $row->last_audit_at = isset($audit_data[$row->id]) ? $audit_data[$row->id]->last_audit_at : null;
         }
 
         $computers = $rows;
@@ -1645,6 +1700,17 @@ class ComputerControlSystem
 
         $report_photos_map = [];
         $history_fk = $this->module_config['history_foreign_key'];
+
+        $report_audit_data = $wpdb->get_results("
+            SELECT {$history_fk} AS item_id, MAX(created_at) AS last_audit_at
+            FROM {$this->table_history}
+            WHERE event_type = 'audit'
+            GROUP BY {$history_fk}
+        ", OBJECT_K);
+
+        foreach ($report_rows as $report_row) {
+            $report_row->last_audit_at = isset($report_audit_data[$report_row->id]) ? $report_audit_data[$report_row->id]->last_audit_at : null;
+        }
 
         if (!empty($report_rows)) {
             $report_ids = [];
@@ -1796,6 +1862,12 @@ class ComputerControlSystem
         }
         $history_fk = $this->module_config['history_foreign_key'];
         $history = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$this->table_history} WHERE {$history_fk} = %d ORDER BY created_at DESC", $id));
+
+        $last_audit = $wpdb->get_row($wpdb->prepare(
+            "SELECT created_at, user_id FROM {$this->table_history} WHERE {$history_fk} = %d AND event_type = 'audit' ORDER BY created_at DESC LIMIT 1",
+            $id
+        ));
+
         $current_module = $this->current_module;
         $module_config = $this->module_config;
         $status_labels = $this->get_status_labels();
