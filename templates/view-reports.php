@@ -12,6 +12,8 @@ $module_param = 'module=' . urlencode($current_module);
 $column_labels = [];
 $column_filter_meta = [];
 $column_widths = [];
+$mobile_auto_fit_columns = ['asset_code', 'phone_number'];
+$mobile_auto_fit_widths = [];
 $report_origin_view = isset($_GET['view']) ? sanitize_text_field((string) $_GET['view']) : 'list';
 if (!in_array($report_origin_view, ['list', 'reports'], true)) {
     $report_origin_view = 'list';
@@ -85,15 +87,33 @@ $format_report_value = static function ($column, $value) {
     return $value;
 };
 
+$get_text_length = static function ($value) {
+    if (function_exists('mb_strlen')) {
+        return mb_strlen((string) $value, 'UTF-8');
+    }
+
+    return strlen((string) $value);
+};
+
 foreach ($report_columns as $column) {
     $column_labels[$column] = $label_overrides[$column] ?? ucwords(str_replace('_', ' ', $column));
 
     $unique_values_map = [];
     $has_empty_values = false;
+    $has_mobile_auto_fit = in_array($column, $mobile_auto_fit_columns, true);
+    $auto_fit_max_length = $has_mobile_auto_fit ? $get_text_length($column_labels[$column]) : 0;
 
     foreach ($report_rows as $row) {
         $raw_value = isset($row->$column) ? (string) $row->$column : '';
         $normalized = trim($raw_value);
+
+        if ($has_mobile_auto_fit) {
+            $display_value = trim($format_report_value($column, $raw_value));
+            if ($display_value === '') {
+                $display_value = '-';
+            }
+            $auto_fit_max_length = max($auto_fit_max_length, $get_text_length($display_value));
+        }
 
         if ($normalized === '') {
             $has_empty_values = true;
@@ -125,6 +145,10 @@ foreach ($report_columns as $column) {
         'is_date' => $is_date_column,
         'use_select' => $use_select_filter,
     ];
+
+    if ($has_mobile_auto_fit) {
+        $mobile_auto_fit_widths[$column] = max(92, min(220, (int) ceil(($auto_fit_max_length * 8.5) + 28)));
+    }
 
     $column_widths[$column] = match ($column) {
         'id' => 90,
@@ -174,8 +198,14 @@ $table_preferences_config = [
         <table id="reportsTable" class="w-max min-w-full table-fixed text-left border-collapse text-sm">
             <colgroup>
                 <?php foreach ($report_columns as $column): ?>
+                    <?php
+                    $col_style = 'width: ' . intval($column_widths[$column] ?? 160) . 'px;';
+                    if (isset($mobile_auto_fit_widths[$column])) {
+                        $col_style .= ' --mobile-auto-fit-width: ' . intval($mobile_auto_fit_widths[$column]) . 'px;';
+                    }
+                    ?>
                     <col data-report-col="<?php echo esc_attr($column); ?>"
-                        style="width: <?php echo intval($column_widths[$column] ?? 160); ?>px;">
+                        style="<?php echo esc_attr($col_style); ?>">
                 <?php endforeach; ?>
             </colgroup>
             <thead class="bg-slate-50">
@@ -402,5 +432,12 @@ $table_preferences_config = [
 
     #reportsTable.report-zebra-enabled tbody tr:nth-child(even) {
         background-color: #f8fafc;
+    }
+
+    @media (max-width: 767px) {
+        #reportsTable col[data-report-col="asset_code"],
+        #reportsTable col[data-report-col="phone_number"] {
+            width: var(--mobile-auto-fit-width, auto) !important;
+        }
     }
 </style>
