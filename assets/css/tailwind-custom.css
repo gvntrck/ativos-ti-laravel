@@ -431,3 +431,32 @@ body {
     cursor: default; /* Padrão */
 }
 /* These are handled via inline styles in JS, but good to have defaults */
+
+/* Protect SVG icon sizes from WP/Elementor CSS overrides */
+.inline-flex > svg.w-6,
+.inline-flex > svg.h-6 {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+    flex-shrink: 0;
+}
+
+.inline-flex > svg.w-5,
+.inline-flex > svg.h-5 {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+    flex-shrink: 0;
+}
+
+.inline-flex > svg.w-4,
+.inline-flex > svg.h-4 {
+    width: 1rem !important;
+    height: 1rem !important;
+    flex-shrink: 0;
+}
+
+.flex > svg.w-5,
+.flex > svg.h-5 {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+    flex-shrink: 0;
+}
