@@ -40,12 +40,6 @@ $module_param = 'module=' . urlencode($current_module);
             <?php
             $is_filter_no_photos = isset($_GET['filter']) && $_GET['filter'] === 'no_photos';
             $no_photos_class = $is_filter_no_photos ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50';
-            
-            $is_filter_audited = isset($_GET['filter']) && $_GET['filter'] === 'audited';
-            $audited_class = $is_filter_audited ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50';
-            
-            $is_filter_not_audited = isset($_GET['filter']) && $_GET['filter'] === 'not_audited';
-            $not_audited_class = $is_filter_not_audited ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50';
             ?>
 
             <div id="filterPanel" class="hidden overflow-hidden transition-all duration-300 ease-in-out">
@@ -57,24 +51,6 @@ $module_param = 'module=' . urlencode($current_module);
                             data-filter-type="status" data-filter-value="no_photos"
                             onchange="applyFilters(this)">
                         <span>Sem Fotos</span>
-                    </label>
-
-                    <label class="flex items-center gap-2 px-2 py-1 border rounded-md text-sm font-medium transition-colors whitespace-nowrap <?php echo esc_attr($audited_class); ?>"
-                        title="Mostrar itens auditados">
-                        <input type="checkbox" class="h-4 w-4 text-emerald-600 border-slate-300 rounded"
-                            <?php echo $is_filter_audited ? 'checked' : ''; ?>
-                            data-filter-type="status" data-filter-value="audited"
-                            onchange="applyFilters(this)">
-                        <span>Auditados</span>
-                    </label>
-
-                    <label class="flex items-center gap-2 px-2 py-1 border rounded-md text-sm font-medium transition-colors whitespace-nowrap <?php echo esc_attr($not_audited_class); ?>"
-                        title="Mostrar itens não auditados">
-                        <input type="checkbox" class="h-4 w-4 text-amber-600 border-slate-300 rounded"
-                            <?php echo $is_filter_not_audited ? 'checked' : ''; ?>
-                            data-filter-type="status" data-filter-value="not_audited"
-                            onchange="applyFilters(this)">
-                        <span>Não Auditados</span>
                     </label>
 
                     <div class="w-px h-6 bg-slate-300 mx-1"></div>

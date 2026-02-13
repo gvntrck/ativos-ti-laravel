@@ -2,7 +2,7 @@
 
 class ComputerControlSystem
 {
-    public const VERSION = '1.10.10';
+    public const VERSION = '1.10.9';
 
     private const MODULE_COMPUTERS = 'computers';
     private const MODULE_CELLPHONES = 'cellphones';
@@ -1554,20 +1554,6 @@ class ComputerControlSystem
                     FROM {$this->table_history}
                     WHERE photos IS NOT NULL AND photos != '' AND photos != 'null'
                 )";
-        } elseif ($filter === 'audited') {
-            $history_fk = $this->module_config['history_foreign_key'];
-            $where_add .= " AND id IN (
-                SELECT DISTINCT {$history_fk}
-                FROM {$this->table_history}
-                WHERE event_type = 'audit'
-            )";
-        } elseif ($filter === 'not_audited') {
-            $history_fk = $this->module_config['history_foreign_key'];
-            $where_add .= " AND id NOT IN (
-                SELECT DISTINCT {$history_fk}
-                FROM {$this->table_history}
-                WHERE event_type = 'audit'
-            )";
         }
 
         if ($this->is_computer_module()) {
