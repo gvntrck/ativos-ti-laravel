@@ -247,26 +247,29 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                                             d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     </svg>
                                 </div>
-                                <span class="text-emerald-700 font-semibold text-sm">Tirar foto do aparelho</span>
+                                <span class="text-emerald-700 font-semibold text-sm">Adicionar Foto</span>
+                                <span class="text-emerald-400 text-xs">Toque para capturar varias</span>
                             </label>
                             <input id="auditCameraInput" type="file" name="asset_photos[]" accept="image/*"
-                                capture="environment" class="hidden" onchange="handleAuditPhotoSelected(this)">
+                                capture="environment" multiple class="hidden" onchange="handleAuditCameraInputChange(this)">
                         </div>
 
-                        <div id="auditPhotoPreview" class="hidden mb-3 flex items-center gap-2 p-2 rounded-lg border border-slate-200 bg-slate-50">
-                            <img id="auditPreviewImg" src="" class="h-14 w-14 object-cover rounded-lg border border-slate-200" alt="Preview">
-                            <span id="auditPreviewName" class="text-xs text-slate-600 truncate flex-1"></span>
-                            <button type="button" onclick="clearAuditPhoto()" class="text-slate-400 hover:text-red-500 p-1">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                            </button>
+                        <div id="auditPhotoQueuePanel" class="hidden mb-3 p-3 rounded-lg border border-slate-200 bg-slate-50">
+                            <div class="flex items-center justify-between gap-2 mb-2">
+                                <span id="auditPhotoQueueCount" class="text-xs text-slate-600">Nenhuma foto selecionada.</span>
+                                <button type="button" id="clearAuditPhotoQueueBtn"
+                                    class="text-xs text-slate-500 hover:text-red-600 underline">Limpar</button>
+                            </div>
+                            <div id="auditPhotoQueuePreview" class="flex gap-2 overflow-x-auto pb-1"></div>
                         </div>
 
                         <button type="submit" id="auditSubmitBtn"
+                            data-default-text="<?php echo esc_attr($last_audit ? 'Refazer Auditoria' : 'Registrar Auditoria'); ?>"
                             class="w-full flex items-center justify-center gap-2 bg-emerald-600 text-white hover:bg-emerald-700 p-3 rounded-lg transition-colors font-medium shadow-sm">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg id="auditSubmitIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <?php echo $last_audit ? 'Refazer Auditoria' : 'Registrar Auditoria'; ?>
+                            <span id="auditSubmitText"><?php echo $last_audit ? 'Refazer Auditoria' : 'Registrar Auditoria'; ?></span>
                         </button>
 
                         <p class="text-xs text-slate-400 mt-2 text-center">Foto opcional, mas recomendada</p>
@@ -731,43 +734,129 @@ $status_label = $status_labels[$status_value] ?? $status_value;
 
         const auditForm = document.getElementById('auditForm');
         const auditLoadingOverlay = document.getElementById('auditLoadingOverlay');
+        const clearAuditBtn = document.getElementById('clearAuditPhotoQueueBtn');
+
+        if (clearAuditBtn) {
+            clearAuditBtn.addEventListener('click', clearAuditPhotoQueue);
+        }
+
         if (auditForm) {
-            auditForm.addEventListener('submit', function () {
+            auditForm.addEventListener('submit', function (event) {
+                if (supportsDataTransfer) {
+                    syncAuditQueuedFilesToInput();
+                }
                 if (auditLoadingOverlay) {
                     auditLoadingOverlay.classList.remove('hidden');
                 }
             }, true);
         }
+
+        renderAuditPhotoQueue();
     });
 
-    let auditPreviewUrl = null;
+    const auditQueuedPhotoFiles = [];
+    const auditQueuedPhotoPreviewUrls = [];
 
-    function handleAuditPhotoSelected(input) {
-        if (!input || !input.files || input.files.length === 0) return;
-        const file = input.files[0];
-        if (!file || !/^image\//.test(file.type)) return;
-
-        const preview = document.getElementById('auditPhotoPreview');
-        const img = document.getElementById('auditPreviewImg');
-        const name = document.getElementById('auditPreviewName');
-        if (!preview || !img || !name) return;
-
-        if (auditPreviewUrl) URL.revokeObjectURL(auditPreviewUrl);
-        auditPreviewUrl = URL.createObjectURL(file);
-        img.src = auditPreviewUrl;
-        name.textContent = file.name;
-        preview.classList.remove('hidden');
+    function syncAuditQueuedFilesToInput() {
+        const input = document.getElementById('auditCameraInput');
+        if (!input || !supportsDataTransfer) return false;
+        const dt = new DataTransfer();
+        auditQueuedPhotoFiles.forEach(function (file) { dt.items.add(file); });
+        input.files = dt.files;
+        return true;
     }
 
-    function clearAuditPhoto() {
-        const input = document.getElementById('auditCameraInput');
-        const preview = document.getElementById('auditPhotoPreview');
-        if (input) input.value = '';
-        if (preview) preview.classList.add('hidden');
-        if (auditPreviewUrl) {
-            URL.revokeObjectURL(auditPreviewUrl);
-            auditPreviewUrl = null;
+    function clearAuditQueuePreviewUrls() {
+        while (auditQueuedPhotoPreviewUrls.length > 0) {
+            URL.revokeObjectURL(auditQueuedPhotoPreviewUrls.pop());
         }
+    }
+
+    function renderAuditPhotoQueue() {
+        const panel = document.getElementById('auditPhotoQueuePanel');
+        const countLabel = document.getElementById('auditPhotoQueueCount');
+        const preview = document.getElementById('auditPhotoQueuePreview');
+
+        if (!panel || !countLabel || !preview) return;
+
+        clearAuditQueuePreviewUrls();
+        preview.innerHTML = '';
+
+        var submitBtn = document.getElementById('auditSubmitBtn');
+        var submitText = document.getElementById('auditSubmitText');
+        var submitIcon = document.getElementById('auditSubmitIcon');
+
+        if (auditQueuedPhotoFiles.length === 0) {
+            panel.classList.add('hidden');
+            countLabel.textContent = 'Nenhuma foto selecionada.';
+            if (submitBtn && submitText) {
+                submitText.textContent = submitBtn.getAttribute('data-default-text') || 'Registrar Auditoria';
+            }
+            if (submitIcon) {
+                submitIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>';
+            }
+            return;
+        }
+
+        panel.classList.remove('hidden');
+        countLabel.textContent = auditQueuedPhotoFiles.length + (auditQueuedPhotoFiles.length === 1 ? ' foto selecionada.' : ' fotos selecionadas.');
+
+        if (submitText) {
+            submitText.textContent = 'Enviar ' + auditQueuedPhotoFiles.length + (auditQueuedPhotoFiles.length === 1 ? ' foto' : ' fotos');
+        }
+        if (submitIcon) {
+            submitIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>';
+        }
+
+        auditQueuedPhotoFiles.forEach(function (file, index) {
+            var item = document.createElement('div');
+            item.className = 'relative flex-shrink-0';
+            var img = document.createElement('img');
+            var previewUrl = URL.createObjectURL(file);
+            auditQueuedPhotoPreviewUrls.push(previewUrl);
+            img.src = previewUrl;
+            img.className = 'h-16 w-16 object-cover rounded-lg border border-slate-200';
+            img.alt = 'Foto ' + (index + 1);
+            item.appendChild(img);
+            preview.appendChild(item);
+        });
+    }
+
+    function queueAuditSelectedPhotos(fileList) {
+        var incoming = Array.from(fileList || []).filter(function (file) { return file && /^image\//.test(file.type); });
+        if (incoming.length === 0) return;
+
+        if (!supportsDataTransfer) {
+            auditQueuedPhotoFiles.length = 0;
+            incoming.forEach(function (file) { auditQueuedPhotoFiles.push(file); });
+            renderAuditPhotoQueue();
+            return;
+        }
+
+        var known = new Set(auditQueuedPhotoFiles.map(buildPhotoFingerprint));
+        incoming.forEach(function (file) {
+            var fingerprint = buildPhotoFingerprint(file);
+            if (!known.has(fingerprint)) {
+                auditQueuedPhotoFiles.push(file);
+                known.add(fingerprint);
+            }
+        });
+
+        syncAuditQueuedFilesToInput();
+        renderAuditPhotoQueue();
+    }
+
+    function clearAuditPhotoQueue() {
+        auditQueuedPhotoFiles.length = 0;
+        syncAuditQueuedFilesToInput();
+        var input = document.getElementById('auditCameraInput');
+        if (input) input.value = '';
+        renderAuditPhotoQueue();
+    }
+
+    function handleAuditCameraInputChange(input) {
+        if (!input || !input.files || input.files.length === 0) return;
+        queueAuditSelectedPhotos(input.files);
     }
 
     function scrollToSection(sectionId) {
