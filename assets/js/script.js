@@ -902,7 +902,7 @@ function initInlineEdit() {
             input.rows = 3;
         } else {
             input = document.createElement('input');
-            input.type = 'text';
+            input.type = 'search';
         }
 
         input.className = 'ccs-inline-input';
