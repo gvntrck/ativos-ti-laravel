@@ -27,7 +27,7 @@ $status_label = $status_labels[$status_value] ?? $status_value;
 ?>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-20 lg:pb-0">
-    <div id="sectionInfo" class="lg:col-span-2 bg-white p-8 rounded-xl shadow-sm border border-slate-200">
+    <div id="sectionInfo" class="lg:col-span-2 bg-white p-5 sm:p-6 lg:p-8 rounded-xl shadow-sm border border-slate-200">
         <div class="relative mb-6 lg:flex lg:justify-between lg:items-start">
             <div class="<?php echo $can_edit ? 'pr-16 lg:pr-0' : ''; ?>">
                 <h2 class="text-2xl font-bold text-slate-900"><?php echo esc_html($identifier_value); ?></h2>
@@ -145,7 +145,7 @@ $status_label = $status_labels[$status_value] ?? $status_value;
 
     <div class="lg:col-start-3 lg:row-start-1 lg:row-span-2">
         <div class="lg:sticky lg:top-8 space-y-6">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+            <div class="bg-white p-4 sm:p-5 lg:p-6 rounded-xl shadow-sm border border-slate-200">
                 <h3 class="font-bold text-slate-900 mb-4">Acoes Rapidas</h3>
 
                 <button type="button" id="copyDataBtn" onclick="copyAssetData()"
@@ -179,7 +179,7 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                 <?php endif; ?>
             </div>
 
-            <div id="sectionCheckup" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+            <div id="sectionCheckup" class="bg-white p-4 sm:p-5 lg:p-6 rounded-xl shadow-sm border border-slate-200">
                 <h3 class="font-bold text-slate-900 mb-4">Novo Evento / Checkup</h3>
                 <?php if ($can_edit): ?>
                     <form method="post" action="?" data-ajax="true">
@@ -199,7 +199,7 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                 <?php endif; ?>
             </div>
 
-            <div id="sectionAudit" class="bg-white p-6 rounded-xl shadow-sm border <?php echo $last_audit ? 'border-emerald-200' : 'border-amber-200'; ?>">
+            <div id="sectionAudit" class="bg-white p-4 sm:p-5 lg:p-6 rounded-xl shadow-sm border <?php echo $last_audit ? 'border-emerald-200' : 'border-amber-200'; ?>">
                 <div class="flex items-center justify-between mb-3">
                     <h3 class="font-bold text-slate-900">Auditoria Presencial</h3>
                     <?php if ($last_audit): ?>
@@ -288,7 +288,7 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                 <?php endif; ?>
             </div>
 
-            <div id="photosCard" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+            <div id="photosCard" class="bg-white p-4 sm:p-5 lg:p-6 rounded-xl shadow-sm border border-slate-200">
                 <h3 class="font-bold text-slate-900 mb-4">Fotos do Equipamento</h3>
                 <?php if ($can_edit): ?>
                     <form method="post" action="?" enctype="multipart/form-data" id="photoUploadForm" data-ajax="true"
@@ -351,7 +351,7 @@ $status_label = $status_labels[$status_value] ?? $status_value;
         </div>
     </div>
 
-    <div id="sectionHistory" class="lg:col-span-2 bg-white p-8 rounded-xl shadow-sm border border-slate-200">
+    <div id="sectionHistory" class="lg:col-span-2 bg-white p-5 sm:p-6 lg:p-8 rounded-xl shadow-sm border border-slate-200">
         <h3 class="text-lg font-bold text-slate-900 mb-6">Historico</h3>
         <div class="space-y-6 relative before:absolute before:inset-0 before:ml-2.5 before:w-0.5 before:bg-slate-200">
             <?php foreach ($history as $h):
@@ -398,7 +398,7 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                                     <a href="javascript:void(0)"
                                         onclick="openLightboxFromHistory(<?php echo intval($h->id); ?>, <?php echo intval($photo_index); ?>)"
                                         class="block flex-shrink-0 cursor-pointer">
-                                        <img src="<?php echo esc_url($photo_url); ?>"
+                                        <img src="<?php echo esc_url($photo_url); ?>" loading="lazy"
                                             class="h-16 w-16 object-cover rounded-lg border border-slate-200 hover:opacity-75 hover:ring-2 hover:ring-indigo-400 transition-all">
                                     </a>
                                 <?php endforeach; ?>

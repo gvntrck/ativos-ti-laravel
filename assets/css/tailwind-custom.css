@@ -14,6 +14,8 @@ body {
     background-color: var(--ccs-bg);
     color: var(--ccs-text-strong);
     font-family: 'Inter', sans-serif;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .ccs-topbar {

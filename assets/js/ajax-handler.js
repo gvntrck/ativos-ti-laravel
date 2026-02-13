@@ -169,7 +169,9 @@ function handleAjaxSuccess(form, response) {
 
 function showToast(message, type = 'success') {
     const toast = document.createElement('div');
-    toast.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white transform transition-all duration-300 translate-y-full opacity-0 z-50 ${type === 'success' ? 'bg-emerald-500' : 'bg-red-500'}`;
+    const hasBottomBar = document.getElementById('mobileBottomBar') && window.innerWidth < 1024;
+    const bottomOffset = hasBottomBar ? 'bottom-20' : 'bottom-4';
+    toast.className = `fixed ${bottomOffset} right-4 px-6 py-3 rounded-lg shadow-lg text-white transform transition-all duration-300 translate-y-full opacity-0 z-50 ${type === 'success' ? 'bg-emerald-500' : 'bg-red-500'}`;
     toast.textContent = message;
 
     document.body.appendChild(toast);

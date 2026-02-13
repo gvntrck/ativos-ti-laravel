@@ -118,9 +118,9 @@ $html_title = !empty($head_module_config['title']) ? $head_module_config['title'
     $manifest_version = file_exists(__DIR__ . '/../manifest.json') ? filemtime(__DIR__ . '/../manifest.json') : time();
     $service_worker_version = file_exists(__DIR__ . '/../service-worker.js') ? filemtime(__DIR__ . '/../service-worker.js') : time();
     ?>
-    <script src="assets/js/script.js?v=<?php echo $script_version; ?>"></script>
-    <script src="assets/js/ajax-handler.js?v=<?php echo $ajax_handler_version; ?>"></script>
-    <script src="assets/js/lightbox.js?v=<?php echo $lightbox_version; ?>"></script>
+    <script src="assets/js/script.js?v=<?php echo $script_version; ?>" defer></script>
+    <script src="assets/js/ajax-handler.js?v=<?php echo $ajax_handler_version; ?>" defer></script>
+    <script src="assets/js/lightbox.js?v=<?php echo $lightbox_version; ?>" defer></script>
     <!-- PWA Configuration -->
     <link rel="manifest" href="manifest.json?v=<?php echo $manifest_version; ?>">
     <meta name="theme-color" content="#4f46e5">
