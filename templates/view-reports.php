@@ -340,13 +340,13 @@ $table_preferences_config = [
                                         $photos_json = '[]';
                                     }
                                     ?>
-                                    <button type="button"
+                                    <a href="<?php echo esc_url($trigger_photo); ?>"
                                         data-report-photo-url="<?php echo esc_url($trigger_photo); ?>"
                                         data-report-photos="<?php echo esc_attr($photos_json); ?>"
                                         data-report-photo-index="<?php echo esc_attr((string) $start_index); ?>"
-                                        class="text-indigo-600 hover:text-indigo-900 underline break-all block text-left">
+                                        class="text-indigo-600 hover:text-indigo-900 underline break-all">
                                         <?php echo count($row_photos) > 1 ? 'Fotos (' . count($row_photos) . ')' : 'Foto'; ?>
-                                    </button>
+                                    </a>
                                 <?php elseif ($column === 'photo_url'): ?>
                                     <span class="text-slate-500">-</span>
                                 <?php elseif (in_array($column, ['phone_number', 'user_name'], true) && $row_id > 0 && $raw_value !== ''): ?>
