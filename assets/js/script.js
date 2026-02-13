@@ -301,6 +301,9 @@ function initReportsFilters() {
 
     restoreReportsFiltersState(filterControls, globalInput);
     applyReportsFilters();
+
+    var preloadStyle = document.getElementById('ccsPreloadHide');
+    if (preloadStyle) preloadStyle.remove();
 }
 
 document.addEventListener('DOMContentLoaded', initReportsFilters);

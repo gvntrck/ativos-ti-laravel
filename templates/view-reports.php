@@ -162,6 +162,36 @@ foreach ($report_columns as $column) {
 }
 
 $table_preferences = is_array($table_preferences ?? null) ? $table_preferences : [];
+
+$srv_hidden_columns = [];
+if (!empty($table_preferences['columns_visibility']) && is_array($table_preferences['columns_visibility'])) {
+    foreach ($table_preferences['columns_visibility'] as $col => $visible) {
+        if ($visible === false) {
+            $srv_hidden_columns[$col] = true;
+        }
+    }
+}
+
+if (!empty($table_preferences['columns_order']) && is_array($table_preferences['columns_order'])) {
+    $saved_order = $table_preferences['columns_order'];
+    $reordered = [];
+    foreach ($saved_order as $col) {
+        if (in_array($col, $report_columns, true)) {
+            $reordered[] = $col;
+        }
+    }
+    foreach ($report_columns as $col) {
+        if (!in_array($col, $reordered, true)) {
+            $reordered[] = $col;
+        }
+    }
+    $report_columns = $reordered;
+}
+
+$srv_density_compact = (!empty($table_preferences['density']) && $table_preferences['density'] === 'compact');
+$srv_zebra = !empty($table_preferences['zebra']);
+$srv_visible_count = count($report_columns) - count($srv_hidden_columns);
+
 $table_preferences_config = [
     'columns' => array_values($report_columns),
     'labels' => $column_labels,
@@ -171,6 +201,9 @@ $table_preferences_config = [
     'module' => $current_module,
 ];
 ?>
+
+<style id="ccsPreloadHide">#reportsTableBody{visibility:hidden}</style>
+<script>setTimeout(function(){var s=document.getElementById('ccsPreloadHide');if(s)s.remove()},5000)</script>
 
 <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
     <div class="p-4 border-b border-slate-100 bg-slate-50/60">
@@ -195,13 +228,16 @@ $table_preferences_config = [
     </div>
 
     <div class="overflow-x-auto">
-        <table id="reportsTable" class="w-max min-w-full table-fixed text-left border-collapse text-sm">
+        <table id="reportsTable" class="w-max min-w-full table-fixed text-left border-collapse text-sm<?php echo $srv_density_compact ? ' report-density-compact' : ''; ?><?php echo $srv_zebra ? ' report-zebra-enabled' : ''; ?>">
             <colgroup>
                 <?php foreach ($report_columns as $column): ?>
                     <?php
                     $col_style = 'width: ' . intval($column_widths[$column] ?? 160) . 'px;';
                     if (isset($mobile_auto_fit_widths[$column])) {
                         $col_style .= ' --mobile-auto-fit-width: ' . intval($mobile_auto_fit_widths[$column]) . 'px;';
+                    }
+                    if (isset($srv_hidden_columns[$column])) {
+                        $col_style .= ' display: none;';
                     }
                     ?>
                     <col data-report-col="<?php echo esc_attr($column); ?>"
@@ -212,14 +248,14 @@ $table_preferences_config = [
                 <tr class="border-b border-slate-200">
                     <?php foreach ($report_columns as $column): ?>
                         <th data-report-header-cell="<?php echo esc_attr($column); ?>"
-                            class="px-3 py-2 text-xs font-semibold text-slate-600 uppercase tracking-wider transition-colors">
+                            class="px-3 py-2 text-xs font-semibold text-slate-600 uppercase tracking-wider transition-colors"<?php echo isset($srv_hidden_columns[$column]) ? ' style="display:none"' : ''; ?>>
                             <?php echo esc_html($column_labels[$column]); ?>
                         </th>
                     <?php endforeach; ?>
                 </tr>
                 <tr class="border-b border-slate-200 bg-white">
                     <?php foreach ($report_columns as $column): ?>
-                        <th data-report-filter-cell="<?php echo esc_attr($column); ?>" class="px-2 py-2 transition-colors">
+                        <th data-report-filter-cell="<?php echo esc_attr($column); ?>" class="px-2 py-2 transition-colors"<?php echo isset($srv_hidden_columns[$column]) ? ' style="display:none"' : ''; ?>>
                             <?php $meta = $column_filter_meta[$column]; ?>
                             <?php if ($column === 'photo_url'): ?>
                                 <select data-report-filter="<?php echo esc_attr($column); ?>"
@@ -304,7 +340,7 @@ $table_preferences_config = [
                             $is_long_text = in_array($column, ['specs', 'notes'], true);
                             $display_value = $is_long_text ? trim($formatted_value) : $formatted_value;
                             ?>
-                            <td data-report-cell="<?php echo esc_attr($column); ?>" class="px-3 py-2 align-top">
+                            <td data-report-cell="<?php echo esc_attr($column); ?>" class="px-3 py-2 align-top"<?php echo isset($srv_hidden_columns[$column]) ? ' style="display:none"' : ''; ?>>
                                 <?php if ($column === $report_primary_column && $row_id > 0): ?>
                                     <div class="flex items-center gap-1.5">
                                         <a href="?<?php echo esc_attr($module_param); ?>&view=details&id=<?php echo $row_id; ?>&return_to=<?php echo esc_attr($report_origin_view); ?>"
@@ -365,7 +401,7 @@ $table_preferences_config = [
                     </tr>
                 <?php endforeach; ?>
                 <tr id="reportsNoResults" class="<?php echo empty($report_rows) ? '' : 'hidden'; ?>">
-                    <td colspan="<?php echo count($report_columns); ?>" class="px-4 py-8 text-center text-slate-400">
+                    <td colspan="<?php echo $srv_visible_count; ?>" class="px-4 py-8 text-center text-slate-400">
                         Nenhum registro encontrado para os filtros atuais.
                     </td>
                 </tr>
