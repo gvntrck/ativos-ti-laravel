@@ -74,10 +74,12 @@ document.addEventListener('DOMContentLoaded', function () {
         'input[data-report-filter]',
         '#reportGlobalSearch',
         '#searchInput',
+        '#mainForm input[type="text"]:not([readonly])',
+        '#mainForm textarea',
     ];
     var inputs = document.querySelectorAll(selectors.join(','));
     inputs.forEach(function (input) {
-        if (input.tagName !== 'INPUT') return;
+        if (input.tagName !== 'INPUT' && input.tagName !== 'TEXTAREA') return;
         input.setAttribute('readonly', '');
         input.addEventListener('focus', function handler() {
             input.removeAttribute('readonly');
