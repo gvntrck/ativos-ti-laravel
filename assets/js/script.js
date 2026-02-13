@@ -196,9 +196,12 @@ function saveReportsFiltersState() {
         filters[column] = control.value || '';
     });
 
+    const auditFilter = document.getElementById('reportAuditFilter');
+
     const state = {
         global: globalInput ? (globalInput.value || '') : '',
         filters: filters,
+        audit: auditFilter ? (auditFilter.value || '') : '',
     };
 
     try {
@@ -232,16 +235,21 @@ function restoreReportsFiltersState(filterControls, globalInput) {
     }
 
     const savedFilters = state.filters && typeof state.filters === 'object' ? state.filters : null;
-    if (!savedFilters) return;
+    if (savedFilters) {
+        filterControls.forEach((control) => {
+            const column = control.getAttribute('data-report-filter');
+            if (!column) return;
 
-    filterControls.forEach((control) => {
-        const column = control.getAttribute('data-report-filter');
-        if (!column) return;
+            if (Object.prototype.hasOwnProperty.call(savedFilters, column)) {
+                control.value = savedFilters[column] || '';
+            }
+        });
+    }
 
-        if (Object.prototype.hasOwnProperty.call(savedFilters, column)) {
-            control.value = savedFilters[column] || '';
-        }
-    });
+    const auditFilter = document.getElementById('reportAuditFilter');
+    if (auditFilter && typeof state.audit === 'string') {
+        auditFilter.value = state.audit;
+    }
 }
 
 function rowMatchesReportFilter(row, control) {
@@ -316,6 +324,8 @@ function applyReportsFilters() {
     const globalInput = document.getElementById('reportGlobalSearch');
     const globalQuery = normalizeReportValue(globalInput ? globalInput.value : '');
     const filterControls = document.querySelectorAll('[data-report-filter]');
+    const auditFilter = document.getElementById('reportAuditFilter');
+    const auditValue = auditFilter ? normalizeReportValue(auditFilter.value) : '';
     const noResultsRow = document.getElementById('reportsNoResults');
     const visibleCountElement = document.getElementById('reportVisibleCount');
 
@@ -328,6 +338,14 @@ function applyReportsFilters() {
         if (!matchesGlobal) {
             row.style.display = 'none';
             return;
+        }
+
+        if (auditValue) {
+            const rowAudit = (row.getAttribute('data-audit-status') || '').toLowerCase();
+            if (rowAudit !== auditValue) {
+                row.style.display = 'none';
+                return;
+            }
         }
 
         for (const control of filterControls) {
@@ -374,10 +392,20 @@ function initReportsFilters() {
         globalInput.addEventListener('input', applyReportsFilters);
     }
 
+    const auditFilter = document.getElementById('reportAuditFilter');
+
+    if (auditFilter) {
+        auditFilter.addEventListener('change', applyReportsFilters);
+    }
+
     if (clearButton) {
         clearButton.addEventListener('click', () => {
             if (globalInput) {
                 globalInput.value = '';
+            }
+
+            if (auditFilter) {
+                auditFilter.value = '';
             }
 
             filterControls.forEach((control) => {

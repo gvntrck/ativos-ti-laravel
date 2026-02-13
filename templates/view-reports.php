@@ -1,4 +1,9 @@
 <?php
+
+// tabela principal
+
+
+
 $current_module = isset($current_module) ? (string) $current_module : 'computers';
 $module_config = isset($module_config) && is_array($module_config) ? $module_config : [];
 $can_save_table_preferences = isset($can_save_table_preferences) ? (bool) $can_save_table_preferences : false;
@@ -215,6 +220,12 @@ $table_preferences_config = [
                 <input id="reportGlobalSearch" type="search" autocomplete="one-time-code"
                     class="block w-full sm:w-80 px-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     placeholder="<?php echo esc_attr($report_search_placeholder); ?>">
+                <select id="reportAuditFilter"
+                    class="block w-full sm:w-auto px-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                    <option value="">Auditoria: Todos</option>
+                    <option value="audited">Auditados</option>
+                    <option value="pending">Nao auditados</option>
+                </select>
                 <button type="button" id="reportEditTableBtn"
                     class="btn btn-secondary whitespace-nowrap <?php echo $can_save_table_preferences ? '' : 'opacity-60 cursor-not-allowed'; ?>"
                     <?php echo $can_save_table_preferences ? '' : 'disabled title="Sem permissao para personalizar a tabela"'; ?>>Editar tabela</button>
@@ -331,7 +342,9 @@ $table_preferences_config = [
 
                     $row_search = trim(implode(' ', $search_terms));
                     ?>
+                    <?php $audit_status = !empty($row->last_audit_at) ? 'audited' : 'pending'; ?>
                     <tr class="report-row hover:bg-slate-50"
+                        data-audit-status="<?php echo esc_attr($audit_status); ?>"
                         data-report-search="<?php echo esc_attr($row_search); ?>" <?php echo implode(' ', $row_attributes); ?>>
                         <?php foreach ($report_columns as $column): ?>
                             <?php
