@@ -74,7 +74,6 @@ document.addEventListener('DOMContentLoaded', function () {
         'input[data-report-filter]',
         '#reportGlobalSearch',
         '#searchInput',
-        '#mainForm input[type="text"]:not([readonly])',
         '#mainForm textarea',
     ];
     var inputs = document.querySelectorAll(selectors.join(','));

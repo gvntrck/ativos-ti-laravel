@@ -53,7 +53,7 @@ if (!$can_edit): ?>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Hostname <span class="text-red-500">*</span></label>
-                    <input type="text" name="hostname" value="<?php echo esc_attr($val_hostname); ?>" required autocomplete="one-time-code"
+                    <input type="search" name="hostname" value="<?php echo esc_attr($val_hostname); ?>" required autocomplete="one-time-code"
                         class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm uppercase">
                 </div>
                 <div>
@@ -80,7 +80,7 @@ if (!$can_edit): ?>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Nome do Usuario</label>
-                    <input type="text" name="user_name" value="<?php echo esc_attr($val_user_name); ?>" autocomplete="one-time-code"
+                    <input type="search" name="user_name" value="<?php echo esc_attr($val_user_name); ?>" autocomplete="one-time-code"
                         class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
                 </div>
             </div>
@@ -115,7 +115,7 @@ if (!$can_edit): ?>
                         <option value="other" <?php selected($selected_location, 'other'); ?>>Outro</option>
                     </select>
 
-                    <input type="text" id="locationOtherInput" autocomplete="one-time-code"
+                    <input type="search" id="locationOtherInput" autocomplete="one-time-code"
                         value="<?php echo esc_attr($is_other_location ? $val_location : ''); ?>"
                         class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm <?php echo $is_other_location ? '' : 'hidden'; ?>"
                         placeholder="Digite o local especifico" <?php echo $is_other_location ? '' : 'disabled'; ?>>
@@ -203,7 +203,7 @@ if (!$can_edit): ?>
             <div class="mb-6">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Numero do Celular</label>
-                    <input type="text" id="phoneNumberInput" name="phone_number" value="<?php echo esc_attr($val_phone); ?>"
+                    <input type="search" id="phoneNumberInput" name="phone_number" value="<?php echo esc_attr($val_phone); ?>"
                         placeholder="(00) 00000-0000"
                         autocomplete="one-time-code"
                         inputmode="numeric"
@@ -230,13 +230,13 @@ if (!$can_edit): ?>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Marca / Modelo</label>
-                    <input type="text" name="brand_model" value="<?php echo esc_attr($val_brand_model); ?>"
+                    <input type="search" name="brand_model" value="<?php echo esc_attr($val_brand_model); ?>"
                         placeholder="Ex.: Samsung A54" autocomplete="one-time-code"
                         class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Usuario</label>
-                    <input type="text" name="user_name" value="<?php echo esc_attr($val_user_name); ?>" autocomplete="one-time-code"
+                    <input type="search" name="user_name" value="<?php echo esc_attr($val_user_name); ?>" autocomplete="one-time-code"
                         class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
                 </div>
             </div>
@@ -265,7 +265,7 @@ if (!$can_edit): ?>
                         <option value="other" <?php selected($selected_department, 'other'); ?>>Outro</option>
                     </select>
 
-                    <input type="text" id="departmentOtherInput" autocomplete="one-time-code"
+                    <input type="search" id="departmentOtherInput" autocomplete="one-time-code"
                         value="<?php echo esc_attr($is_other_department ? $val_department : ''); ?>"
                         class="w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm <?php echo $is_other_department ? '' : 'hidden'; ?>"
                         placeholder="Digite o departamento" <?php echo $is_other_department ? '' : 'disabled'; ?>>
