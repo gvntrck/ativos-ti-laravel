@@ -2,7 +2,7 @@
 
 class ComputerControlSystem
 {
-    public const VERSION = '1.10.11';
+    public const VERSION = '1.10.12';
 
     private const MODULE_COMPUTERS = 'computers';
     private const MODULE_CELLPHONES = 'cellphones';
@@ -40,6 +40,8 @@ class ComputerControlSystem
         'delete_cellphone_history',
         'delete_permanent_cellphone',
         'audit_cellphone',
+        'inline_edit_computer',
+        'inline_edit_cellphone',
     ];
 
     public function __construct()
@@ -119,6 +121,7 @@ class ComputerControlSystem
                 'delete_permanent_action' => 'delete_permanent_computer',
                 'quick_action' => 'quick_windows_update',
                 'audit_action' => 'audit_computer',
+                'inline_edit_action' => 'inline_edit_computer',
                 'trash_filters_storage_key' => 'ccs_trash_filters_computers',
                 'report_filters_storage_key' => 'ccs_reports_filters_computers',
                 'title' => 'Controle de Computadores',
@@ -151,6 +154,7 @@ class ComputerControlSystem
                 'delete_permanent_action' => 'delete_permanent_cellphone',
                 'quick_action' => null,
                 'audit_action' => 'audit_cellphone',
+                'inline_edit_action' => 'inline_edit_cellphone',
                 'trash_filters_storage_key' => 'ccs_trash_filters_cellphones',
                 'report_filters_storage_key' => 'ccs_reports_filters_cellphones',
                 'title' => 'Controle de Celulares',
@@ -205,6 +209,7 @@ class ComputerControlSystem
                 'delete_permanent_action',
                 'quick_action',
                 'audit_action',
+                'inline_edit_action',
             ];
 
             foreach ($action_keys as $action_key) {
@@ -762,6 +767,10 @@ class ComputerControlSystem
             case 'save_table_preferences':
                 $result = $this->process_save_table_preferences($current_user_id);
                 break;
+            case 'inline_edit_computer':
+            case 'inline_edit_cellphone':
+                $result = $this->process_inline_edit($current_user_id);
+                break;
         }
 
         if ($is_ajax) {
@@ -1045,6 +1054,57 @@ class ComputerControlSystem
             'message' => $this->module_config['singular_label'] . ' atualizado com sucesso!',
             'redirect_url' => $this->build_url(['view' => 'details', 'id' => $id, 'message' => 'updated']),
             'data' => ['id' => $id],
+        ];
+    }
+
+    private function process_inline_edit($current_user_id)
+    {
+        global $wpdb;
+
+        $id = $this->get_post_item_id();
+        if ($id <= 0) {
+            return ['success' => false, 'message' => 'ID do item nao informado.'];
+        }
+
+        $column = isset($_POST['column']) ? sanitize_key((string) $_POST['column']) : '';
+        $allowed_columns = ['user_name', 'notes'];
+        if (!in_array($column, $allowed_columns, true)) {
+            return ['success' => false, 'message' => 'Coluna nao permitida para edicao inline.'];
+        }
+
+        $value = $column === 'notes'
+            ? sanitize_textarea_field((string) ($_POST['value'] ?? ''))
+            : sanitize_text_field((string) ($_POST['value'] ?? ''));
+
+        $old_data = $wpdb->get_row(
+            $wpdb->prepare("SELECT * FROM {$this->table_inventory} WHERE id = %d", $id),
+            ARRAY_A
+        );
+
+        if (!$old_data) {
+            return ['success' => false, 'message' => $this->module_config['singular_label'] . ' nao encontrado.'];
+        }
+
+        $old_value = isset($old_data[$column]) ? (string) $old_data[$column] : '';
+        if ($old_value === $value) {
+            return [
+                'success' => true,
+                'message' => 'Nenhuma alteracao detectada.',
+                'data' => ['id' => $id, 'column' => $column, 'value' => $value],
+            ];
+        }
+
+        $wpdb->update($this->table_inventory, [$column => $value], ['id' => $id]);
+
+        $label_map = ['user_name' => 'usuario', 'notes' => 'anotacoes'];
+        $field_label = $label_map[$column] ?? $column;
+        $change_desc = "{$field_label} alterado de '{$old_value}' para '{$value}'";
+        $this->log_history($id, 'update', $change_desc, $current_user_id);
+
+        return [
+            'success' => true,
+            'message' => ucfirst($field_label) . ' atualizado com sucesso!',
+            'data' => ['id' => $id, 'column' => $column, 'value' => $value],
         ];
     }
 

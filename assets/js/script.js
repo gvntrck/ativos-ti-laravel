@@ -839,3 +839,213 @@ function initReportTablePreferences() {
 }
 
 document.addEventListener('DOMContentLoaded', initReportTablePreferences);
+
+function initInlineEdit() {
+    var config = window.ccsInlineEditConfig;
+    if (!config || !config.action) return;
+
+    var tableBody = document.getElementById('reportsTableBody');
+    if (!tableBody) return;
+
+    var activeEditor = null;
+
+    tableBody.addEventListener('click', function (e) {
+        var target = e.target.closest('[data-inline-editable]');
+        if (!target) return;
+        if (activeEditor && activeEditor.span === target) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (activeEditor) {
+            commitInlineEdit(activeEditor, config);
+        }
+
+        openInlineEditor(target, config);
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (!activeEditor) return;
+
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            cancelInlineEdit(activeEditor);
+            return;
+        }
+
+        if (e.key === 'Enter' && activeEditor.column !== 'notes') {
+            e.preventDefault();
+            commitInlineEdit(activeEditor, config);
+        }
+    });
+
+    document.addEventListener('mousedown', function (e) {
+        if (!activeEditor) return;
+        if (activeEditor.input && activeEditor.input.contains(e.target)) return;
+        commitInlineEdit(activeEditor, config);
+    }, true);
+
+    function openInlineEditor(span, cfg) {
+        var column = span.getAttribute('data-inline-editable');
+        var rawValue = span.getAttribute('data-inline-raw') || '';
+        var row = span.closest('tr.report-row');
+        var rowId = row ? parseInt(row.getAttribute('data-row-id') || '0', 10) : 0;
+        var td = span.closest('td');
+
+        if (!rowId || !td) return;
+
+        var isTextarea = column === 'notes';
+        var input;
+
+        if (isTextarea) {
+            input = document.createElement('textarea');
+            input.rows = 3;
+        } else {
+            input = document.createElement('input');
+            input.type = 'text';
+        }
+
+        input.className = 'ccs-inline-input';
+        input.value = rawValue;
+
+        span.style.display = 'none';
+        td.classList.add('ccs-inline-editing');
+        td.appendChild(input);
+
+        activeEditor = {
+            span: span,
+            input: input,
+            td: td,
+            column: column,
+            rowId: rowId,
+            originalRaw: rawValue,
+        };
+
+        requestAnimationFrame(function () {
+            input.focus();
+            if (!isTextarea) {
+                input.select();
+            } else {
+                input.setSelectionRange(input.value.length, input.value.length);
+                autoResizeTextarea(input);
+                input.addEventListener('input', function () {
+                    autoResizeTextarea(input);
+                });
+            }
+        });
+    }
+
+    function autoResizeTextarea(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = Math.max(textarea.scrollHeight, 48) + 'px';
+    }
+
+    function cancelInlineEdit(editor) {
+        if (!editor) return;
+
+        editor.input.remove();
+        editor.td.classList.remove('ccs-inline-editing');
+        editor.span.style.display = '';
+        activeEditor = null;
+    }
+
+    function commitInlineEdit(editor, cfg) {
+        if (!editor) return;
+
+        var newValue = editor.input.value;
+        var trimmedNew = newValue.trim();
+        var trimmedOld = editor.originalRaw.trim();
+
+        if (trimmedNew === trimmedOld) {
+            cancelInlineEdit(editor);
+            return;
+        }
+
+        var currentEditor = editor;
+        activeEditor = null;
+
+        currentEditor.td.classList.add('ccs-inline-saving');
+        currentEditor.input.disabled = true;
+
+        saveInlineEdit(cfg, currentEditor.rowId, currentEditor.column, newValue)
+            .then(function (result) {
+                var savedValue = result.value !== undefined ? result.value : newValue;
+                currentEditor.span.setAttribute('data-inline-raw', savedValue);
+
+                var displayValue = savedValue.trim() === '' ? '-' : savedValue;
+                currentEditor.span.textContent = displayValue;
+
+                updateRowSearchData(currentEditor.span.closest('tr.report-row'), currentEditor.column, savedValue);
+
+                currentEditor.input.remove();
+                currentEditor.td.classList.remove('ccs-inline-editing', 'ccs-inline-saving');
+                currentEditor.span.style.display = '';
+
+                if (typeof showToast === 'function') {
+                    showToast(result.message || 'Salvo!', 'success');
+                }
+            })
+            .catch(function (error) {
+                currentEditor.td.classList.remove('ccs-inline-saving');
+                currentEditor.input.disabled = false;
+                currentEditor.input.focus();
+
+                activeEditor = currentEditor;
+
+                if (typeof showToast === 'function') {
+                    showToast(error.message || 'Erro ao salvar.', 'error');
+                } else {
+                    alert(error.message || 'Erro ao salvar.');
+                }
+            });
+    }
+
+    function saveInlineEdit(cfg, rowId, column, value) {
+        var formData = new FormData();
+        formData.append('ccs_action', cfg.action);
+        formData.append('_wpnonce', cfg.nonce);
+        formData.append(cfg.idField, String(rowId));
+        formData.append('column', column);
+        formData.append('value', value);
+        formData.append('module', cfg.module);
+        formData.append('ajax', '1');
+
+        return fetch(cfg.saveUrl, {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function (response) {
+            var contentType = response.headers.get('content-type') || '';
+            if (!contentType.includes('application/json')) {
+                throw new Error('Resposta invalida do servidor.');
+            }
+            return response.json();
+        })
+        .then(function (data) {
+            if (!data.success) {
+                var msg = (data.data && data.data.message) ? data.data.message : 'Erro ao salvar.';
+                throw new Error(msg);
+            }
+            return data.data || {};
+        });
+    }
+
+    function updateRowSearchData(row, column, newValue) {
+        if (!row) return;
+
+        var normalized = (newValue || '').trim().toLowerCase();
+        row.setAttribute('data-col-' + column, normalized);
+
+        var allCols = row.querySelectorAll('[data-report-cell]');
+        var searchParts = [];
+        allCols.forEach(function (cell) {
+            var colName = cell.getAttribute('data-report-cell');
+            var val = row.getAttribute('data-col-' + colName) || '';
+            searchParts.push(val);
+        });
+        row.setAttribute('data-report-search', searchParts.join(' ').trim());
+    }
+}
+
+document.addEventListener('DOMContentLoaded', initInlineEdit);

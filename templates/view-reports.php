@@ -364,6 +364,7 @@ $table_preferences_config = [
                     ?>
                     <?php $audit_status = !empty($row->last_audit_at) ? 'audited' : 'pending'; ?>
                     <tr class="report-row hover:bg-slate-50"
+                        data-row-id="<?php echo $row_id; ?>"
                         data-audit-status="<?php echo esc_attr($audit_status); ?>"
                         data-report-search="<?php echo esc_attr($row_search); ?>" <?php echo implode(' ', $row_attributes); ?>>
                         <?php foreach ($report_columns as $column): ?>
@@ -418,6 +419,16 @@ $table_preferences_config = [
                                     </a>
                                 <?php elseif ($column === 'photo_url'): ?>
                                     <span class="text-slate-500">-</span>
+                                <?php elseif ($column === 'user_name' && !empty($can_edit) && $row_id > 0): ?>
+                                    <span class="ccs-inline-editable text-slate-700 block whitespace-nowrap overflow-hidden text-ellipsis cursor-pointer hover:bg-indigo-50 hover:text-indigo-700 rounded px-1 -mx-1 transition-colors"
+                                        data-inline-editable="user_name"
+                                        data-inline-raw="<?php echo esc_attr($raw_value); ?>"
+                                        title="Clique para editar"><?php echo esc_html($display_value); ?></span>
+                                <?php elseif ($column === 'notes' && !empty($can_edit) && $row_id > 0): ?>
+                                    <span class="ccs-inline-editable whitespace-pre-wrap break-words text-xs text-slate-700 block w-full text-left cursor-pointer hover:bg-indigo-50 hover:text-indigo-700 rounded px-1 -mx-1 transition-colors"
+                                        data-inline-editable="notes"
+                                        data-inline-raw="<?php echo esc_attr($raw_value); ?>"
+                                        title="Clique para editar"><?php echo esc_html($display_value); ?></span>
                                 <?php elseif (in_array($column, ['phone_number', 'user_name'], true) && $row_id > 0 && $raw_value !== ''): ?>
                                     <a href="?<?php echo esc_attr($module_param); ?>&view=details&id=<?php echo $row_id; ?>&return_to=<?php echo esc_attr($report_origin_view); ?>"
                                         class="text-indigo-600 hover:text-indigo-900 font-medium block whitespace-nowrap overflow-hidden text-ellipsis"
@@ -490,6 +501,15 @@ $table_preferences_config = [
     window.ccsCurrentModule = <?php echo wp_json_encode($current_module); ?>;
     window.ccsReportContext = <?php echo wp_json_encode($report_origin_view); ?>;
     window.ccsTablePreferencesConfig = <?php echo wp_json_encode($table_preferences_config); ?>;
+    <?php if (!empty($can_edit)): ?>
+    window.ccsInlineEditConfig = {
+        action: <?php echo wp_json_encode($module_config['inline_edit_action'] ?? ''); ?>,
+        idField: <?php echo wp_json_encode($module_config['id_field'] ?? 'computer_id'); ?>,
+        nonce: <?php echo wp_json_encode(wp_create_nonce('ccs_action_nonce')); ?>,
+        saveUrl: <?php echo wp_json_encode('?' . $module_param); ?>,
+        module: <?php echo wp_json_encode($current_module); ?>
+    };
+    <?php endif; ?>
 </script>
 
 <style>
@@ -501,6 +521,44 @@ $table_preferences_config = [
 
     #reportsTable.report-zebra-enabled tbody tr:nth-child(even) {
         background-color: #f8fafc;
+    }
+
+    .ccs-inline-editable {
+        min-height: 1.5em;
+    }
+
+    .ccs-inline-editable:empty::after {
+        content: '-';
+        color: #94a3b8;
+    }
+
+    .ccs-inline-editing {
+        padding: 0 !important;
+    }
+
+    .ccs-inline-input {
+        width: 100%;
+        border: 2px solid #6366f1;
+        border-radius: 0.375rem;
+        padding: 0.35rem 0.5rem;
+        font-size: inherit;
+        font-family: inherit;
+        line-height: 1.4;
+        background: #fff;
+        color: #1e293b;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        resize: vertical;
+    }
+
+    .ccs-inline-input:focus {
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+    }
+
+    .ccs-inline-saving {
+        opacity: 0.6;
+        pointer-events: none;
     }
 
     @media (max-width: 767px) {
