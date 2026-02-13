@@ -147,7 +147,7 @@ foreach ($report_columns as $column) {
     ];
 
     if ($has_mobile_auto_fit) {
-        $mobile_auto_fit_widths[$column] = max(92, min(220, (int) ceil(($auto_fit_max_length * 8.5) + 28)));
+        $mobile_auto_fit_widths[$column] = max(74, min(172, (int) ceil(($auto_fit_max_length * 7.1) + 20)));
     }
 
     $column_widths[$column] = match ($column) {
@@ -435,6 +435,34 @@ $table_preferences_config = [
     }
 
     @media (max-width: 767px) {
+        #reportsTable {
+            font-size: 0.8125rem;
+        }
+
+        #reportsTable th,
+        #reportsTable td {
+            padding-left: 0.45rem;
+            padding-right: 0.45rem;
+        }
+
+        #reportsTable thead tr:first-child th {
+            padding-top: 0.4rem;
+            padding-bottom: 0.35rem;
+            font-size: 0.64rem;
+            letter-spacing: 0.02em;
+        }
+
+        #reportsTable thead tr:nth-child(2) th {
+            padding-top: 0.3rem;
+            padding-bottom: 0.35rem;
+        }
+
+        #reportsTable [data-report-filter] {
+            min-height: 1.85rem;
+            padding: 0.2rem 0.35rem;
+            font-size: 0.69rem;
+        }
+
         #reportsTable col[data-report-col="asset_code"],
         #reportsTable col[data-report-col="phone_number"] {
             width: var(--mobile-auto-fit-width, auto) !important;
