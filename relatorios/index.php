@@ -182,6 +182,8 @@ if ($current_report) {
             text-transform: uppercase;
             font-weight: 600;
             color: var(--ccs-text-strong);
+            cursor: move;
+            /* Indica reordenacao de colunas */
         }
 
         table.dataTable.no-footer {
@@ -189,10 +191,10 @@ if ($current_report) {
         }
 
         /* Hover na linha */
+        /* Hover na linha */
         table.dataTable tbody tr:hover {
             background-color: #f3f4f6 !important;
-            cursor: move;
-            /* Indica reordenacao possivel (metafora) */
+            cursor: default;
         }
 
         /* Sidebar Link Active */
