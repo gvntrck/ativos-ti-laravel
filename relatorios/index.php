@@ -277,22 +277,7 @@ if ($current_report) {
                         <?php endforeach; ?>
                     </nav>
                 </div>
-                <div class="flex flex-shrink-0 border-t border-gray-200 p-4 bg-gray-50">
-                    <a href="/wp-admin" class="group block w-full flex-shrink-0">
-                        <div class="flex items-center">
-                            <div class="ml-1">
-                                <p
-                                    class="text-xs font-medium text-gray-500 group-hover:text-gray-900 flex items-center gap-1">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z"></path>
-                                    </svg>
-                                    Voltar para o Painel
-                                </p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
+
             </div>
         </div>
 
