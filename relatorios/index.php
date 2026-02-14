@@ -30,14 +30,31 @@ global $wpdb;
 
 $querys_dir = __DIR__ . '/../querys';
 $files = glob($querys_dir . '/*.sql');
-$reports = [];
+$reports_by_category = [
+    'Computadores' => [],
+    'Celulares' => [],
+    'Geral' => []
+];
 
 if ($files) {
     foreach ($files as $file) {
         $filename = basename($file);
+        $content = file_get_contents($file);
+        
+        // Logica simples de categorizacao baseada no conteudo da query
+        $category = 'Geral';
+        if (stripos($content, 'wp_computer_inventory') !== false || stripos($content, 'computer') !== false) {
+            $category = 'Computadores';
+        } elseif (stripos($content, 'wp_cellphone_inventory') !== false || stripos($content, 'cellphone') !== false) {
+            $category = 'Celulares';
+        }
+
         $name = str_replace(['.sql', '_', '-'], ['', ' ', ' '], $filename);
+        // Remove numeracao inicial se existir (ex: "1 distribuicao..." -> "Distribuicao...")
+        $name = preg_replace('/^\d+\s*/', '', $name);
         $name = ucwords($name);
-        $reports[] = [
+
+        $reports_by_category[$category][] = [
             'file' => $filename,
             'name' => $name,
             'path' => $file
@@ -54,16 +71,17 @@ if ($current_report) {
     $report_file = $querys_dir . '/' . basename($current_report);
     if (file_exists($report_file)) {
         $sql = file_get_contents($report_file);
-
+        
         // Remove comentarios do SQL para exibir (opcional) ou execucao limpa
         // $wpdb->get_results executa a query diretamente
-
+        
         // Pega o titulo baseado no nome do arquivo
         $report_title = str_replace(['.sql', '_', '-'], ['', ' ', ' '], basename($current_report));
+        $report_title = preg_replace('/^\d+\s*/', '', $report_title);
         $report_title = ucwords($report_title);
 
         $results = $wpdb->get_results($sql, ARRAY_A);
-
+        
         if ($wpdb->last_error) {
             $error = $wpdb->last_error;
         }
@@ -75,7 +93,6 @@ if ($current_report) {
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR" class="h-full bg-gray-50">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -83,12 +100,9 @@ if ($current_report) {
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
+        body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
-
 <body class="h-full">
     <div class="min-h-full flex">
         <!-- Sidebar -->
@@ -99,21 +113,29 @@ if ($current_report) {
                         <h1 class="text-xl font-bold text-indigo-600">Relatorios</h1>
                     </div>
                     <nav class="mt-2 flex-1 space-y-1 bg-white px-2">
-                        <?php foreach ($reports as $report): ?>
-                            <?php
-                            $active = $current_report === $report['file'];
-                            $classes = $active
-                                ? 'bg-indigo-50 text-indigo-600 group flex items-center px-2 py-2 text-sm font-medium rounded-md'
-                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md';
-                            ?>
-                            <a href="?report=<?php echo urlencode($report['file']); ?>" class="<?php echo $classes; ?>">
-                                <svg class="<?php echo $active ? 'text-indigo-500' : 'text-gray-400 group-hover:text-gray-500'; ?> mr-3 h-5 w-5 flex-shrink-0"
-                                    fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                                </svg>
-                                <?php echo htmlspecialchars($report['name']); ?>
-                            </a>
+                        <?php foreach ($reports_by_category as $category => $reports): ?>
+                            <?php if (empty($reports)) continue; ?>
+                            
+                            <div class="px-3 mt-4 mb-2">
+                                <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    <?php echo htmlspecialchars($category); ?>
+                                </h3>
+                            </div>
+
+                            <?php foreach ($reports as $report): ?>
+                                <?php 
+                                    $active = $current_report === $report['file'];
+                                    $classes = $active 
+                                        ? 'bg-indigo-50 text-indigo-600 group flex items-center px-2 py-2 text-sm font-medium rounded-md' 
+                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md';
+                                ?>
+                                <a href="?report=<?php echo urlencode($report['file']); ?>" class="<?php echo $classes; ?>">
+                                    <svg class="<?php echo $active ? 'text-indigo-500' : 'text-gray-400 group-hover:text-gray-500'; ?> mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                    </svg>
+                                    <?php echo htmlspecialchars($report['name']); ?>
+                                </a>
+                            <?php endforeach; ?>
                         <?php endforeach; ?>
                     </nav>
                 </div>
