@@ -62,7 +62,7 @@ if ($files) {
     }
 }
 
-$current_report = isset($_GET['report']) ? $_GET['report'] : null;
+$current_report = isset($_GET['report']) ? $_GET['report'] : 'relatorio_celulares.sql';
 $results = null;
 $error = null;
 $report_title = 'Selecione um relatorio';
