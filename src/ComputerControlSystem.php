@@ -129,7 +129,7 @@ class ComputerControlSystem
                 'plural_label' => 'Computadores',
                 'singular_label' => 'Computador',
                 'new_label' => 'Novo Computador',
-                'report_title' => 'Relatorios de PCs',
+                'report_title' => 'Lista de PCs',
                 'report_search_placeholder' => 'Busca global (hostname, usuario, local...)',
                 'list_search_placeholder' => 'Filtrar computadores...',
                 'copy_title' => 'FICHA DO COMPUTADOR',
@@ -162,7 +162,7 @@ class ComputerControlSystem
                 'plural_label' => 'Celulares',
                 'singular_label' => 'Celular',
                 'new_label' => 'Novo Celular',
-                'report_title' => 'Relatorios de Celulares',
+                'report_title' => 'Lista de Celulares',
                 'report_search_placeholder' => 'Busca global (ID CEL, numero, usuario, marca/modelo...)',
                 'list_search_placeholder' => 'Filtrar celulares...',
                 'copy_title' => 'FICHA DO CELULAR',
@@ -1995,8 +1995,7 @@ class ComputerControlSystem
                                     value="<?php echo intval($item_id); ?>">
                                 <input type="hidden" name="history_id" value="<?php echo intval($history_id); ?>">
                                 <input type="hidden" name="module" value="<?php echo esc_attr($this->current_module); ?>">
-                                <button type="submit"
-                                    class="text-slate-400 hover:text-red-500 p-1 rounded transition-colors"
+                                <button type="submit" class="text-slate-400 hover:text-red-500 p-1 rounded transition-colors"
                                     title="Excluir item do historico">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
