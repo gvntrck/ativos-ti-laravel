@@ -122,21 +122,35 @@ if ($current_report) {
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
 
     <style>
+        :root {
+            --ccs-primary: #1f2937;
+            --ccs-secondary: #334155;
+            --ccs-surface: #ffffff;
+            --ccs-bg: #f5f5f5;
+            --ccs-accent: #334155;
+            --ccs-text-strong: #111111;
+            --ccs-text: #6b7280;
+            --ccs-text-soft: #9ca3af;
+            --ccs-border: #d1d5db;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
+            background-color: var(--ccs-bg);
+            color: var(--ccs-text);
         }
 
         /* Ajustes para DataTables + Tailwind */
         .dataTables_wrapper .dataTables_length select {
             padding-right: 2rem;
             background-image: none;
-            border: 1px solid #d1d5db;
+            border: 1px solid var(--ccs-border);
             border-radius: 0.375rem;
             padding: 0.25rem 2rem 0.25rem 0.5rem;
         }
 
         .dataTables_wrapper .dataTables_filter input {
-            border: 1px solid #d1d5db;
+            border: 1px solid var(--ccs-border);
             border-radius: 0.375rem;
             padding: 0.25rem 0.5rem;
             margin-left: 0.5rem;
@@ -153,21 +167,21 @@ if ($current_report) {
             font-size: 0.75rem !important;
             /* text-xs */
             vertical-align: middle;
-            border-right: 1px solid #e5e7eb;
+            border-right: 1px solid var(--ccs-border);
             /* Linha vertical */
-            border-bottom: 1px solid #d1d5db !important;
+            border-bottom: 1px solid var(--ccs-border) !important;
             /* LINHA HORIZONTAL 1PX FORTE */
         }
 
         table.dataTable thead th {
             padding: 8px 8px !important;
             font-size: 0.75rem !important;
-            background-color: #f9fafb;
-            border-bottom: 2px solid #9ca3af !important;
-            border-right: 1px solid #e5e7eb;
+            background-color: var(--ccs-bg);
+            border-bottom: 2px solid var(--ccs-border) !important;
+            border-right: 1px solid var(--ccs-border);
             text-transform: uppercase;
             font-weight: 600;
-            color: #374151;
+            color: var(--ccs-text-strong);
         }
 
         table.dataTable.no-footer {
@@ -183,8 +197,10 @@ if ($current_report) {
 
         /* Sidebar Link Active */
         .nav-link.active {
-            background-color: #eef2ff;
-            color: #4f46e5;
+            background-color: var(--ccs-bg);
+            color: var(--ccs-text-strong);
+            font-weight: 600;
+            border-right: 2px solid var(--ccs-primary);
         }
 
         .nav-link:hover:not(.active) {
@@ -216,8 +232,8 @@ if ($current_report) {
             <div class="flex min-h-0 flex-1 flex-col border-r border-gray-200 bg-white shadow-lg z-10">
                 <div class="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
                     <div class="flex flex-col px-4 mb-5">
-                        <h1 class="text-xl font-bold text-indigo-600 flex items-center gap-2 mb-3">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <h1 class="text-xl font-bold text-gray-900 flex items-center gap-2 mb-3">
+                            <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
                                 </path>
@@ -225,7 +241,7 @@ if ($current_report) {
                             Relatorios Ativos Metalife
                         </h1>
                         <a href="/sistemas/computadores/"
-                            class="inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 w-full">
+                            class="inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-slate-800 hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 w-full transition-all">
                             <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
                                 fill="currentColor" aria-hidden="true">
                                 <path fill-rule="evenodd"
