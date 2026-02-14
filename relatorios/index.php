@@ -5,14 +5,14 @@
  */
 
 // Tenta carregar o WordPress para usar $wpdb
-// Caminho relativo comum: plugin -> plugins -> wp-content -> raiz
-$wp_load_path = __DIR__ . '/../../../../wp-load.php';
+// Caminho ajustado conforme referencia do usuario: ../../../wp-load.php
+$wp_load_path = __DIR__ . '/../../../wp-load.php';
 
 if (file_exists($wp_load_path)) {
     require_once $wp_load_path;
 } else {
-    // Tenta subir mais um nivel caso esteja em mu-plugins ou estrutura diferente
-    $wp_load_path = __DIR__ . '/../../../../../wp-load.php';
+    // Fallback: Tenta subir mais niveis caso a estrutura seja diferente
+    $wp_load_path = __DIR__ . '/../../../../wp-load.php';
     if (file_exists($wp_load_path)) {
         require_once $wp_load_path;
     } else {
