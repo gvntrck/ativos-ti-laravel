@@ -35,12 +35,12 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                     <?php echo esc_html($is_cellphone_module ? 'celular' : (string) ($pc->type ?? '')); ?>
                 </span>
             </div>
-            <div class="<?php echo $can_edit ? 'absolute top-0 right-0 flex flex-col items-end gap-2 lg:static' : 'flex flex-col items-end gap-2'; ?>">
+            <div
+                class="<?php echo $can_edit ? 'absolute top-0 right-0 flex flex-col items-end gap-2 lg:static' : 'flex flex-col items-end gap-2'; ?>">
                 <?php if ($can_edit): ?>
                     <button type="button"
                         class="lg:hidden inline-flex items-center justify-center w-11 h-11 text-indigo-600 hover:text-indigo-800 rounded-lg border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-colors"
-                        title="Tirar Foto"
-                        onclick="triggerCameraCapture()">
+                        title="Tirar Foto" onclick="triggerCameraCapture()">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
@@ -50,8 +50,7 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                     </button>
                     <a href="<?php echo esc_url($edit_url); ?>"
                         class="inline-flex items-center justify-center w-11 h-11 lg:w-10 lg:h-10 text-indigo-600 hover:text-indigo-800 rounded-lg border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-colors"
-                        title="Editar item"
-                        aria-label="Editar item">
+                        title="Editar item" aria-label="Editar item">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -61,7 +60,8 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                         data-confirm="Tem certeza que deseja enviar este item para a lixeira? Ele nao sera excluido permanentemente.">
                         <?php wp_nonce_field('ccs_action_nonce'); ?>
                         <input type="hidden" name="ccs_action" value="<?php echo esc_attr($trash_action); ?>">
-                        <input type="hidden" name="<?php echo esc_attr($id_field); ?>" value="<?php echo intval($pc->id); ?>">
+                        <input type="hidden" name="<?php echo esc_attr($id_field); ?>"
+                            value="<?php echo intval($pc->id); ?>">
                         <input type="hidden" name="module" value="<?php echo esc_attr($current_module); ?>">
                         <button type="submit"
                             class="inline-flex items-center justify-center w-11 h-11 lg:w-10 lg:h-10 text-red-500 hover:text-red-700 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 transition-colors"
@@ -99,7 +99,8 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                 </div>
                 <div>
                     <span class="block text-slate-400 text-xs uppercase tracking-wider font-semibold">Marca / Modelo</span>
-                    <span class="font-medium"><?php echo esc_html(($pc->brand_model ?? '') !== '' ? $pc->brand_model : '-'); ?></span>
+                    <span
+                        class="font-medium"><?php echo esc_html(($pc->brand_model ?? '') !== '' ? $pc->brand_model : '-'); ?></span>
                 </div>
                 <div>
                     <span class="block text-slate-400 text-xs uppercase tracking-wider font-semibold">Departamento</span>
@@ -107,7 +108,8 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                 </div>
                 <div>
                     <span class="block text-slate-400 text-xs uppercase tracking-wider font-semibold">Propriedade</span>
-                    <span class="font-medium"><?php echo esc_html(($pc->property ?? '') !== '' ? $pc->property : '-'); ?></span>
+                    <span
+                        class="font-medium"><?php echo esc_html(($pc->property ?? '') !== '' ? $pc->property : '-'); ?></span>
                 </div>
             <?php else: ?>
                 <div>
@@ -138,7 +140,8 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                 <span class="block text-slate-400 text-xs uppercase tracking-wider font-semibold mb-2">
                     <?php echo $is_cellphone_module ? 'Observacao' : 'Anotacoes'; ?>
                 </span>
-                <p class="text-slate-700 bg-amber-50 border border-amber-100 p-3 rounded-lg text-sm"><?php echo nl2br(esc_html($pc->notes)); ?></p>
+                <p class="text-slate-700 bg-amber-50 border border-amber-100 p-3 rounded-lg text-sm">
+                    <?php echo nl2br(esc_html($pc->notes)); ?></p>
             </div>
         <?php endif; ?>
     </div>
@@ -185,7 +188,8 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                     <form method="post" action="?" data-ajax="true">
                         <?php wp_nonce_field('ccs_action_nonce'); ?>
                         <input type="hidden" name="ccs_action" value="<?php echo esc_attr($checkup_action); ?>">
-                        <input type="hidden" name="<?php echo esc_attr($id_field); ?>" value="<?php echo intval($pc->id); ?>">
+                        <input type="hidden" name="<?php echo esc_attr($id_field); ?>"
+                            value="<?php echo intval($pc->id); ?>">
                         <input type="hidden" name="module" value="<?php echo esc_attr($current_module); ?>">
                         <div class="mb-4">
                             <textarea name="description" rows="4"
@@ -199,17 +203,28 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                 <?php endif; ?>
             </div>
 
-            <div id="sectionAudit" class="bg-white p-4 sm:p-5 lg:p-6 rounded-xl shadow-sm border <?php echo $last_audit ? 'border-emerald-200' : 'border-amber-200'; ?>">
+            <div id="sectionAudit"
+                class="bg-white p-4 sm:p-5 lg:p-6 rounded-xl shadow-sm border <?php echo $last_audit ? 'border-emerald-200' : 'border-amber-200'; ?>">
                 <div class="flex items-center justify-between mb-3">
                     <h3 class="font-bold text-slate-900">Auditoria Presencial</h3>
                     <?php if ($last_audit): ?>
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500 text-white shadow-sm">
-                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                        <span
+                            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500 text-white shadow-sm">
+                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                    clip-rule="evenodd" />
+                            </svg>
                             Conferido
                         </span>
                     <?php else: ?>
-                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
-                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                        <span
+                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
+                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                    clip-rule="evenodd" />
+                            </svg>
                             Pendente
                         </span>
                     <?php endif; ?>
@@ -221,8 +236,10 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                     $audit_user_name = $audit_user ? $audit_user->display_name : 'Sistema';
                     ?>
                     <div class="text-xs text-slate-500 mb-3 bg-emerald-50 p-2 rounded-lg">
-                        <span class="block">Ultima auditoria: <strong class="text-slate-700"><?php echo date('d/m/Y H:i', strtotime($last_audit->created_at)); ?></strong></span>
-                        <span class="block">Por: <strong class="text-slate-700"><?php echo esc_html($audit_user_name); ?></strong></span>
+                        <span class="block">Ultima auditoria: <strong
+                                class="text-slate-700"><?php echo date('d/m/Y H:i', strtotime($last_audit->created_at)); ?></strong></span>
+                        <span class="block">Por: <strong
+                                class="text-slate-700"><?php echo esc_html($audit_user_name); ?></strong></span>
                     </div>
                 <?php else: ?>
                     <p class="text-xs text-amber-600 mb-3">Nenhuma auditoria presencial registrada.</p>
@@ -233,16 +250,19 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                         data-loading-overlay-id="auditLoadingOverlay" class="relative">
                         <?php wp_nonce_field('ccs_action_nonce'); ?>
                         <input type="hidden" name="ccs_action" value="<?php echo esc_attr($audit_action); ?>">
-                        <input type="hidden" name="<?php echo esc_attr($id_field); ?>" value="<?php echo intval($pc->id); ?>">
+                        <input type="hidden" name="<?php echo esc_attr($id_field); ?>"
+                            value="<?php echo intval($pc->id); ?>">
                         <input type="hidden" name="module" value="<?php echo esc_attr($current_module); ?>">
 
                         <div class="mb-3">
                             <label for="auditCameraInput"
                                 class="cursor-pointer flex items-center justify-center gap-2 w-full h-20 border-2 border-dashed border-emerald-300 rounded-xl bg-emerald-50 hover:bg-emerald-100 transition-colors group">
                                 <div class="p-2 bg-emerald-100 rounded-full group-hover:bg-emerald-200 transition-colors">
-                                    <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                        </path>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     </svg>
@@ -254,9 +274,11 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                                 capture="environment" multiple class="hidden" onchange="handleAuditCameraInputChange(this)">
                         </div>
 
-                        <div id="auditPhotoQueuePanel" class="hidden mb-3 p-3 rounded-lg border border-slate-200 bg-slate-50">
+                        <div id="auditPhotoQueuePanel"
+                            class="hidden mb-3 p-3 rounded-lg border border-slate-200 bg-slate-50">
                             <div class="flex items-center justify-between gap-2 mb-2">
-                                <span id="auditPhotoQueueCount" class="text-xs text-slate-600">Nenhuma foto selecionada.</span>
+                                <span id="auditPhotoQueueCount" class="text-xs text-slate-600">Nenhuma foto
+                                    selecionada.</span>
                                 <button type="button" id="clearAuditPhotoQueueBtn"
                                     class="text-xs text-slate-500 hover:text-red-600 underline">Limpar</button>
                             </div>
@@ -267,18 +289,24 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                             data-default-text="<?php echo esc_attr($last_audit ? 'Refazer Auditoria' : 'Registrar Auditoria'); ?>"
                             class="w-full flex items-center justify-center gap-2 bg-emerald-600 text-white hover:bg-emerald-700 p-3 rounded-lg transition-colors font-medium shadow-sm">
                             <svg id="auditSubmitIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            <span id="auditSubmitText"><?php echo $last_audit ? 'Refazer Auditoria' : 'Registrar Auditoria'; ?></span>
+                            <span
+                                id="auditSubmitText"><?php echo $last_audit ? 'Refazer Auditoria' : 'Registrar Auditoria'; ?></span>
                         </button>
 
                         <p class="text-xs text-slate-400 mt-2 text-center">Foto opcional, mas recomendada</p>
 
                         <div id="auditLoadingOverlay"
                             class="hidden absolute inset-0 bg-white/80 flex flex-col items-center justify-center rounded-xl z-10">
-                            <svg class="animate-spin h-8 w-8 text-emerald-600 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            <svg class="animate-spin h-8 w-8 text-emerald-600 mb-2" xmlns="http://www.w3.org/2000/svg"
+                                fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                                </circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
                             </svg>
                             <span class="text-sm font-medium text-emerald-700">Registrando auditoria...</span>
                         </div>
@@ -295,14 +323,17 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                         data-loading-overlay-id="loadingOverlay" class="relative">
                         <?php wp_nonce_field('ccs_action_nonce'); ?>
                         <input type="hidden" name="ccs_action" value="<?php echo esc_attr($upload_action); ?>">
-                        <input type="hidden" name="<?php echo esc_attr($id_field); ?>" value="<?php echo intval($pc->id); ?>">
+                        <input type="hidden" name="<?php echo esc_attr($id_field); ?>"
+                            value="<?php echo intval($pc->id); ?>">
                         <input type="hidden" name="module" value="<?php echo esc_attr($current_module); ?>">
 
                         <div class="mb-3">
                             <label for="cameraInput"
                                 class="cursor-pointer flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-indigo-300 rounded-xl bg-indigo-50 hover:bg-indigo-100 transition-colors group">
-                                <div class="p-3 bg-indigo-100 rounded-full group-hover:bg-indigo-200 transition-colors mb-2">
-                                    <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div
+                                    class="p-3 bg-indigo-100 rounded-full group-hover:bg-indigo-200 transition-colors mb-2">
+                                    <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
                                         </path>
@@ -311,10 +342,11 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                                     </svg>
                                 </div>
                                 <span class="text-indigo-700 font-semibold text-sm">Adicionar Foto</span>
-                                <span class="text-indigo-400 text-xs mt-1">Toque para capturar varias e enviar de uma vez</span>
+                                <span class="text-indigo-400 text-xs mt-1">Toque para capturar varias e enviar de uma
+                                    vez</span>
                             </label>
-                            <input id="cameraInput" type="file" name="asset_photos[]" accept="image/*"
-                                capture="environment" multiple class="hidden" onchange="handleCameraInputChange(this)">
+                            <input id="cameraInput" type="file" name="asset_photos[]" accept="image/*" capture="environment"
+                                multiple class="hidden" onchange="handleCameraInputChange(this)">
                         </div>
 
                         <div id="photoQueuePanel" class="hidden mb-4 p-3 rounded-lg border border-slate-200 bg-slate-50">
@@ -327,8 +359,7 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                         </div>
 
                         <button type="submit" id="submitPhotoBatchBtn"
-                            class="w-full btn btn-primary opacity-60 cursor-not-allowed"
-                            disabled>
+                            class="w-full btn btn-primary opacity-60 cursor-not-allowed" disabled>
                             Enviar fotos selecionadas
                         </button>
 
@@ -336,7 +367,8 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                             class="hidden absolute inset-0 bg-white/80 flex flex-col items-center justify-center rounded-xl z-10">
                             <svg class="animate-spin h-8 w-8 text-indigo-600 mb-2" xmlns="http://www.w3.org/2000/svg"
                                 fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                                </circle>
                                 <path class="opacity-75" fill="currentColor"
                                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                                 </path>
@@ -351,27 +383,33 @@ $status_label = $status_labels[$status_value] ?? $status_value;
         </div>
     </div>
 
-    <div id="sectionHistory" class="lg:col-span-2 bg-white p-5 sm:p-6 lg:p-8 rounded-xl shadow-sm border border-slate-200">
+    <div id="sectionHistory"
+        class="lg:col-span-2 bg-white p-5 sm:p-6 lg:p-8 rounded-xl shadow-sm border border-slate-200">
         <h3 class="text-lg font-bold text-slate-900 mb-6">Historico</h3>
         <div class="space-y-6 relative before:absolute before:inset-0 before:ml-2.5 before:w-0.5 before:bg-slate-200">
             <?php foreach ($history as $h):
                 $u = get_userdata($h->user_id);
                 ?>
                 <div class="relative flex gap-4 min-w-0">
-                    <div class="absolute -left-1 w-2.5 h-2.5 rounded-full bg-indigo-500 ring-4 ring-white mt-1.5 ml-1"></div>
+                    <div class="absolute -left-1 w-2.5 h-2.5 rounded-full bg-indigo-500 ring-4 ring-white mt-1.5 ml-1">
+                    </div>
                     <div class="ml-6 flex-1 min-w-0">
                         <div class="flex flex-col gap-1 sm:flex-row sm:justify-between sm:items-baseline mb-1 min-w-0">
-                            <span class="font-semibold text-slate-900 capitalize"><?php echo esc_html($h->event_type); ?></span>
+                            <span
+                                class="font-semibold text-slate-900 capitalize"><?php echo esc_html($h->event_type); ?></span>
                             <div class="flex items-center gap-2 min-w-0">
                                 <span class="text-xs text-slate-400 break-words whitespace-normal">
-                                    <?php echo date('d/m H:i', strtotime($h->created_at)); ?> - <?php echo esc_html($u ? $u->display_name : 'Sistema'); ?>
+                                    <?php echo date('d/m H:i', strtotime($h->created_at)); ?> -
+                                    <?php echo esc_html($u ? $u->display_name : 'Sistema'); ?>
                                 </span>
                                 <?php if ($can_edit): ?>
                                     <form method="post" action="?" data-ajax="true" class="inline"
                                         data-confirm="Tem certeza que deseja excluir este item do historico?">
                                         <?php wp_nonce_field('ccs_action_nonce'); ?>
-                                        <input type="hidden" name="ccs_action" value="<?php echo esc_attr($delete_history_action); ?>">
-                                        <input type="hidden" name="<?php echo esc_attr($id_field); ?>" value="<?php echo intval($pc->id); ?>">
+                                        <input type="hidden" name="ccs_action"
+                                            value="<?php echo esc_attr($delete_history_action); ?>">
+                                        <input type="hidden" name="<?php echo esc_attr($id_field); ?>"
+                                            value="<?php echo intval($pc->id); ?>">
                                         <input type="hidden" name="history_id" value="<?php echo intval($h->id); ?>">
                                         <input type="hidden" name="module" value="<?php echo esc_attr($current_module); ?>">
                                         <button type="submit"
@@ -387,7 +425,8 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                                 <?php endif; ?>
                             </div>
                         </div>
-                        <p class="text-slate-600 text-sm break-words whitespace-normal"><?php echo esc_html($h->description); ?></p>
+                        <p class="text-slate-600 text-sm break-words whitespace-normal">
+                            <?php echo esc_html($h->description); ?></p>
 
                         <?php
                         $photos = !empty($h->photos) ? json_decode($h->photos, true) : [];
@@ -414,22 +453,45 @@ $status_label = $status_labels[$status_value] ?? $status_value;
     </div>
 </div>
 
-<nav id="mobileBottomBar" class="fixed bottom-0 inset-x-0 z-50 lg:hidden bg-white border-t border-slate-200 shadow-[0_-2px_10px_rgba(0,0,0,0.06)]">
+<nav id="mobileBottomBar"
+    class="fixed bottom-0 inset-x-0 z-50 lg:hidden bg-white border-t border-slate-200 shadow-[0_-2px_10px_rgba(0,0,0,0.06)]">
     <div class="flex items-center justify-around h-14 max-w-lg mx-auto px-2">
-        <button type="button" onclick="scrollToSection('sectionInfo')" class="mobile-nav-btn group flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-slate-400 hover:text-indigo-600 transition-colors" data-section="sectionInfo">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <button type="button" onclick="scrollToSection('sectionInfo')"
+            class="mobile-nav-btn group flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-slate-400 hover:text-indigo-600 transition-colors"
+            data-section="sectionInfo">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
             <span class="text-[10px] font-medium leading-none">Info</span>
         </button>
-        <button type="button" onclick="scrollToSection('sectionAudit')" class="mobile-nav-btn group flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors <?php echo $last_audit ? 'text-emerald-500 hover:text-emerald-700' : 'text-amber-500 hover:text-amber-700'; ?>" data-section="sectionAudit">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <button type="button" onclick="triggerAuditCamera()"
+            class="mobile-nav-btn group flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors <?php echo $last_audit ? 'text-emerald-500 hover:text-emerald-700' : 'text-amber-500 hover:text-amber-700'; ?>"
+            data-section="sectionAudit">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
             <span class="text-[10px] font-medium leading-none">Auditoria</span>
         </button>
-        <button type="button" onclick="scrollToSection('photosCard')" class="mobile-nav-btn group flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-slate-400 hover:text-indigo-600 transition-colors" data-section="photosCard">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <button type="button" onclick="scrollToSection('photosCard')"
+            class="mobile-nav-btn group flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-slate-400 hover:text-indigo-600 transition-colors"
+            data-section="photosCard">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
             <span class="text-[10px] font-medium leading-none">Fotos</span>
         </button>
-        <button type="button" onclick="scrollToSection('sectionHistory')" class="mobile-nav-btn group flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-slate-400 hover:text-indigo-600 transition-colors" data-section="sectionHistory">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <button type="button" onclick="scrollToSection('sectionHistory')"
+            class="mobile-nav-btn group flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-slate-400 hover:text-indigo-600 transition-colors"
+            data-section="sectionHistory">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
             <span class="text-[10px] font-medium leading-none">Historico</span>
         </button>
     </div>
@@ -456,7 +518,7 @@ $status_label = $status_labels[$status_value] ?? $status_value;
                 $u = get_userdata($h->user_id);
                 $photos = !empty($h->photos) ? json_decode($h->photos, true) : [];
                 ?>
-                {
+                    {
                     type: <?php echo json_encode($h->event_type); ?>,
                     date: <?php echo json_encode(date('d/m/Y H:i', strtotime($h->created_at))); ?>,
                     user: <?php echo json_encode($u ? $u->display_name : 'Sistema'); ?>,
@@ -883,6 +945,16 @@ $status_label = $status_labels[$status_value] ?? $status_value;
         const barHeight = 56 + 12;
         const y = el.getBoundingClientRect().top + window.pageYOffset - 12;
         window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+
+    function triggerAuditCamera() {
+        scrollToSection('sectionAudit');
+        // Pequeno timeout para garantir que a rolagem inicie antes de abrir a câmera
+        // e dar feedback visual ao usuário
+        setTimeout(function () {
+            const input = document.getElementById('auditCameraInput');
+            if (input) input.click();
+        }, 300);
     }
 
     (function () {
