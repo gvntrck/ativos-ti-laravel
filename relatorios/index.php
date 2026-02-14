@@ -97,7 +97,7 @@ if ($current_report) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Relatorios</title>
+    <title>Relatorios Ativos Metalife</title>
 
     <!-- Scripts e Estilos -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -209,7 +209,7 @@ if ($current_report) {
                                     d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
                                 </path>
                             </svg>
-                            Relatorios ERP
+                            Relatorios Ativos Metalife
                         </h1>
                     </div>
                     <nav class="mt-2 flex-1 space-y-1 bg-white px-2">
