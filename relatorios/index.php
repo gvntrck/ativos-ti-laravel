@@ -149,11 +149,18 @@ if ($current_report) {
             padding: 0.25rem 2rem 0.25rem 0.5rem;
         }
 
+        .dataTables_wrapper .dataTables_filter {
+            text-align: left !important;
+            float: none !important;
+        }
+
         .dataTables_wrapper .dataTables_filter input {
             border: 1px solid var(--ccs-border);
             border-radius: 0.375rem;
             padding: 0.25rem 0.5rem;
-            margin-left: 0.5rem;
+            margin-left: 0;
+            margin-right: 0.5rem;
+            min-width: 250px;
         }
 
         /* Estilo Compacto ERP */
@@ -401,7 +408,7 @@ if ($current_report) {
     <script>
         $(document).ready(function () {
             var table = $('#reportTable').DataTable({
-                dom: 'Blfrtip', /* B=Buttons, l=Length (qnt itens), f=Filter, r=Processing, t=Table, i=Info, p=Pagination */
+                dom: '<"flex flex-col gap-2 items-start" B f>rtip', /* B=Buttons, f=Filter (agora alinhados a esquerda em coluna) */
                 buttons: [
                     'copy',
                     'csv',
