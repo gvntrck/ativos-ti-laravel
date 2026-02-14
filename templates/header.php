@@ -191,8 +191,10 @@ $html_title = !empty($head_module_config['title']) ? $head_module_config['title'
 
     <div class="ccs-topbar">
         <div class="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-end gap-3 text-xs">
-            <span class="text-slate-500">Usuario: <strong class="text-slate-700"><?php echo esc_html($user_first_name); ?></strong></span>
-            <a href="<?php echo esc_url($logout_url); ?>" class="text-slate-600 hover:text-slate-900 hover:underline">Sair</a>
+            <span class="text-slate-500">Usuario: <strong
+                    class="text-slate-700"><?php echo esc_html($user_first_name); ?></strong></span>
+            <a href="<?php echo esc_url($logout_url); ?>"
+                class="text-slate-600 hover:text-slate-900 hover:underline">Sair</a>
         </div>
     </div>
 
@@ -201,7 +203,8 @@ $html_title = !empty($head_module_config['title']) ? $head_module_config['title'
         <!-- Header -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <div>
-                <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight"><?php echo esc_html($module_title); ?></h1>
+                <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+                    <?php echo esc_html($module_title); ?></h1>
                 <p class="text-slate-500 mt-1"><?php echo esc_html($module_subtitle); ?></p>
                 <div class="mt-3 inline-flex rounded-lg border border-slate-200 bg-white p-1 gap-1">
                     <a href="<?php echo esc_url($module_switch_urls['computers'] ?? '?module=computers&view=list'); ?>"
@@ -215,8 +218,19 @@ $html_title = !empty($head_module_config['title']) ? $head_module_config['title'
                 </div>
             </div>
             <div class="flex space-x-3 w-full sm:w-auto">
+                <a href="relatorios/index.php"
+                    class="hidden lg:inline-flex items-center px-4 py-2 border border-slate-300 shadow-sm text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <svg class="w-4 h-4 mr-2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 011.414.586l4 4a1 1 0 01.586 1.414V19a2 2 0 01-2 2z">
+                        </path>
+                    </svg>
+                    Relatórios
+                </a>
                 <?php if ($view !== 'list'): ?>
-                    <a href="<?php echo esc_url($module_list_url); ?>" id="backToListBtn" class="btn btn-secondary">Voltar para Lista</a>
+                    <a href="<?php echo esc_url($module_list_url); ?>" id="backToListBtn" class="btn btn-secondary">Voltar
+                        para Lista</a>
                     <script>
                         (function () {
                             const backBtn = document.getElementById('backToListBtn');
@@ -287,8 +301,8 @@ $html_title = !empty($head_module_config['title']) ? $head_module_config['title'
                     <a href="<?php echo esc_url($module_trash_url); ?>" class="btn btn-secondary">Lixeira</a>
                 <?php endif; ?>
                 <?php if ($can_edit && $view !== 'add'): ?>
-                    <a href="<?php echo esc_url($module_add_url); ?>" class="btn btn-primary"><svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
+                    <a href="<?php echo esc_url($module_add_url); ?>" class="btn btn-primary"><svg class="w-4 h-4 mr-2"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                         </svg><?php echo esc_html($module_new_label); ?></a>
                 <?php endif; ?>
