@@ -109,10 +109,12 @@ if ($current_report) {
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
-
+    <link rel="stylesheet" href="https://cdn.datatables.net/colreorder/1.7.0/css/colReorder.dataTables.min.css">
+    
     <!-- DataTables JS -->
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/colreorder/1.7.0/js/dataTables.colReorder.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
@@ -120,60 +122,59 @@ if ($current_report) {
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
 
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-
+        body { font-family: 'Inter', sans-serif; }
+        
         /* Ajustes para DataTables + Tailwind */
         .dataTables_wrapper .dataTables_length select {
             padding-right: 2rem;
             background-image: none;
             border: 1px solid #d1d5db;
             border-radius: 0.375rem;
+            padding: 0.25rem 2rem 0.25rem 0.5rem;
         }
-
         .dataTables_wrapper .dataTables_filter input {
             border: 1px solid #d1d5db;
             border-radius: 0.375rem;
             padding: 0.25rem 0.5rem;
             margin-left: 0.5rem;
         }
-
+        
         /* Estilo Compacto ERP */
-        table.dataTable tbody td {
-            padding: 4px 8px !important;
-            /* Mais compacto */
-            font-size: 0.75rem !important;
-            /* text-xs */
-            vertical-align: middle;
-            border-right: 1px solid #f3f4f6;
+        table.dataTable {
+            border-collapse: collapse !important;
         }
-
+        table.dataTable tbody td {
+            padding: 4px 8px !important; /* Mais compacto */
+            font-size: 0.75rem !important; /* text-xs */
+            vertical-align: middle;
+            border-right: 1px solid #e5e7eb; /* Linha vertical */
+            border-bottom: 1px solid #d1d5db !important; /* LINHA HORIZONTAL 1PX FORTE */
+        }
         table.dataTable thead th {
             padding: 8px 8px !important;
             font-size: 0.75rem !important;
             background-color: #f9fafb;
-            border-bottom: 2px solid #e5e7eb !important;
+            border-bottom: 2px solid #9ca3af !important;
+            border-right: 1px solid #e5e7eb;
             text-transform: uppercase;
             font-weight: 600;
             color: #374151;
         }
-
         table.dataTable.no-footer {
             border-bottom: 1px solid #e5e7eb;
         }
-
+        
         /* Hover na linha */
         table.dataTable tbody tr:hover {
             background-color: #f3f4f6 !important;
+            cursor: move; /* Indica reordenacao possivel (metafora) */
         }
-
+        
         /* Sidebar Link Active */
         .nav-link.active {
             background-color: #eef2ff;
             color: #4f46e5;
         }
-
         .nav-link:hover:not(.active) {
             background-color: #f9fafb;
             color: #111827;
@@ -209,7 +210,7 @@ if ($current_report) {
                                     d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
                                 </path>
                             </svg>
-                            Relatorios Ativos Metalife
+                            Relatorios ERP
                         </h1>
                     </div>
                     <nav class="mt-2 flex-1 space-y-1 bg-white px-2">
@@ -375,10 +376,20 @@ if ($current_report) {
     <script>
         $(document).ready(function () {
             var table = $('#reportTable').DataTable({
-                dom: 'Bfrtip',
+                dom: 'Blfrtip', /* B=Buttons, l=Length (qnt itens), f=Filter, r=Processing, t=Table, i=Info, p=Pagination */
                 buttons: [
-                    'copy', 'csv', 'excel', 'pdf', 'print'
+                    'copy', 
+                    'csv', 
+                    'excel', 
+                    {
+                        extend: 'pdfHtml5',
+                        orientation: 'landscape', /* PDF Horizontal */
+                        pageSize: 'A4'
+                    },
+                    'print'
                 ],
+                colReorder: true, /* Habilita reordenacao de colunas arrastando */
+                lengthMenu: [ [10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"] ], /* Opcoes de quantidade */
                 paging: true,
                 pageLength: 25,
                 language: {
