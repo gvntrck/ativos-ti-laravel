@@ -40,7 +40,7 @@ if ($files) {
     foreach ($files as $file) {
         $filename = basename($file);
         $content = file_get_contents($file);
-        
+
         // Logica simples de categorizacao baseada no conteudo da query
         $category = 'Geral';
         if (stripos($content, 'wp_computer_inventory') !== false || stripos($content, 'computer') !== false) {
@@ -71,17 +71,17 @@ if ($current_report) {
     $report_file = $querys_dir . '/' . basename($current_report);
     if (file_exists($report_file)) {
         $sql = file_get_contents($report_file);
-        
+
         // Remove comentarios do SQL para exibir (opcional) ou execucao limpa
         // $wpdb->get_results executa a query diretamente
-        
+
         // Pega o titulo baseado no nome do arquivo
         $report_title = str_replace(['.sql', '_', '-'], ['', ' ', ' '], basename($current_report));
         $report_title = preg_replace('/^\d+\s*/', '', $report_title);
         $report_title = ucwords($report_title);
 
         $results = $wpdb->get_results($sql, ARRAY_A);
-        
+
         if ($wpdb->last_error) {
             $error = $wpdb->last_error;
         }
@@ -90,24 +90,26 @@ if ($current_report) {
     }
 }
 
+?>
 <!DOCTYPE html>
 <html lang="pt-BR" class="h-full bg-gray-50">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Relatorios</title>
-    
+
     <!-- Scripts e Estilos -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
-    
+
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
-    
+
     <!-- DataTables JS -->
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
@@ -118,8 +120,10 @@ if ($current_report) {
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
 
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
         /* Ajustes para DataTables + Tailwind */
         .dataTables_wrapper .dataTables_length select {
             padding-right: 2rem;
@@ -127,20 +131,24 @@ if ($current_report) {
             border: 1px solid #d1d5db;
             border-radius: 0.375rem;
         }
+
         .dataTables_wrapper .dataTables_filter input {
             border: 1px solid #d1d5db;
             border-radius: 0.375rem;
             padding: 0.25rem 0.5rem;
             margin-left: 0.5rem;
         }
-        
+
         /* Estilo Compacto ERP */
         table.dataTable tbody td {
-            padding: 4px 8px !important; /* Mais compacto */
-            font-size: 0.75rem !important; /* text-xs */
+            padding: 4px 8px !important;
+            /* Mais compacto */
+            font-size: 0.75rem !important;
+            /* text-xs */
             vertical-align: middle;
             border-right: 1px solid #f3f4f6;
         }
+
         table.dataTable thead th {
             padding: 8px 8px !important;
             font-size: 0.75rem !important;
@@ -150,20 +158,22 @@ if ($current_report) {
             font-weight: 600;
             color: #374151;
         }
+
         table.dataTable.no-footer {
             border-bottom: 1px solid #e5e7eb;
         }
-        
+
         /* Hover na linha */
         table.dataTable tbody tr:hover {
             background-color: #f3f4f6 !important;
         }
-        
+
         /* Sidebar Link Active */
         .nav-link.active {
             background-color: #eef2ff;
             color: #4f46e5;
         }
+
         .nav-link:hover:not(.active) {
             background-color: #f9fafb;
             color: #111827;
@@ -179,11 +189,13 @@ if ($current_report) {
             color: #374151 !important;
             margin-bottom: 0.5rem !important;
         }
+
         .dt-button:hover {
             background: #f3f4f6 !important;
         }
     </style>
 </head>
+
 <body class="h-full">
     <div class="min-h-full flex">
         <!-- Sidebar -->
@@ -192,14 +204,19 @@ if ($current_report) {
                 <div class="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
                     <div class="flex flex-shrink-0 items-center px-4 mb-5">
                         <h1 class="text-xl font-bold text-indigo-600 flex items-center gap-2">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                </path>
+                            </svg>
                             Relatorios ERP
                         </h1>
                     </div>
                     <nav class="mt-2 flex-1 space-y-1 bg-white px-2">
                         <?php foreach ($reports_by_category as $category => $reports): ?>
-                            <?php if (empty($reports)) continue; ?>
-                            
+                            <?php if (empty($reports))
+                                continue; ?>
+
                             <div class="px-3 mt-6 mb-2">
                                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider border-b pb-1">
                                     <?php echo htmlspecialchars($category); ?>
@@ -207,11 +224,12 @@ if ($current_report) {
                             </div>
 
                             <?php foreach ($reports as $report): ?>
-                                <?php 
-                                    $active = $current_report === $report['file'];
-                                    $report_name_cleaned = preg_replace('/^\d+/', '', $report['name']); // Tira numero se tiver ficado
+                                <?php
+                                $active = $current_report === $report['file'];
+                                $report_name_cleaned = preg_replace('/^\d+/', '', $report['name']); // Tira numero se tiver ficado
                                 ?>
-                                <a href="?report=<?php echo urlencode($report['file']); ?>" class="nav-link <?php echo $active ? 'active' : 'text-gray-600'; ?> group flex items-center px-2 py-1.5 text-xs font-medium rounded-md transition-colors duration-150">
+                                <a href="?report=<?php echo urlencode($report['file']); ?>"
+                                    class="nav-link <?php echo $active ? 'active' : 'text-gray-600'; ?> group flex items-center px-2 py-1.5 text-xs font-medium rounded-md transition-colors duration-150">
                                     <span class="truncate"><?php echo htmlspecialchars($report_name_cleaned); ?></span>
                                 </a>
                             <?php endforeach; ?>
@@ -222,8 +240,12 @@ if ($current_report) {
                     <a href="/wp-admin" class="group block w-full flex-shrink-0">
                         <div class="flex items-center">
                             <div class="ml-1">
-                                <p class="text-xs font-medium text-gray-500 group-hover:text-gray-900 flex items-center gap-1">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z"></path></svg>
+                                <p
+                                    class="text-xs font-medium text-gray-500 group-hover:text-gray-900 flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z"></path>
+                                    </svg>
                                     Voltar para o Painel
                                 </p>
                             </div>
@@ -253,7 +275,9 @@ if ($current_report) {
                             <div class="flex">
                                 <div class="flex-shrink-0">
                                     <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                        <path fill-rule="evenodd"
+                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                            clip-rule="evenodd" />
                                     </svg>
                                 </div>
                                 <div class="ml-3">
@@ -272,15 +296,16 @@ if ($current_report) {
                                 <table id="reportTable" class="min-w-full divide-y divide-gray-200 border border-gray-200">
                                     <thead class="bg-gray-50">
                                         <tr>
-                                            <?php 
+                                            <?php
                                             $columns = array_keys($results[0]);
-                                            foreach ($columns as $column): 
+                                            foreach ($columns as $column):
                                                 // Limpa nome da coluna para ficar bonito no header
                                                 $colName = str_replace('_', ' ', $column);
                                                 // Se comecar com _ (ex: _prioridade), esconde do titulo visual mas mantem para debug se precisar
                                                 $isHidden = substr($column, 0, 1) === '_';
-                                            ?>
-                                                <th scope="col" class="text-xs font-semibold text-gray-700 uppercase tracking-wider <?php echo $isHidden ? 'hidden' : ''; ?>">
+                                                ?>
+                                                <th scope="col"
+                                                    class="text-xs font-semibold text-gray-700 uppercase tracking-wider <?php echo $isHidden ? 'hidden' : ''; ?>">
                                                     <?php echo htmlspecialchars($colName); ?>
                                                 </th>
                                             <?php endforeach; ?>
@@ -289,22 +314,27 @@ if ($current_report) {
                                     <tbody class="bg-white divide-y divide-gray-200">
                                         <?php foreach ($results as $row): ?>
                                             <tr class="hover:bg-gray-50 transition-colors">
-                                                <?php foreach ($row as $key => $value): 
-                                                     $isHidden = substr($key, 0, 1) === '_';
-                                                ?>
-                                                    <td class="<?php echo $isHidden ? 'hidden' : ''; ?> text-xs text-gray-700 whitespace-nowrap">
-                                                        <?php 
-                                                            if (strpos($key, 'url') !== false && filter_var($value, FILTER_VALIDATE_URL)) {
-                                                                echo '<a href="' . htmlspecialchars($value) . '" target="_blank" class="text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg> Abrir</a>';
-                                                            } elseif ($value === null) {
-                                                                echo '<span class="text-gray-300">-</span>';
-                                                            } else {
-                                                                // Destaque condicional basico
-                                                                if ($value === 'NUNCA AUDITADO') echo '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">NUNCA</span>';
-                                                                elseif (strpos($value, 'ATRASADO') !== false) echo '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">' . htmlspecialchars($value) . '</span>';
-                                                                elseif ($value === 'EM DIA') echo '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">OK</span>';
-                                                                else echo htmlspecialchars($value);
-                                                            }
+                                                <?php foreach ($row as $key => $value):
+                                                    $isHidden = substr($key, 0, 1) === '_';
+                                                    ?>
+                                                    <td
+                                                        class="<?php echo $isHidden ? 'hidden' : ''; ?> text-xs text-gray-700 whitespace-nowrap">
+                                                        <?php
+                                                        if (strpos($key, 'url') !== false && filter_var($value, FILTER_VALIDATE_URL)) {
+                                                            echo '<a href="' . htmlspecialchars($value) . '" target="_blank" class="text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg> Abrir</a>';
+                                                        } elseif ($value === null) {
+                                                            echo '<span class="text-gray-300">-</span>';
+                                                        } else {
+                                                            // Destaque condicional basico
+                                                            if ($value === 'NUNCA AUDITADO')
+                                                                echo '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">NUNCA</span>';
+                                                            elseif (strpos($value, 'ATRASADO') !== false)
+                                                                echo '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">' . htmlspecialchars($value) . '</span>';
+                                                            elseif ($value === 'EM DIA')
+                                                                echo '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">OK</span>';
+                                                            else
+                                                                echo htmlspecialchars($value);
+                                                        }
                                                         ?>
                                                     </td>
                                                 <?php endforeach; ?>
@@ -316,17 +346,21 @@ if ($current_report) {
                         </div>
                     <?php elseif ($current_report && !$error): ?>
                         <div class="mt-12 text-center p-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                             <h3 class="mt-2 text-sm font-medium text-gray-900">Nenhum dado encontrado</h3>
                             <p class="mt-1 text-sm text-gray-500">A query executou com sucesso mas nao retornou linhas.</p>
                         </div>
                     <?php else: ?>
                         <!-- Tela de boas vindas -->
-                         <div class="mt-12 text-center p-12 ">
-                            <svg class="mx-auto h-16 w-16 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+                        <div class="mt-12 text-center p-12 ">
+                            <svg class="mx-auto h-16 w-16 text-indigo-400" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
                             </svg>
                             <h3 class="mt-4 text-lg font-medium text-gray-900">Bem-vindo ao Sistema de Relatorios</h3>
                             <p class="mt-1 text-sm text-gray-500">Selecione um relatorio no menu lateral para comecar.</p>
@@ -339,7 +373,7 @@ if ($current_report) {
 
     <!-- Inicializacao do DataTables -->
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             var table = $('#reportTable').DataTable({
                 dom: 'Bfrtip',
                 buttons: [
@@ -355,4 +389,5 @@ if ($current_report) {
         });
     </script>
 </body>
+
 </html>
